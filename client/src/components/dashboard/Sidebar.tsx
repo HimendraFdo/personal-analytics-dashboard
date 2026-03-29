@@ -1,29 +1,78 @@
 export default function Sidebar() {
-    const navItems = ["Dashboard", "Entries","Analytics","Settings"];
+    const mainNavItems = [
+        { name: "Dashboard", active: true },
+        { name: "Entries", active: false},
+        { name: "Analytics", active: false },
+        { name: "Settings", active: false }
+    ];
+
+    const secondaryNavItems = [
+        {name: "Goals" },
+        {name: "Settings" },
+        {name: "Help" }
+    ];
 
     return(
-        <aside className="hidden x-64 flex-col bg-slate-900 text-white md:flex">
-            <div className="border-b border-slate-800 px-6 py-5">
-                <h2 className="text-xl font-bold">PAD</h2>
+        <aside className="hidden w-72 flex-col border-r border-slate-800 bg-slate-950 text-white md:flex">
+            <div className="border-b border-slate-800 px-6 py-6">
+                <h2 className="text-xl font-bold" tracking-tight>PAD</h2>
                 <p className="mt-1 text-sm text-slate-400">
-                    Personal Analytics
+                    Personal Analytics Dashboard
                 </p>
             </div>
 
-            <nav className="flex-1 px-4 py-6">
-                <ul className="space-y-2">
-                    {navItems.map((item) => (
-                        <li key={item}>
-                            <button
-                            className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 transition hover:bg-slate-800"
-                            type="button"
-                            >
-                              {item}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </nav>
+            <div className="flex-1 overflow-y-auto px-4 py-3">
+                <div>
+                    <p className="px-3 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500"> 
+                        Main
+                    </p>
+
+                    <ul className="space-y-2">
+                        {mainNavItems.map((item) => (
+                            <li key={item.name}>
+                                <button
+                                    type="button"
+                                    className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 transition hover:bg-slate-800 ${
+                                        item.active
+                                            ? "bg-slate-700 text-white"
+                                            : "text-slate-400 hover:bg-slate-800"
+                                    }`}
+                                >
+                                    {item.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="mt-8">
+                    <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        Workspace
+                    </p>
+
+                    <ul className="mt-3 space-y-1">
+                        {secondaryNavItems.map((item) => (
+                            <li key={item.name}>
+                                <button
+                                type="button"
+                                className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-300 transition hover:bg-slate-900 hover:text-white"
+                                >
+                                    {item.name}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                <div className="border-t border-slate-800 pc-4 py-4">
+                    <div className="rounded-2xl bg-slate-900 p-4">
+                        <p className="text-sm font-medium text-white">Current Focus</p>
+                        <p className="mt-2 text-sm text-slate-400">
+                            Review weekly trends and update your latest entries
+                        </p>
+                    </div>
+                </div>
+            </div>
         </aside>
     )
 }
