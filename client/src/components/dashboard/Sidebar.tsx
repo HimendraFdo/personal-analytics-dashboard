@@ -7,7 +7,7 @@ export default function Sidebar({
     activeItem,
     onSelectItem,
 }: SidebarProps) {
-    const mainNavItems = ["DashBoard", "Entries", "Trends", "Analytics"];
+    const mainNavItems = ["Dashboard", "Entries", "Trends", "Analytics"];
 
     const secondaryNavItems = ["Goals", "Settings", "Help"];
 
