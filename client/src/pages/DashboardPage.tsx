@@ -1,9 +1,15 @@
+import { useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import SummaryCard from "../components/dashboard/SummaryCard";
 
 export default function DashboardPage() {
+  const [activeItem, setActiveItem] = useState("Dashboard");
+
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      activeItem={activeItem}
+      onSelectItem={setActiveItem}
+    >
       <div className="space-y-8">
         <section className="rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -15,6 +21,9 @@ export default function DashboardPage() {
               <p className="mt-2 max-w-2xl text-sm text-slate-600">
                 Here is a snapshot of your recent activity, key trends, and the
                 metrics you are tracking across your personal dashboard.
+              </p>
+              <p className="mt-3 text-sm text-slate-500">
+                Active section: <span className="font-semibold text-slate-900">{activeItem}</span>
               </p>
             </div>
 

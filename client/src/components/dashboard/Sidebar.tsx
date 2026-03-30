@@ -1,16 +1,15 @@
-export default function Sidebar() {
-    const mainNavItems = [
-        { name: "Dashboard", active: true },
-        { name: "Entries", active: false},
-        { name: "Analytics", active: false },
-        { name: "Settings", active: false }
-    ];
+type SidebarProps = {
+    activeItem: string;
+    onSelectItem: (item: string) => void;
+};
 
-    const secondaryNavItems = [
-        {name: "Goals" },
-        {name: "Settings" },
-        {name: "Help" }
-    ];
+export default function Sidebar({
+    activeItem,
+    onSelectItem,
+}: SidebarProps) {
+    const mainNavItems = ["DashBoard", "Entries", "Trends", "Analytics"];
+
+    const secondaryNavItems = ["Goals", "Settings", "Help"];
 
     return(
         <aside className="hidden w-72 flex-col border-r border-slate-800 bg-slate-950 text-white md:flex">
@@ -29,16 +28,17 @@ export default function Sidebar() {
 
                     <ul className="space-y-2">
                         {mainNavItems.map((item) => (
-                            <li key={item.name}>
+                            <li key={item}>
                                 <button
                                     type="button"
+                                    onClick={() => onSelectItem(item)}
                                     className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 transition hover:bg-slate-800 ${
-                                        item.active
+                                        activeItem == item
                                             ? "bg-slate-700 text-white"
                                             : "text-slate-400 hover:bg-slate-800"
                                     }`}
                                 >
-                                    {item.name}
+                                    {item}
                                 </button>
                             </li>
                         ))}
@@ -52,12 +52,17 @@ export default function Sidebar() {
 
                     <ul className="mt-3 space-y-1">
                         {secondaryNavItems.map((item) => (
-                            <li key={item.name}>
+                            <li key={item}>
                                 <button
                                 type="button"
-                                className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-300 transition hover:bg-slate-900 hover:text-white"
+                                onClick={() => onSelectItem(item)}
+                                className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-300 transition ${
+                                    activeItem === item
+                                        ? "bg-slate-800 text-white"
+                                        : "hover:bg-slate-900 hover:text-white"
+                                    }`}
                                 >
-                                    {item.name}
+                                    {item}
                                 </button>
                             </li>
                         ))}

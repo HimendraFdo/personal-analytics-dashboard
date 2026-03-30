@@ -4,14 +4,18 @@ import Topbar from "../components/dashboard/Topbar";
 
 type DashboardLayoutProps = {
     children: ReactNode;
+    activeItem: string;
+    onSelectItem: (item: string) => void;
 };
 
 export default function DashboardLayout({
     children,
+    activeItem,
+    onSelectItem,
 }: DashboardLayoutProps) {
     return (
         <div className="flex h-screen">
-            <Sidebar />
+            <Sidebar activeItem={activeItem} onSelectItem={onSelectItem} />
 
             <div className = "flex min-h-screen flex-col">
                 <Topbar />
