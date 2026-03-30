@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
+import type { NavigationItem } from "../constants/navigation";
 
 type DashboardLayoutProps = {
     children: ReactNode;
-    activeItem: string;
-    onSelectItem: (item: string) => void;
+    activeItem: NavigationItem;
+onSelectItem: (item: NavigationItem) => void;
 };
 
 export default function DashboardLayout({
@@ -17,7 +18,7 @@ export default function DashboardLayout({
         <div className="flex h-screen">
             <Sidebar activeItem={activeItem} onSelectItem={onSelectItem} />
 
-            <div className = "flex min-h-screen flex-col">
+            <div className = "flex min-h-screen flex-1 flex-col">
                 <Topbar />
 
                 <main className = "flex-1 p-6">

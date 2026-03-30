@@ -7,37 +7,40 @@ import EmptySection from "../components/dashboard/EmptySection";
 import GoalsSection from "../components/dashboard/GoalsSection";
 import SettingsSection from "../components/dashboard/SettingsSection";
 import HelpSection from "../components/dashboard/HelpSection";
-import TrendsSection from "../components/dashboard/TrendsSection";
+import ReportsSection from "../components/dashboard/ReportsSection";
+import { NAVIGATION_ITEMS, type NavigationItem } from "../constants/navigation";
 
 export default function DashboardPage() {
-  const [activeItem, setActiveItem] = useState("Dashboard");
+    const [activeItem, setActiveItem] = useState<NavigationItem>(
+        NAVIGATION_ITEMS.DASHBOARD
+    );
 
   function renderActiveSection() {
-    if (activeItem === "Dashboard") {
+    if (activeItem === NAVIGATION_ITEMS.DASHBOARD) {
       return <DashboardSection activeItem={activeItem} />;
     }
 
-    if (activeItem === "Entries") {
+    if (activeItem === NAVIGATION_ITEMS.ENTRIES) {
       return <EntriesSection />;
     }
 
-    if (activeItem === "Trends") {
-        return <TrendsSection />;
-    }
-
-    if (activeItem === "Analytics") {
+    if (activeItem === NAVIGATION_ITEMS.ANALYTICS) {
         return <AnalyticsSection />;
     }
 
-    if (activeItem === "Goals") {
+    if (activeItem === NAVIGATION_ITEMS.REPORTS) {
+        return <ReportsSection />;
+    }
+
+    if (activeItem === NAVIGATION_ITEMS.GOALS) {
         return <GoalsSection />;
     }
 
-    if (activeItem === "Settings") {
+    if (activeItem === NAVIGATION_ITEMS.SETTINGS) {
         return <SettingsSection />;
     }
 
-    if (activeItem === "Help") {
+    if (activeItem === NAVIGATION_ITEMS.HELP) {
         return <HelpSection />;
     }
 

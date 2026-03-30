@@ -1,20 +1,22 @@
+import {
+  MAIN_NAV_ITEMS,
+  WORKSPACE_NAV_ITEMS,
+  type NavigationItem,
+} from "../../constants/navigation";
+
 type SidebarProps = {
-    activeItem: string;
-    onSelectItem: (item: string) => void;
+    activeItem: NavigationItem;
+    onSelectItem: (item: NavigationItem) => void;
 };
 
 export default function Sidebar({
     activeItem,
     onSelectItem,
 }: SidebarProps) {
-    const mainNavItems = ["Dashboard", "Entries", "Trends", "Analytics"];
-
-    const secondaryNavItems = ["Goals", "Settings", "Help"];
-
     return(
         <aside className="hidden w-72 flex-col border-r border-slate-800 bg-slate-950 text-white md:flex">
             <div className="border-b border-slate-800 px-6 py-6">
-                <h2 className="text-xl font-bold" tracking-tight>PAD</h2>
+                <h2 className="text-xl font-bold tracking-tight" >PAD</h2>
                 <p className="mt-1 text-sm text-slate-400">
                     Personal Analytics Dashboard
                 </p>
@@ -27,13 +29,13 @@ export default function Sidebar({
                     </p>
 
                     <ul className="space-y-2">
-                        {mainNavItems.map((item) => (
+                        {MAIN_NAV_ITEMS.map((item) => (
                             <li key={item}>
                                 <button
                                     type="button"
                                     onClick={() => onSelectItem(item)}
                                     className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-200 transition hover:bg-slate-800 ${
-                                        activeItem == item
+                                        activeItem === item
                                             ? "bg-slate-700 text-white"
                                             : "text-slate-400 hover:bg-slate-800"
                                     }`}
@@ -51,7 +53,7 @@ export default function Sidebar({
                     </p>
 
                     <ul className="mt-3 space-y-1">
-                        {secondaryNavItems.map((item) => (
+                        {WORKSPACE_NAV_ITEMS.map((item) => (
                             <li key={item}>
                                 <button
                                 type="button"
@@ -69,7 +71,7 @@ export default function Sidebar({
                     </ul>
                 </div>
 
-                <div className="border-t border-slate-800 pc-4 py-4">
+                <div className="border-t border-slate-800 px-4 py-4">
                     <div className="rounded-2xl bg-slate-900 p-4">
                         <p className="text-sm font-medium text-white">Current Focus</p>
                         <p className="mt-2 text-sm text-slate-400">
