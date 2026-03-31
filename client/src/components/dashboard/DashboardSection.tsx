@@ -1,12 +1,48 @@
 import SummaryCard from "./SummaryCard";
+import type { Entry } from "../../types/entry";
 
 type DashboardSectionProps = {
   activeItem: string;
+  entries: Entry[];
 };
 
 export default function DashboardSection({
-  activeItem,
+  entries,
 }: DashboardSectionProps) {
+
+  const totalEntries = entries.length;
+
+  const recentEntries = entries.slice(0, 4);
+
+  const uniqueDates = new Set(entries.map((entry) => entry.date.toDateString()));
+
+  const averagePerDay = uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
+
+  const categoryCounts: Record<string, number> = {};
+
+  for (const entry of entries) {
+    categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
+  }
+
+  let topCategory = "N/A";
+  let maxCount = 0;
+
+  for(const category in categoryCounts) {
+    if(categoryCounts[category] > maxCount) {
+      maxCount = categoryCounts[category];
+      topCategory = category;
+    }
+  }
+
+  const today = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 7);
+
+  const entriesThisWeek = entries.filter((entry) => {
+    const entryDate = new Date(entry.date);
+    return entryDate >= weekAgo && entryDate <= today;
+  }).length;
+
   return (
     <div className="space-y-8">
       <section className="rounded-3xl bg-white p-6 shadow-sm">
@@ -19,10 +55,6 @@ export default function DashboardSection({
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               Here is a snapshot of your recent activity, key trends, and the
               metrics you are tracking across your personal dashboard.
-            </p>
-            <p className="mt-3 text-sm text-slate-500">
-              Active section:{" "}
-              <span className="font-semibold text-slate-900">{activeItem}</span>
             </p>
           </div>
 
@@ -40,14 +72,18 @@ export default function DashboardSection({
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Entries
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">128</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {totalEntries}
+              </p>
             </div>
 
             <div className="rounded-2xl bg-slate-50 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Focus
               </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">Study</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {topCategory}
+              </p>
             </div>
 
             <div className="rounded-2xl bg-slate-50 px-4 py-3">
@@ -63,10 +99,10 @@ export default function DashboardSection({
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total Entries" value="128" />
-        <SummaryCard title="This Week" value="24" />
-        <SummaryCard title="Top Category" value="Study" />
-        <SummaryCard title="Average per Day" value="5.2" />
+        <SummaryCard title="Total Entries" value={totalEntries.toString()} />
+        <SummaryCard title="This Week" value={entriesThisWeek.toString()} />
+        <SummaryCard title="Top Category" value={topCategory} />
+        <SummaryCard title="Average per Day" value={averagePerDay} />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-12">
@@ -101,19 +137,19 @@ export default function DashboardSection({
             <div className="mt-5 space-y-3">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-sm font-medium text-slate-900">
-                  Your study entries increased by 12% this week.
+                  You currently have {totalEntries} tracked entries.
                 </p>
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-sm font-medium text-slate-900">
-                  Weekend spending remains higher than weekday spending.
+                  Your most common category is {topCategory}.
                 </p>
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4">
                 <p className="text-sm font-medium text-slate-900">
-                  You are closest to reaching your weekly consistency goal.
+                  Your average activity is {averagePerDay} entries per day.
                 </p>
               </div>
             </div>
@@ -129,20 +165,30 @@ export default function DashboardSection({
               <div>
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Weekly Goal</span>
-                  <span className="font-medium text-slate-900">72%</span>
+                  <span className="font-medium text-slate-900">
+                    {entriesThisWeek}/7
+                    </span>
                 </div>
                 <div className="h-3 rounded-full bg-slate-200">
-                  <div className="h-3 w-3/4 rounded-full bg-slate-900" />
+                  <div
+                    className="h-3 rounded-full bg-slate-900"
+                    style={{ width: `${Math.min((entriesThisWeek / 7) * 100, 100)}%` }}
+                  />
                 </div>
               </div>
 
               <div>
                 <div className="mb-2 flex justify-between text-sm">
-                  <span className="text-slate-600">Monthly Goal</span>
-                  <span className="font-medium text-slate-900">48%</span>
+                  <span className="text-slate-600">Data Coverage</span>
+                  <span className="font-medium text-slate-900">
+                    {uniqueDates.size} days
+                  </span>
                 </div>
                 <div className="h-3 rounded-full bg-slate-200">
-                  <div className="h-3 w-1/2 rounded-full bg-slate-700" />
+                  <div
+                    className="h-3 rounded-full bg-slate-700"
+                    style={{ width: `${Math.min(uniqueDates.size * 10, 100)}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -154,29 +200,33 @@ export default function DashboardSection({
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">Recent Entries</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Your latest tracked items will appear here.
+            Your latest tracked items appear here.
           </p>
 
           <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-medium text-slate-900">Study Hours</span>
-              <span className="text-sm text-slate-600">2.5 hrs</span>
-            </div>
+            {recentEntries.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                No recent entries yet.
+              </div>
+            ) : (
+              recentEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between rounded-2xl bg-slate-50 p-4"
+                >
+                  <div>
+                    <span className="text-sm font-medium text-slate-900">
+                      {entry.title}
+                    </span>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {entry.category} • {entry.date.toDateString()}
+                    </p>
+                  </div>
 
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-medium text-slate-900">Expense</span>
-              <span className="text-sm text-slate-600">$18.00</span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-medium text-slate-900">Workout</span>
-              <span className="text-sm text-slate-600">45 min</span>
-            </div>
-
-            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
-              <span className="text-sm font-medium text-slate-900">Reading</span>
-              <span className="text-sm text-slate-600">30 min</span>
-            </div>
+                  <span className="text-sm text-slate-600">{entry.value}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -188,8 +238,24 @@ export default function DashboardSection({
             A smaller secondary visualization can live here.
           </p>
 
-          <div className="mt-6 flex h-64 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400">
-            Secondary Chart Placeholder
+          <div className="mt-6 space-y-3">
+            {Object.keys(categoryCounts).length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                No category data yet.
+              </div>
+            ) : (
+              Object.entries(categoryCounts).map(([category, count]) => (
+                <div
+                  key={category}
+                  className="flex items-center justify-between rounded-2xl bg-slate-50 p-4"
+                >
+                  <span className="text-sm font-medium text-slate-900">
+                    {category}
+                  </span>
+                  <span className="text-sm text-slate-600">{count}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
