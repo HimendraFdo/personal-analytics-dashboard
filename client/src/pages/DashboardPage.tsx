@@ -69,7 +69,7 @@ export default function DashboardPage() {
     }
 
     if (activeItem === NAVIGATION_ITEMS.ANALYTICS) {
-        return <AnalyticsSection />;
+      return <AnalyticsSection entries={entries} />;
     }
 
     if (activeItem === NAVIGATION_ITEMS.REPORTS) {
