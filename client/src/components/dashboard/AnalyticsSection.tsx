@@ -1,4 +1,13 @@
 import type { Entry } from "../../types/entry";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
 
 type AnalyticsSectionProps = {
     entries: Entry[];
@@ -41,6 +50,12 @@ export default function AnalyticsSection({
 
     const latestEntry = sortedEntries[0] ?? null;
 
+    const categoryChartData = Object.entries(categoryTotals).map(
+        ([category, total]) => ({
+        category,
+        total,
+    }));
+
     return (
     <div className="space-y-6">
         {/* Analytics Overview Section */}
@@ -72,7 +87,7 @@ export default function AnalyticsSection({
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Average Time Spent</p>
           <h3 className="mt-3 text-2xl font-bold text-slate-900">
-            {averageValue}
+            {averageValue.toFixed(2)}
           </h3>
         </div>
 
@@ -162,17 +177,32 @@ export default function AnalyticsSection({
         </div>
       </section>
 
+      {/* Category Totals Chart Section */}
       <section className="rounded-3xl bg-white p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-slate-900">
-          Chart Placeholder
+          Category Totals Chart
         </h3>
         <p className="mt-1 text-sm text-slate-500">
-          This section can later display a category bar chart or time-based trend
-          chart using the same entries data.
+          Bar chart showing total tracked value by category.
         </p>
 
-        <div className="mt-6 flex h-72 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400">
-          Analytics Chart Placeholder
+        {/* Chart attributes */}
+        <div className="mt-6 h-72">
+          {categoryChartData.length === 0 ? (
+            <div className="flex h-full items-center justify-center rounded-2xl bg-slate-50 text-sm text-slate-500">
+              No chart data yet.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="category" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="total" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </section>
     </div>
