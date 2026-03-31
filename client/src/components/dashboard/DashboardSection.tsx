@@ -20,6 +20,7 @@ export default function DashboardSection({
 
   const categoryCounts: Record<string, number> = {};
 
+  // Calculate the count of entries for each category
   for (const entry of entries) {
     categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
   }
@@ -27,6 +28,7 @@ export default function DashboardSection({
   let topCategory = "N/A";
   let maxCount = 0;
 
+  // Determine the category with the highest count
   for(const category in categoryCounts) {
     if(categoryCounts[category] > maxCount) {
       maxCount = categoryCounts[category];
@@ -34,10 +36,12 @@ export default function DashboardSection({
     }
   }
 
+  // Calculate entries in the last 7 days
   const today = new Date();
   const weekAgo = new Date();
   weekAgo.setDate(today.getDate() - 7);
 
+  // Filter entries that fall within the last 7 days
   const entriesThisWeek = entries.filter((entry) => {
     const entryDate = new Date(entry.date);
     return entryDate >= weekAgo && entryDate <= today;
@@ -45,6 +49,7 @@ export default function DashboardSection({
 
   return (
     <div className="space-y-8">
+      {/* Dashboard Overview */}
       <section className="rounded-3xl bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -59,7 +64,7 @@ export default function DashboardSection({
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="rounded-2xl bg-slate-100 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Period
               </p>
@@ -68,7 +73,7 @@ export default function DashboardSection({
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="rounded-2xl bg-slate-100 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Entries
               </p>
@@ -77,7 +82,7 @@ export default function DashboardSection({
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="rounded-2xl bg-slate-100 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Focus
               </p>
@@ -86,7 +91,7 @@ export default function DashboardSection({
               </p>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="rounded-2xl bg-slate-100 px-4 py-3">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Goal
               </p>
@@ -98,6 +103,7 @@ export default function DashboardSection({
         </div>
       </section>
 
+      {/* Summary Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard title="Total Entries" value={totalEntries.toString()} />
         <SummaryCard title="This Week" value={entriesThisWeek.toString()} />
@@ -105,6 +111,7 @@ export default function DashboardSection({
         <SummaryCard title="Average per Day" value={averagePerDay} />
       </section>
 
+      {/* Main Analytics Chart */}
       <section className="grid gap-6 xl:grid-cols-12">
         <div className="rounded-3xl bg-white p-6 shadow-sm xl:col-span-8">
           <div className="flex items-start justify-between">
@@ -127,6 +134,7 @@ export default function DashboardSection({
           </div>
         </div>
 
+        {/* Insights List */}
         <div className="space-y-6 xl:col-span-4">
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">Insights</h3>
@@ -135,19 +143,19 @@ export default function DashboardSection({
             </p>
 
             <div className="mt-5 space-y-3">
-              <div className="rounded-2xl bg-slate-50 p-4">
+              <div className="rounded-2xl bg-slate-100 p-4">
                 <p className="text-sm font-medium text-slate-900">
                   You currently have {totalEntries} tracked entries.
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4">
+              <div className="rounded-2xl bg-slate-100 p-4">
                 <p className="text-sm font-medium text-slate-900">
                   Your most common category is {topCategory}.
                 </p>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4">
+              <div className="rounded-2xl bg-slate-100 p-4">
                 <p className="text-sm font-medium text-slate-900">
                   Your average activity is {averagePerDay} entries per day.
                 </p>
@@ -155,6 +163,7 @@ export default function DashboardSection({
             </div>
           </div>
 
+          {/* Progress Overview with Progress Bars */}
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-slate-900">Progress</h3>
             <p className="mt-1 text-sm text-slate-500">
@@ -196,6 +205,7 @@ export default function DashboardSection({
         </div>
       </section>
 
+      {/* List of Recent Entries */}
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">Recent Entries</h3>
@@ -212,7 +222,7 @@ export default function DashboardSection({
               recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between rounded-2xl bg-slate-50 p-4"
+                  className="flex items-center justify-between rounded-2xl bg-slate-100 p-4"
                 >
                   <div>
                     <span className="text-sm font-medium text-slate-900">
@@ -230,6 +240,7 @@ export default function DashboardSection({
           </div>
         </div>
 
+        {/* Summary of Categories */}
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">
             Category Breakdown
@@ -240,14 +251,14 @@ export default function DashboardSection({
 
           <div className="mt-6 space-y-3">
             {Object.keys(categoryCounts).length === 0 ? (
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+              <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-500">
                 No category data yet.
               </div>
             ) : (
               Object.entries(categoryCounts).map(([category, count]) => (
                 <div
                   key={category}
-                  className="flex items-center justify-between rounded-2xl bg-slate-50 p-4"
+                  className="flex items-center justify-between rounded-2xl bg-slate-100 p-4"
                 >
                   <span className="text-sm font-medium text-slate-900">
                     {category}
