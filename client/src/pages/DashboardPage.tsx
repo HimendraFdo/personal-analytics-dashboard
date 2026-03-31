@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import DashboardSection from "../components/dashboard/DashboardSection";
 import EntriesSection from "../components/dashboard/EntriesSection";
@@ -10,6 +10,8 @@ import HelpSection from "../components/dashboard/HelpSection";
 import ReportsSection from "../components/dashboard/ReportsSection";
 import { NAVIGATION_ITEMS, type NavigationItem } from "../constants/navigation";
 import type { Entry } from "../types/entry";
+
+const STORAGE_KEY = "personal-analytics-dashboard-entries";
 
 //Initial entries to populate the dashboard with some sample data.
 const INITIAL_ENTRIES: Entry[] = [
@@ -39,6 +41,27 @@ const INITIAL_ENTRIES: Entry[] = [
   },
 ];
 
+// Loads stored entries from localStorage
+function getStoredEntries(): Entry[] {
+  const storedEntries = localStorage.getItem(STORAGE_KEY);
+
+  if(!storedEntries) {
+    return INITIAL_ENTRIES;
+  }
+
+  try {
+    const parsedEntries = JSON.parse(storedEntries);
+
+    if(!Array.isArray(parsedEntries)) {
+      return INITIAL_ENTRIES;
+    }
+
+    return parsedEntries;
+  } catch {
+    return INITIAL_ENTRIES;
+  }
+}
+
 //The main Dashboard page component that renders the layout and handles navigation between sections
 export default function DashboardPage() {
   const [activeItem, setActiveItem] = useState<NavigationItem>(
@@ -46,7 +69,12 @@ export default function DashboardPage() {
   );
   
   //State to hold the list of entries displayed in the Entries section
-  const [entries, setEntries] = useState<Entry[]>(INITIAL_ENTRIES);
+  const [entries, setEntries] = useState<Entry[]>(getStoredEntries);
+
+  // Saves the list of entries after converting to string and saving in localStorage
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }, [entries]);
 
   //Function is called when a new entry is added through the EntryForm component
   function handleAddEntry(newEntry: Entry) {

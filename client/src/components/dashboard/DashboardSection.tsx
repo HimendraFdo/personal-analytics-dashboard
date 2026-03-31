@@ -14,7 +14,7 @@ export default function DashboardSection({
 
   const recentEntries = entries.slice(0, 4);
 
-  const uniqueDates = new Set(entries.map((entry) => entry.date.toDateString()));
+  const uniqueDates = new Set(entries.map((entry) => new Date(entry.date).toDateString()));
 
   const averagePerDay = uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
 
@@ -229,7 +229,7 @@ export default function DashboardSection({
                       {entry.title}
                     </span>
                     <p className="mt-1 text-xs text-slate-500">
-                      {entry.category} • {entry.date.toDateString()}
+                      {entry.category} • {new Date(entry.date).toDateString()}
                     </p>
                   </div>
 

@@ -29,7 +29,7 @@ export default function EntryList({ entries }: EntryListProps) {
                                 {entry.title}
                             </p>
                             <p className="text-sm font-semibold text-slate-500">
-                                {entry.category} • {entry.date.toLocaleDateString()}
+                                {entry.category} • {new Date(entry.date).toLocaleDateString()}
                             </p>
                             {entry.note && (
                                 <p className="mt-2 text-sm text-slate-600">

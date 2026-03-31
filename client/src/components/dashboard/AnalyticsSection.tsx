@@ -33,7 +33,7 @@ export default function AnalyticsSection({
     for (const entry of entries) {
         categoryTotals[entry.category] = (categoryTotals[entry.category] || 0) + entry.value;
         categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
-        dateTotals[entry.date.toLocaleDateString()] = (dateTotals[entry.date.toLocaleDateString()] || 0) + entry.value;
+        dateTotals[new Date(entry.date).toLocaleDateString()] = (dateTotals[new Date(entry.date).toLocaleDateString()] || 0) + entry.value;
     }
 
     let mostFrequentCategory = "N/A";
