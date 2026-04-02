@@ -12,6 +12,13 @@ type EntriesSectionProps = {
   onUpdateEntry: (entry: Entry) => void;
 };
 
+const SORT_OPTIONS = [
+  "Newest",
+  "Oldest",
+  "Lowest Value",
+  "Highest Value",
+];
+
 const CATEGORY_OPTIONS: Array<"All" | EntryCategory> = [
   "All",
   "Study",
@@ -29,6 +36,7 @@ export default function EntriesSection({
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedSort, setSelectedSort] = useState("Newest");
 
   function handleStartEdit(entry: Entry) {
     setEditingEntry(entry);
@@ -50,6 +58,7 @@ export default function EntriesSection({
   function handleClearFilters() {
     setSelectedCategory("All");
     setSelectedDate("");
+    setSelectedSort("Newest");
   }
 
   const filteredEntries = useMemo(() => {
@@ -59,11 +68,33 @@ export default function EntriesSection({
 
       const matchesDate = 
         selectedDate === "" ||
-        formatDateForInput(entry.date) ===selectedDate;
+        formatDateForInput(entry.date) === selectedDate;
       
       return matchesCategory && matchesDate;
-    });
+    });   
   }, [entries, selectedCategory, selectedDate]);
+
+  const sortedEntries = useMemo(() => {
+    const sortedEntries = [...filteredEntries];
+      if (selectedSort === "Newest") {
+        sortedEntries.sort(
+        (a,b) => b.date.getTime() - a.date.getTime());
+        return sortedEntries;
+      } else if (selectedSort === "Oldest") {
+        sortedEntries.sort(
+        (a,b) => a.date.getTime() - b.date.getTime());
+        return sortedEntries;
+      } else if (selectedSort === "Highest Value") {
+        sortedEntries.sort(
+        (a,b) => b.value - a.value);
+        return sortedEntries;
+      } else if (selectedSort === "Lowest Value") {
+        sortedEntries.sort(
+        (a,b) => a.value - b.value);
+        return sortedEntries;
+      }
+      return sortedEntries;
+  }, [filteredEntries, selectedSort]);
 
   return (
     <div className="space-y-6">
@@ -75,8 +106,32 @@ export default function EntriesSection({
       </section>
 
       <section className="rounded-3xl bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div className="flex-1">
+        <div className="mb-5">
+          <h3 className="text-lg font-semibold text-slate-900">Filters and Sorting</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Narrow down your entries and control the display order.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Sort by
+            </label>
+            <select
+              value={selectedSort}
+              onChange={(event) => setSelectedSort(event.target.value as "Newest")}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Filter by Category
             </label>
@@ -95,7 +150,7 @@ export default function EntriesSection({
             </select>
           </div>
 
-          <div className="flex-1">
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Filter by Date
             </label>
@@ -107,11 +162,11 @@ export default function EntriesSection({
             />
           </div>
 
-          <div className="lg:w-auto">
+          <div className="flex items-end">
             <button
               type="button"
               onClick={handleClearFilters}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 lg:w-auto"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
             >
               Clear Filters
             </button>
@@ -144,7 +199,7 @@ export default function EntriesSection({
 
           <div className="mt-6">
             <EntryList
-              entries={filteredEntries}
+              entries={sortedEntries}
               onDeleteEntry={onDeleteEntry}
               onEditEntry={handleStartEdit}
             />
