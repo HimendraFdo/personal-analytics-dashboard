@@ -4,7 +4,7 @@ Version 1(MVP)
 -Being able to create 1 or 2 graphs about the data
 -Filter or categorize data feature
 
-Version 2(Imporvements)
+Version 2(Improvements)
 -Better UI
 -Sorting
 -Categories

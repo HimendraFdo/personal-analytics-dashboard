@@ -34,10 +34,10 @@ server -> backend app
 dosc -> documentation
 planning -> design notes
 
-Learning Goals
-Full-Stack development
-API design
-Database modeling
+Learning Goals -
+Full-Stack development,
+API design,
+Database modeling,
 Clean architecture
 
 Setup Instructions

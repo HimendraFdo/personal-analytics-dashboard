@@ -16,7 +16,7 @@ export default function EntryList({
     if(entries.length === 0) {
         return (
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-                No entries yet. Add your first entry.
+                No entries match your current filters.
             </div>
         );
     }
@@ -45,7 +45,7 @@ export default function EntryList({
                         </div>
 
                         <div className="text-right">
-                            <div className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm">
+                            <div className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-700">
                                 {entry.value}
                             </div>
 
