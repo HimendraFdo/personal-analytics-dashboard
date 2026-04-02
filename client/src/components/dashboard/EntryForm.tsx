@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { type Entry, type EntryCategory } from "../../types/entry";
+import { formatDateForInput } from "../../utils/date";
 
-//Renders a form for adding an entry to the Dashboard
+
+//Renders a form for adding, editing and canceling the edit of an entry to the Dashboard
 type EntryFormProps = {
-    onAddEntry: (entry:Entry) => void;
+    onSubmitEntry: (entry:Entry) => void;
+    editingEntry: Entry | null;
+    onCancelEdit: () => void;
 };
 
 //Defines the only categories an entry can have
@@ -12,45 +16,87 @@ const CATEGORIES: EntryCategory[] = [
     "Finance",
     "Health",
     "Personal"
-    
 ];
 
+type FormData = {
+    title: string;
+    value: string;
+    category: EntryCategory;
+    date: string;
+    note: string;
+};
+
+function getInitialFormData(editingEntry: Entry | null): FormData {
+    if (editingEntry) {
+        return {
+            title: editingEntry.title,
+            value: String(editingEntry.value),
+            category: editingEntry.category,
+            date: formatDateForInput(editingEntry.date),
+            note: editingEntry.note,
+        };
+    }
+
+    return {
+        title: "",
+        value: "",
+        category: "Study",
+        date: "",
+        note: "",
+    };
+}
+
 //Method renders a form to handle adding an entry to the dashboard
-export default function EntryForm({onAddEntry}: EntryFormProps) {
-    const [title, setTitle] = useState("");
-    const [value, setValue] = useState(0);
-    const [category, setCategory] = useState<EntryCategory>("Study");
-    const [date, setDate] = useState("");
-    const [note, setNote] = useState("");
+export default function EntryForm({
+    onSubmitEntry,
+    editingEntry,
+    onCancelEdit
+}: EntryFormProps) {
+    const [formData, setFormData] = useState<FormData>(() =>
+        getInitialFormData(editingEntry)
+    );
+
+    function handleChange(
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) {
+        const { name, value } = event.target;
+
+        setFormData((currentFormData) => ({
+            ...currentFormData,
+            [name]: value,
+        }));
+    }
 
     //This runs when a form is submitted
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault(); //Prevents the form submission from reloading the page
 
         //Checks if required fields are missing
-        if (!title.trim() || !String(value).trim() || !date) {
+        if (
+            !formData.title.trim() ||
+            !formData.value.trim() ||
+            !formData.date
+        ) {
             return;
         }
 
         //Object representing the new entry
-        const newEntry: Entry = {
-            id: crypto.randomUUID(),
-            title: title.trim(),
-            value: Number(value),
-            category,
-            date: new Date(date),
-            note: note.trim()
+        const submittedEntry: Entry = {
+            id: editingEntry ? editingEntry.id : crypto.randomUUID(),
+            title: formData.title.trim(),
+            value: Number(formData.value),
+            category: formData.category,
+            date: new Date(formData.date),
+            note: formData.note.trim(),
         };
 
         //Passes the entry to the parent through the function prop
-        onAddEntry(newEntry);
+        onSubmitEntry(submittedEntry);
 
         //Resetting all the form fields to their default values
-        setTitle("");
-        setValue(0);
-        setCategory("Study");
-        setDate("");
-        setNote("");
+        if(!editingEntry){
+            setFormData(getInitialFormData(null));
+        }
     }
 
     return (
@@ -62,8 +108,10 @@ export default function EntryForm({onAddEntry}: EntryFormProps) {
                 </label>
                 <input
                     type="text"
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder="e.g. Study Hours"
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                 />
             </div>
@@ -75,8 +123,11 @@ export default function EntryForm({onAddEntry}: EntryFormProps) {
                 </label>
                 <input
                     type="number"
-                    value={value}
-                    onChange={(event) => setValue(Number(event.target.value))}
+                    step="0.1"
+                    name="value"
+                    value={formData.value}
+                    onChange={handleChange}
+                    placeholder="e.g. 2.5"
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                 />
             </div>
@@ -87,8 +138,8 @@ export default function EntryForm({onAddEntry}: EntryFormProps) {
                     Category
                 </label>
                 <select
-                    value={category}
-                    onChange={(event) => setCategory(event.target.value as EntryCategory)}
+                    value={formData.category}
+                    onChange={(event) => setFormData({...formData, category: event.target.value as EntryCategory})}
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                     >
                         {CATEGORIES.map((Option) => (
@@ -106,8 +157,9 @@ export default function EntryForm({onAddEntry}: EntryFormProps) {
                 </label>
                 <input
                     type="date"
-                    value={date}
-                    onChange={(event) => setDate(event.target.value)}
+                    name="date"
+                    value={formData.date}
+                    onChange={handleChange}
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                 />
             </div>
@@ -118,20 +170,33 @@ export default function EntryForm({onAddEntry}: EntryFormProps) {
                     Note
                 </label>
                 <textarea
-                    value={note}
-                    onChange={(event) => setNote(event.target.value)}
+                    value={formData.note}
+                    onChange={(event) => setFormData({...formData, note: event.target.value})}
                     placeholder="Optional note"
                     rows={4}
                     className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
                 />
             </div>
 
-            {/*Add Entry button*/}
-            <button 
-              type="submit" 
-              className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700">
-                Add Entry
-            </button>
+            {/*Add/Edit Entry button*/}
+            <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700"
+                >
+                    {editingEntry ? "Save Changes" : "Add Entry"}
+                </button>
+
+                {editingEntry && (
+                    <button
+                      type="button"
+                      onClick={onCancelEdit}
+                      className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
         </form>
     );
 };

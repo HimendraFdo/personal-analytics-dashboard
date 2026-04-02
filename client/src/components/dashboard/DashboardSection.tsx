@@ -14,7 +14,7 @@ export default function DashboardSection({
 
   const recentEntries = entries.slice(0, 4);
 
-  const uniqueDates = new Set(entries.map((entry) => new Date(entry.date).toDateString()));
+  const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
 
   const averagePerDay = uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
 

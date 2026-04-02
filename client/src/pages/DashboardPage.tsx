@@ -10,6 +10,7 @@ import HelpSection from "../components/dashboard/HelpSection";
 import ReportsSection from "../components/dashboard/ReportsSection";
 import { NAVIGATION_ITEMS, type NavigationItem } from "../constants/navigation";
 import type { Entry } from "../types/entry";
+import { parseStoredDate } from "../utils/date";
 
 const STORAGE_KEY = "personal-analytics-dashboard-entries";
 
@@ -56,7 +57,10 @@ function getStoredEntries(): Entry[] {
       return INITIAL_ENTRIES;
     }
 
-    return parsedEntries;
+    return parsedEntries.map((entry) => ({
+      ...entry,
+      date: parseStoredDate(entry.date),
+    }));
   } catch {
     return INITIAL_ENTRIES;
   }
@@ -81,6 +85,22 @@ export default function DashboardPage() {
     setEntries((currentEntries) => [newEntry, ...currentEntries]);
   }
 
+  //Function to delete entries
+  function handleDeleteEntry(entryId: string) {
+    setEntries((currentEntries) => 
+      currentEntries.filter((entry) => entry.id !== entryId)
+    );
+  }
+
+  //Function to update an existing entry
+  function handleUpdateEntry(updatedEntry: Entry) {
+    setEntries((currentEntries) =>
+      currentEntries.map((entry) =>
+        entry.id === updatedEntry.id ? updatedEntry : entry
+      )
+    );
+  }
+
   //Function determines which section component to render based on the currently active navigation item
   function renderActiveSection() {
     if (activeItem === NAVIGATION_ITEMS.DASHBOARD) {
@@ -92,6 +112,8 @@ export default function DashboardPage() {
         <EntriesSection
           entries={entries}
           onAddEntry={handleAddEntry}
+          onDeleteEntry={handleDeleteEntry}
+          onUpdateEntry={handleUpdateEntry}
         />
       );
     }

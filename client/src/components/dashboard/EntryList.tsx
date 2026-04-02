@@ -3,10 +3,16 @@ import type { Entry } from "../../types/entry";
 //Renders a list of entries on the Dashboard
 type EntryListProps = {
     entries: Entry[];
+    onDeleteEntry: (entryId: string) => void;
+    onEditEntry: (entry: Entry) => void;
 };
 
 //Renders a list of entries or a message if there are no entries in the list
-export default function EntryList({ entries }: EntryListProps) {
+export default function EntryList({ 
+    entries,
+    onDeleteEntry,
+    onEditEntry,
+}: EntryListProps) {
     if(entries.length === 0) {
         return (
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
@@ -29,7 +35,7 @@ export default function EntryList({ entries }: EntryListProps) {
                                 {entry.title}
                             </p>
                             <p className="text-sm font-semibold text-slate-500">
-                                {entry.category} • {new Date(entry.date).toLocaleDateString()}
+                                {entry.category} • {entry.date.toLocaleDateString()}
                             </p>
                             {entry.note && (
                                 <p className="mt-2 text-sm text-slate-600">
@@ -38,8 +44,28 @@ export default function EntryList({ entries }: EntryListProps) {
                             )}
                         </div>
 
-                        <div className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm">
-                            {entry.value}
+                        <div className="text-right">
+                            <div className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-700 shadow-sm">
+                                {entry.value}
+                            </div>
+
+                            <div className="mt-3 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => onEditEntry(entry)}
+                                  className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteEntry(entry.id)}
+                                  className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
