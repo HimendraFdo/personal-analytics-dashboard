@@ -1,44 +1,91 @@
-# personal-analytics-dashboard
-This project gives the user to see underlying trends in the way they behave.
+# 📊 Personal Analytics Dashboard
 
-This project will solve the problem of recording data that hasn't yet been be represented in a graphical format to be able to give insights.
+A full-stack web application for tracking personal data and uncovering trends through interactive visualisations.
 
-The project will be for people that want to understand the data they have been collecting about the progress they have been making to their goals.
+---
 
-I started building this service as a way to learn about data handling, UI and Backend work to better my knowledge of building projects. 
-This was also a way for me to be able to visualise the data I will be recording about the project itself.
+## 🚀 Overview
 
-MVP Features
-1. Input data
-2. Store data
-3. Display data
-4. Simple analytics
+The Personal Analytics Dashboard is designed to help users better understand their habits, progress, and behaviours by transforming raw data into meaningful insights.
 
-Planned Features
-1. AI insights
-2. Improved UI
-3. Performance improvements
+This project focuses on making personal data more accessible and actionable through a clean interface and intuitive visualisations.
 
-Tech Stack
-1. Frontend - React, TypeScript, Vite, Tailwind CSS
+---
 
-2. Backend - Node.js, Express.js
+## 📸 Preview
 
-3. Database - PostgreSQL
+<img src="client\src\assets\DashboardPage.png" width="700"/>
 
-4. Tooling - Git, Github, VS Code, npm
+*Main dashboard displaying user data and analytics*
 
-Project Structure
-client -> frontend app
-server -> backend app
-dosc -> documentation
-planning -> design notes
+<img src="client\src\assets\EntriesPage.png" width="700"/>
 
-Learning Goals -
-Full-Stack development,
-API design,
-Database modeling,
-Clean architecture
+*Add, edit and delete functionality as well as filtering and sorting*
 
-Setup Instructions
--
+<img src="client\src\assets\AnalyticsPage.png" width="700"/>
+
+*Entries represented graphically and visually for the user*
+
+---
+
+## ✨ Features
+
+- 📥 Input and manage structured data entries  
+- 💾 Store and persist data  
+- 📊 Visualise trends through interactive UI components  
+- 📈 Basic analytics to highlight patterns and progress  
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- React  
+- TypeScript  
+- Vite  
+- Tailwind CSS   
+
+### Tooling
+- Git  
+- GitHub  
+- VS Code  
+- npm  
+
+---
+
+## 🧠 What I Built & Learned
+
+This project was developed to strengthen my full-stack development skills and gain hands-on experience building real-world applications.
+
+Key areas of focus:
+- Designing reusable frontend components  
+- Handling and transforming data for visualisation  
+- Structuring a full-stack application (frontend + backend)  
+- Debugging real-world issues (e.g. state handling, data formatting)  
+- Improving UI/UX for usability and clarity  
+
+---
+
+## 📂 Project Structure
+
+client/      → Frontend (React application)   
+planning/    → Design notes  
+
+---
+
+## ⚙️ Setup & Installation
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/HimendraFdo/personal-analytics-dashboard.git
+cd personal-analytics-dashboard
+```
+---
+
+### 2. Install Dependencies
+```bash
+cd client
+npm install
+npm run dev
+```
+---
