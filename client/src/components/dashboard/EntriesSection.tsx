@@ -12,11 +12,13 @@ type EntriesSectionProps = {
   onUpdateEntry: (entry: Entry) => void;
 };
 
-const SORT_OPTIONS = [
+type SortOption = "Newest" | "Oldest" | "Highest Value" | "Lowest Value";
+
+const SORT_OPTIONS: SortOption[] = [
   "Newest",
   "Oldest",
-  "Lowest Value",
   "Highest Value",
+  "Lowest Value",
 ];
 
 const CATEGORY_OPTIONS: Array<"All" | EntryCategory> = [
@@ -36,7 +38,7 @@ export default function EntriesSection({
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSort, setSelectedSort] = useState("Newest");
+  const [selectedSort, setSelectedSort] = useState<SortOption>("Newest")
 
   function handleStartEdit(entry: Entry) {
     setEditingEntry(entry);
@@ -120,7 +122,7 @@ export default function EntriesSection({
             </label>
             <select
               value={selectedSort}
-              onChange={(event) => setSelectedSort(event.target.value as "Newest")}
+              onChange={(event) => setSelectedSort(event.target.value as SortOption)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
             >
               {SORT_OPTIONS.map((option) => (
