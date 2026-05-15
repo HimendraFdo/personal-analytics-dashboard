@@ -1,10 +1,12 @@
 import type { Entry } from "../../types/entry";
+import { formatDisplayDate } from "../../utils/date";
 
 //Renders a list of entries on the Dashboard
 type EntryListProps = {
     entries: Entry[];
     onDeleteEntry: (entryId: string) => void;
     onEditEntry: (entry: Entry) => void;
+    emptyMessage?: string;
 };
 
 //Renders a list of entries or a message if there are no entries in the list
@@ -12,11 +14,12 @@ export default function EntryList({
     entries,
     onDeleteEntry,
     onEditEntry,
+    emptyMessage = "No entries match your current filters.",
 }: EntryListProps) {
     if(entries.length === 0) {
         return (
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-                No entries match your current filters.
+                {emptyMessage}
             </div>
         );
     }
@@ -35,7 +38,7 @@ export default function EntryList({
                                 {entry.title}
                             </p>
                             <p className="text-sm font-semibold text-slate-500">
-                                {entry.category} • {entry.date.toLocaleDateString()}
+                                {entry.category} • {formatDisplayDate(entry.date)}
                             </p>
                             {entry.note && (
                                 <p className="mt-2 text-sm text-slate-600">

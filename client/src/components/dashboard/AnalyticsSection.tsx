@@ -1,4 +1,5 @@
 import type { Entry } from "../../types/entry";
+import { formatDisplayDate } from "../../utils/date";
 import {
     BarChart,
     Bar,
@@ -169,7 +170,7 @@ export default function AnalyticsSection({
                   {latestEntry.title}
                 </p>
                 <p className="mt-2 text-sm text-slate-500">
-                  {latestEntry.category} • {latestEntry.date.toLocaleDateString()}
+                  {latestEntry.category} • {formatDisplayDate(latestEntry.date)}
                 </p>
                 <p className="mt-3 text-sm text-slate-700">
                   Value: {latestEntry.value}

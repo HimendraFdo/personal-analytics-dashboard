@@ -98,6 +98,11 @@ export default function EntriesSection({
       return sortedEntries;
   }, [filteredEntries, selectedSort]);
 
+  const hasNoEntries = entries.length === 0;
+  const listEmptyMessage = hasNoEntries
+    ? "No entries yet. Add your first entry using the form."
+    : "No entries match your current filters.";
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl bg-white p-6 shadow-sm">
@@ -106,6 +111,15 @@ export default function EntriesSection({
           Add, edit, filter, and review your tracked entries.
         </p>
       </section>
+
+      {hasNoEntries && (
+        <section className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center shadow-sm">
+          <h3 className="text-lg font-semibold text-slate-900">No entries yet</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Start tracking study, finance, health, or personal metrics with your first entry.
+          </p>
+        </section>
+      )}
 
       <section className="rounded-3xl bg-white p-6 shadow-sm">
         <div className="mb-5">
@@ -204,6 +218,7 @@ export default function EntriesSection({
               entries={sortedEntries}
               onDeleteEntry={onDeleteEntry}
               onEditEntry={handleStartEdit}
+              emptyMessage={listEmptyMessage}
             />
           </div>
         </div>
