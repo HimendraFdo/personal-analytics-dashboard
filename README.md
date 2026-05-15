@@ -10,11 +10,11 @@ Track personal metrics (study hours, spending, health habits) and explore trends
 
 ## Preview
 
-<img src="public/assets/DashboardPage.png" width="700" alt="Dashboard summary and recent entries"/>
+<img src="Images/Dashboard.png" width="700" alt="Dashboard summary and recent entries"/>
 
-<img src="public/assets/EntriesPage.png" width="700" alt="Entry form with filter and sort"/>
+<img src="Images/Entries.png" width="700" alt="Entry form with filter and sort"/>
 
-<img src="public/assets/AnalyticsPage.png" width="700" alt="Charts built with Recharts"/>
+<img src="Images/Analytics.png" width="700" alt="Charts built with Recharts"/>
 
 ---
 
