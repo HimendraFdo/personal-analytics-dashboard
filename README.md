@@ -1,91 +1,130 @@
-# 📊 Personal Analytics Dashboard
+# Personal Analytics Dashboard
 
-A full-stack web application for tracking personal data and uncovering trends through interactive visualisations.
+Track personal metrics (study hours, spending, health habits) and explore trends through a Next.js dashboard with PostgreSQL persistence.
 
----
+**Live demo:** _Not deployed yet — complete [Production deploy](#production-deploy-vercel--neon) (Vercel + Neon, ~5 min), then add `https://<your-project>.vercel.app/dashboard` here._
 
-## 🚀 Overview
-
-The Personal Analytics Dashboard is designed to help users better understand their habits, progress, and behaviours by transforming raw data into meaningful insights.
-
-This project focuses on making personal data more accessible and actionable through a clean interface and intuitive visualisations.
+[![CI](https://github.com/HimendraFdo/personal-analytics-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/HimendraFdo/personal-analytics-dashboard/actions/workflows/ci.yml)
 
 ---
 
-## 📸 Preview
+## Preview
 
-<img src="client\src\assets\DashboardPage.png" width="700"/>
+<img src="public/assets/DashboardPage.png" width="700" alt="Dashboard summary and recent entries"/>
 
-*Main dashboard displaying user data and analytics*
+<img src="public/assets/EntriesPage.png" width="700" alt="Entry form with filter and sort"/>
 
-<img src="client\src\assets\EntriesPage.png" width="700"/>
-
-*Add, edit and delete functionality as well as filtering and sorting*
-
-<img src="client\src\assets\AnalyticsPage.png" width="700"/>
-
-*Entries represented graphically and visually for the user*
+<img src="public/assets/AnalyticsPage.png" width="700" alt="Charts built with Recharts"/>
 
 ---
 
-## ✨ Features
+## Tech stack
 
-- 📥 Input and manage structured data entries  
-- 💾 Store and persist data  
-- 📊 Visualise trends through interactive UI components  
-- 📈 Basic analytics to highlight patterns and progress  
-
----
-
-## 🛠 Tech Stack
-
-### Frontend
-- React  
-- TypeScript  
-- Vite  
-- Tailwind CSS   
-
-### Tooling
-- Git  
-- GitHub  
-- VS Code  
-- npm  
+| Layer | Tools |
+|-------|--------|
+| App | Next.js 15 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS 4 |
+| Data | Prisma ORM, PostgreSQL |
+| Charts | Recharts |
+| Validation | Zod |
+| Hosting | Vercel |
+| Database (production) | [Neon](https://neon.tech) serverless Postgres |
 
 ---
 
-## 🧠 What I Built & Learned
+## Architecture
 
-This project was developed to strengthen my full-stack development skills and gain hands-on experience building real-world applications.
+```mermaid
+flowchart LR
+  Browser["Browser (React UI)"]
+  Next["Next.js App Router"]
+  API["API Routes /api/entries"]
+  DB[(PostgreSQL)]
 
-Key areas of focus:
-- Designing reusable frontend components  
-- Handling and transforming data for visualisation  
-- Structuring a full-stack application (frontend + backend)  
-- Debugging real-world issues (e.g. state handling, data formatting)  
-- Improving UI/UX for usability and clarity  
+  Browser --> Next
+  Next --> API
+  API --> DB
+```
 
----
-
-## 📂 Project Structure
-
-client/      → Frontend (React application)   
-planning/    → Design notes  
+Routes: `/dashboard`, `/entries`, `/analytics`. Data flows through REST handlers (`GET`, `POST`, `PATCH`, `DELETE`) backed by Prisma.
 
 ---
 
-## ⚙️ Setup & Installation
+## Quick start (local)
 
-### 1. Clone the repository
 ```bash
 git clone https://github.com/HimendraFdo/personal-analytics-dashboard.git
 cd personal-analytics-dashboard
-```
----
-
-### 2. Install Dependencies
-```bash
-cd client
 npm install
+cp .env.example .env.local
+# Edit DATABASE_URL in .env.local (local Postgres, Docker, or Neon dev branch)
+npx prisma migrate dev
+npm run db:seed   # optional sample data
 npm run dev
 ```
+
+Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
+
+### Environment variables
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DIRECT_URL` | Optional | Direct connection for migrations when using a pooler (Neon/Supabase) |
+
 ---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Generate client, run migrations, production build |
+| `npm run lint` | ESLint (Next.js) |
+| `npm run test` | Vitest unit tests |
+| `npm run db:migrate` | Create/apply migrations locally |
+| `npm run db:seed` | Seed sample entries |
+
+---
+
+## Production deploy (Vercel + Neon)
+
+1. Create a [Neon](https://neon.tech) project and copy the pooled `DATABASE_URL` (and `DIRECT_URL` if shown).
+2. Import the repo in [Vercel](https://vercel.com); set `DATABASE_URL` (and `DIRECT_URL` if used) in project Environment Variables.
+3. Deploy — the build runs `prisma migrate deploy` then `next build`.
+4. Visit `/dashboard` on the deployment URL and add an entry to confirm the full flow.
+
+See [MIGRATION.md](./MIGRATION.md) for API details and troubleshooting.
+
+---
+
+## What I learned
+
+- Migrating a Vite SPA to Next.js App Router while keeping UI parity and shared types
+- Modeling entries with Prisma enums and exposing them through typed API routes
+- Validating request bodies with Zod before database writes
+- Centralising fetch logic in hooks/context so dashboard, entries, and analytics stay in sync
+- Running `prisma migrate deploy` in CI/CD so production schema matches migrations in git
+
+---
+
+## Future work
+
+- Export entries (CSV/JSON) for offline analysis
+- Date-range filters on analytics charts
+- Optional auth for multi-user deployments
+
+---
+
+## Project structure
+
+```
+app/              Next.js routes and API handlers
+components/       Dashboard UI (forms, charts, layout)
+lib/              Prisma client, validation, API helpers
+prisma/           Schema and migrations
+public/assets/    Screenshots
+utils/            Date formatting helpers
+```
+
+Interview walkthrough: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md)
