@@ -3,6 +3,7 @@ import { EntryCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
+import { handleApiError } from "@/lib/handle-api-error";
 import { parseEntryDate, updateEntrySchema } from "@/lib/validation";
 
 type RouteContext = {
@@ -48,7 +49,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (error instanceof Error && error.message === "Invalid date") {
       return jsonError("Invalid date", "VALIDATION_ERROR", 400);
     }
-    return jsonError("Failed to update entry", "INTERNAL_ERROR", 500);
+    return handleApiError(error, "Failed to update entry");
   }
 }
 
@@ -63,8 +64,8 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
 
     await prisma.entry.delete({ where: { id } });
     return new Response(null, { status: 204 });
-  } catch {
-    return jsonError("Failed to delete entry", "INTERNAL_ERROR", 500);
+  } catch (error) {
+    return handleApiError(error, "Failed to delete entry");
   }
 }
 

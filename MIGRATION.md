@@ -54,3 +54,29 @@ npm run start
 - `DELETE /api/entries/[id]` — delete
 
 Entries persist in PostgreSQL; `localStorage` is no longer used.
+
+## Troubleshooting `/api/entries` 500 errors
+
+1. **Env file at repo root** — use `.env` or `.env.local` (not inside `client/`):
+
+   ```env
+   DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/your_db?schema=public"
+   ```
+
+2. **Restart the dev server** after changing env vars (stop all `npm run dev` processes).
+
+3. **Apply migrations** on the same database as `DATABASE_URL`:
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+4. **Verify DB access**:
+
+   ```bash
+   node scripts/test-db.mjs
+   ```
+
+   Expect `OK N entries`. If this works but the browser still returns 500, you are likely hitting an old server on another port — use the URL printed when you run `npm run dev`.
+
+5. In development, 500 responses include the Prisma error message in `error.message` (check the Network tab).

@@ -8,6 +8,7 @@ import {
   parseEntryDate,
   sortSchema,
 } from "@/lib/validation";
+import { handleApiError } from "@/lib/handle-api-error";
 import { ENTRY_CATEGORIES } from "@/types/entry";
 
 function getOrderBy(sort: string): Prisma.EntryOrderByWithRelationInput {
@@ -53,8 +54,8 @@ export async function GET(request: NextRequest) {
     return Response.json({
       entries: entries.map(serializeEntryJson),
     });
-  } catch {
-    return jsonError("Failed to fetch entries", "INTERNAL_ERROR", 500);
+  } catch (error) {
+    return handleApiError(error, "Failed to fetch entries");
   }
 }
 
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.message === "Invalid date") {
       return jsonError("Invalid date", "VALIDATION_ERROR", 400);
     }
-    return jsonError("Failed to create entry", "INTERNAL_ERROR", 500);
+    return handleApiError(error, "Failed to create entry");
   }
 }
 
