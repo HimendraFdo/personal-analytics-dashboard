@@ -1,8 +1,4 @@
-import {
-  MAIN_NAV_ITEMS,
-  WORKSPACE_NAV_ITEMS,
-  type NavigationItem,
-} from "../../constants/navigation";
+import { MAIN_NAV_ITEMS, type NavigationItem } from "../../constants/navigation";
 
 type SidebarProps = {
     activeItem: NavigationItem;
@@ -47,31 +43,7 @@ export default function Sidebar({
                     </ul>
                 </div>
 
-                <div className="mt-8">
-                    <p className="px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Workspace
-                    </p>
-
-                    <ul className="mt-3 space-y-1">
-                        {WORKSPACE_NAV_ITEMS.map((item) => (
-                            <li key={item}>
-                                <button
-                                type="button"
-                                onClick={() => onSelectItem(item)}
-                                className={`w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-300 transition ${
-                                    activeItem === item
-                                        ? "bg-slate-800 text-white"
-                                        : "hover:bg-slate-900 hover:text-white"
-                                    }`}
-                                >
-                                    {item}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="border-t border-slate-800 px-4 py-4">
+                <div className="mt-8 border-t border-slate-800 pt-4">
                     <div className="rounded-2xl bg-slate-900 p-4">
                         <p className="text-sm font-medium text-white">Current Focus</p>
                         <p className="mt-2 text-sm text-slate-400">

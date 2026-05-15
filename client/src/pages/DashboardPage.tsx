@@ -3,11 +3,6 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import DashboardSection from "../components/dashboard/DashboardSection";
 import EntriesSection from "../components/dashboard/EntriesSection";
 import AnalyticsSection from "../components/dashboard/AnalyticsSection";
-import EmptySection from "../components/dashboard/EmptySection";
-import GoalsSection from "../components/dashboard/GoalsSection";
-import SettingsSection from "../components/dashboard/SettingsSection";
-import HelpSection from "../components/dashboard/HelpSection";
-import ReportsSection from "../components/dashboard/ReportsSection";
 import { NAVIGATION_ITEMS, type NavigationItem } from "../constants/navigation";
 import type { Entry } from "../types/entry";
 import { parseStoredDate } from "../utils/date";
@@ -104,7 +99,7 @@ export default function DashboardPage() {
   //Function determines which section component to render based on the currently active navigation item
   function renderActiveSection() {
     if (activeItem === NAVIGATION_ITEMS.DASHBOARD) {
-      return <DashboardSection activeItem={activeItem} entries={entries} />;
+      return <DashboardSection entries={entries} />;
     }
 
     if (activeItem === NAVIGATION_ITEMS.ENTRIES) {
@@ -122,23 +117,7 @@ export default function DashboardPage() {
       return <AnalyticsSection entries={entries} />;
     }
 
-    if (activeItem === NAVIGATION_ITEMS.REPORTS) {
-        return <ReportsSection />;
-    }
-
-    if (activeItem === NAVIGATION_ITEMS.GOALS) {
-        return <GoalsSection />;
-    }
-
-    if (activeItem === NAVIGATION_ITEMS.SETTINGS) {
-        return <SettingsSection />;
-    }
-
-    if (activeItem === NAVIGATION_ITEMS.HELP) {
-        return <HelpSection />;
-    }
-
-    return <EmptySection title={activeItem} />;
+    return null;
   }
 
   //The main render method that displays the DashboardLayout and the currently active section

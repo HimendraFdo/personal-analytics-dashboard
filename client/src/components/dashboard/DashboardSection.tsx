@@ -1,8 +1,17 @@
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import SummaryCard from "./SummaryCard";
 import type { Entry } from "../../types/entry";
+import { formatDisplayDate } from "../../utils/date";
 
 type DashboardSectionProps = {
-  activeItem: string;
   entries: Entry[];
 };
 
@@ -46,6 +55,25 @@ export default function DashboardSection({
     const entryDate = new Date(entry.date);
     return entryDate >= weekAgo && entryDate <= today;
   }).length;
+
+  const dateTotals: Record<string, number> = {};
+  for (const entry of entries) {
+    const dateKey = entry.date.toISOString().split("T")[0];
+    dateTotals[dateKey] = (dateTotals[dateKey] || 0) + entry.value;
+  }
+
+  const timeSeriesChartData = Object.entries(dateTotals)
+    .map(([date, total]) => ({
+      date,
+      total,
+    }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const chartTotal = timeSeriesChartData.reduce((sum, point) => sum + point.total, 0);
+  const chartPeak = timeSeriesChartData.reduce(
+    (best, point) => (point.total > best.total ? point : best),
+    timeSeriesChartData[0] ?? { date: "", total: 0 }
+  );
 
   return (
     <div className="space-y-8">
@@ -120,18 +148,48 @@ export default function DashboardSection({
                 Activity Trend
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                A larger chart area for your main analytics view.
+                Total tracked value by day across your entries.
               </p>
             </div>
 
             <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-600">
-              Monthly
+              By day
             </div>
           </div>
 
-          <div className="mt-6 flex h-80 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400">
-            Main Chart Placeholder
+          <div className="mt-6 h-80">
+            {timeSeriesChartData.length === 0 ? (
+              <div className="flex h-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+                Add entries to see your activity trend.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={timeSeriesChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#0f172a"
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
+
+          {timeSeriesChartData.length > 0 && (
+            <p className="mt-4 text-sm text-slate-600">
+              {chartTotal.toFixed(1)} total value tracked
+              {chartPeak.date
+                ? ` · peak on ${chartPeak.date} (${chartPeak.total})`
+                : ""}
+            </p>
+          )}
         </div>
 
         {/* Insights List */}
@@ -229,7 +287,7 @@ export default function DashboardSection({
                       {entry.title}
                     </span>
                     <p className="mt-1 text-xs text-slate-500">
-                      {entry.category} • {new Date(entry.date).toDateString()}
+                      {entry.category} • {formatDisplayDate(entry.date)}
                     </p>
                   </div>
 

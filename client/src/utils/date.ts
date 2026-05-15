@@ -1,9 +1,24 @@
 //Helper methods to covert Date data type variables from string to Date and vice versa.
 export function formatDateForInput(date: Date | string): string {
-  const parsedDate = date instanceof Date ? date : new Date(date);
+  const parsedDate = parseStoredDate(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
   return parsedDate.toISOString().split("T")[0];
 }
 
 export function parseStoredDate(value: string | Date): Date {
-  return value instanceof Date ? value : new Date(value);
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? new Date() : value;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
+export function formatDisplayDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown date";
+  }
+  return date.toLocaleDateString();
 }
