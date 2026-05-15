@@ -38,6 +38,13 @@ npm run build
 npm run start
 ```
 
+## Production deploy (Vercel + Neon)
+
+1. Create a Neon project; use the pooled connection string as `DATABASE_URL` and the direct URL as `DIRECT_URL` when Neon provides both.
+2. In Vercel project settings, add those environment variables for Production.
+3. Deploy from `main` or a preview branch — `npm run build` runs `prisma migrate deploy` automatically.
+4. Smoke-test: open `/dashboard`, add an entry on `/entries`, confirm it appears on `/analytics`.
+
 ## Prisma commands
 
 | Command | Purpose |
