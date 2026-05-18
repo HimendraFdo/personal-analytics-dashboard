@@ -2,7 +2,7 @@
 
 Track personal metrics (study hours, spending, health habits) and explore trends through a Next.js dashboard with PostgreSQL persistence.
 
-**Live demo:** _Not deployed yet — complete [Production deploy](#production-deploy-vercel--neon) (Vercel + Neon, ~5 min), then add `https://<your-project>.vercel.app/dashboard` here._
+**Live demo:** personalanalyticsdashboard.vercel.app
 
 [![CI](https://github.com/HimendraFdo/personal-analytics-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/HimendraFdo/personal-analytics-dashboard/actions/workflows/ci.yml)
 
@@ -69,8 +69,7 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `DIRECT_URL` | Optional | Direct connection for migrations when using a pooler (Neon/Supabase) |
+| `DATABASE_URL` | Yes | Neon connection string |
 
 ---
 
@@ -89,8 +88,8 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 
 ## Production deploy (Vercel + Neon)
 
-1. Create a [Neon](https://neon.tech) project and copy the pooled `DATABASE_URL` (and `DIRECT_URL` if shown).
-2. Import the repo in [Vercel](https://vercel.com); set `DATABASE_URL` (and `DIRECT_URL` if used) in project Environment Variables.
+1. Created a [Neon](https://neon.tech) project and copy the pooled `DATABASE_URL`.
+2. Import the repo in [Vercel](https://vercel.com); set `DATABASE_URL` in project Environment Variables.
 3. Deploy — the build runs `prisma migrate deploy` then `next build`.
 4. Visit `/dashboard` on the deployment URL and add an entry to confirm the full flow.
 

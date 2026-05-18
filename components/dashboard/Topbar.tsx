@@ -1,5 +1,6 @@
 "use client";
 
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getNavItemFromPath, NAV_PATHS, NAVIGATION_ITEMS } from "@/constants/navigation";
@@ -29,8 +30,8 @@ export default function Topbar() {
           Add Entry
         </Link>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
-          HF
+        <div className="flex h-10 w-10 items-center justify-center">
+          <UserButton />
         </div>
       </div>
     </header>

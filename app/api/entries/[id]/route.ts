@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { EntryCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
@@ -11,6 +12,12 @@ type RouteContext = {
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
     const { id } = await context.params;
     const body = await request.json();
     const parsed = updateEntrySchema.safeParse(body);
@@ -23,7 +30,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const existing = await prisma.entry.findUnique({ where: { id } });
+    const existing = await prisma.entry.findFirst({ where: { id, userId } });
     if (!existing) {
       return jsonError("Entry not found", "NOT_FOUND", 404);
     }
@@ -54,8 +61,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
     const { id } = await context.params;
-    const existing = await prisma.entry.findUnique({ where: { id } });
+    const existing = await prisma.entry.findFirst({ where: { id, userId } });
 
     if (!existing) {
       return jsonError("Entry not found", "NOT_FOUND", 404);

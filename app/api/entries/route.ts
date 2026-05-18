@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { EntryCategory, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
@@ -26,6 +27,12 @@ function getOrderBy(sort: string): Prisma.EntryOrderByWithRelationInput {
 
 export async function GET(request: NextRequest) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
     const { searchParams } = request.nextUrl;
     const category = searchParams.get("category");
     const sortResult = sortSchema.safeParse(
@@ -44,9 +51,10 @@ export async function GET(request: NextRequest) {
     }
 
     const entries = await prisma.entry.findMany({
-      where: category
-        ? { category: category as EntryCategory }
-        : undefined,
+      where: {
+        userId,
+        ...(category ? { category: category as EntryCategory } : {}),
+      },
       orderBy: getOrderBy(sortResult.data),
     });
 
@@ -60,6 +68,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
     const body = await request.json();
     const parsed = createEntrySchema.safeParse(body);
 
@@ -75,6 +89,7 @@ export async function POST(request: NextRequest) {
 
     const entry = await prisma.entry.create({
       data: {
+        userId,
         title,
         value,
         category: category as EntryCategory,
