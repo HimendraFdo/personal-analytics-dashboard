@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useUser } from "@clerk/nextjs";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
@@ -20,6 +21,12 @@ type DashboardSectionProps = {
 export default function DashboardSection({
   entries,
 }: DashboardSectionProps) {
+  const { isLoaded, user } = useUser();
+  const metadataDisplayName = user?.unsafeMetadata.displayName;
+  const displayName =
+    typeof metadataDisplayName === "string" && metadataDisplayName.trim()
+      ? metadataDisplayName.trim()
+      : user?.firstName || user?.username || "there";
 
   const totalEntries = entries.length;
 
@@ -85,7 +92,7 @@ export default function DashboardSection({
           <div>
             <p className="text-sm font-medium text-slate-500">Overview</p>
             <h2 className="mt-2 text-3xl font-bold text-slate-900">
-              Welcome back, Himendra
+              Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-slate-600">
               Here is a snapshot of your recent activity, key trends, and the
