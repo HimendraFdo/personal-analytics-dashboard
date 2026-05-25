@@ -16,6 +16,8 @@ Authenticated personal metrics tracker for logging study, finance, health, and p
 
 <img src="Images/Analytics.png" width="700" alt="Analytics page with category totals and time-series charts"/>
 
+<img src="Images/Authentication.png" width="700" alt="Clerk authentication page when you visit the site for the first time"/>
+
 ---
 
 ## What the app does
