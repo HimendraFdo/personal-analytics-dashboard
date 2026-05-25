@@ -1,13 +1,19 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { getNavItemFromPath, NAV_PATHS, NAVIGATION_ITEMS } from "@/constants/navigation";
 
 export default function Topbar() {
   const pathname = usePathname();
   const activeItem = getNavItemFromPath(pathname);
+  const { user } = useUser();
+  const displayName = user?.unsafeMetadata.displayName;
+  const fallbackInitial =
+    typeof displayName === "string" && displayName.trim()
+      ? displayName.trim().charAt(0).toUpperCase()
+      : user?.firstName?.charAt(0).toUpperCase() ?? "U";
 
   return (
     <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:flex-row lg:items-center lg:justify-between">
@@ -39,9 +45,20 @@ export default function Topbar() {
           Add Entry
         </Link>
 
-        <div className="flex h-10 w-10 items-center justify-center">
-          <UserButton />
-        </div>
+        {user ? (
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "h-10 w-10",
+              },
+            }}
+            fallback={
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
+                {fallbackInitial}
+              </div>
+            }
+          />
+        ) : null}
       </div>
     </header>
   );

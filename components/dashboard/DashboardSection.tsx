@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import SummaryCard from "@/components/dashboard/SummaryCard";
@@ -19,6 +20,13 @@ const ActivityTrendChart = dynamic(
 );
 
 export default function DashboardSection({ entries }: DashboardSectionProps) {
+  const { isLoaded, user } = useUser();
+  const metadataDisplayName = user?.unsafeMetadata.displayName;
+  const displayName =
+    typeof metadataDisplayName === "string" && metadataDisplayName.trim()
+      ? metadataDisplayName.trim()
+      : user?.firstName || user?.username || "there";
+
   const totalEntries = entries.length;
   const recentEntries = entries.slice(0, 4);
   const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
@@ -70,7 +78,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           <div>
             <p className="text-sm font-semibold text-teal-200">Overview</p>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
-              Welcome back, Himendra
+              Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
               Here is a snapshot of your recent activity, key trends, and the
