@@ -20,7 +20,7 @@ export default function Sidebar() {
       <div className="border-b border-slate-800 px-6 py-6">
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-400 text-sm font-black text-slate-950 shadow-lg shadow-teal-500/20">
-            PA
+            PAD
           </div>
           <div>
             <h2 className="text-xl font-bold">PAD</h2>
