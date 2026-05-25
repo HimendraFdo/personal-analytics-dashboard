@@ -16,8 +16,8 @@ export default function Topbar() {
       : user?.firstName?.charAt(0).toUpperCase() ?? "U";
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-      <div>
+    <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+      <div className="min-w-0">
         <h1 className="text-xl font-semibold text-slate-900">{activeItem}</h1>
         <p className="mt-1 text-sm text-slate-500">
           Monitor your activity, trends and recent entries.
@@ -25,13 +25,22 @@ export default function Topbar() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-400">
-          Search Analytics
-        </div>
+        <label className="relative block">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            placeholder="Search analytics"
+            className="h-10 w-full rounded-2xl border border-slate-200 bg-white/80 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 sm:w-56"
+          />
+        </label>
 
         <Link
           href={NAV_PATHS[NAVIGATION_ITEMS.ENTRIES]}
-          className="rounded-xl bg-slate-900 px-4 py-2 text-center text-sm font-medium text-white transition hover:bg-slate-700"
+          className="rounded-2xl bg-slate-950 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-teal-700"
         >
           Add Entry
         </Link>

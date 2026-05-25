@@ -16,10 +16,18 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="hidden w-72 flex-col border-r border-slate-800 bg-slate-950 text-white md:flex">
+    <aside className="hidden w-72 flex-col border-r border-slate-900/70 bg-slate-950 text-white md:flex">
       <div className="border-b border-slate-800 px-6 py-6">
-        <h2 className="text-xl font-bold tracking-tight">PAD</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-teal-400 text-sm font-black text-slate-950 shadow-lg shadow-teal-500/20">
+            PA
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">PAD</h2>
+            <p className="text-xs font-medium text-teal-200">Live workspace</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-slate-400">
           Personal Analytics Dashboard
         </p>
       </div>
@@ -35,13 +43,18 @@ export default function Sidebar() {
               <li key={item}>
                 <Link
                   href={NAV_PATHS[item]}
-                  className={`block w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition hover:bg-slate-800 ${
+                  className={`group flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                     isActive(item)
-                      ? "bg-slate-700 text-white"
-                      : "text-slate-400 hover:bg-slate-800"
+                      ? "bg-white text-slate-950 shadow-lg shadow-black/20"
+                      : "text-slate-400 hover:bg-slate-900 hover:text-white"
                   }`}
                 >
-                  {item}
+                  <span>{item}</span>
+                  <span
+                    className={`h-2 w-2 rounded-full transition ${
+                      isActive(item) ? "bg-teal-500" : "bg-slate-700 group-hover:bg-teal-300"
+                    }`}
+                  />
                 </Link>
               </li>
             ))}
@@ -49,11 +62,14 @@ export default function Sidebar() {
         </div>
 
         <div className="mt-8 border-t border-slate-800 pt-4">
-          <div className="rounded-2xl bg-slate-900 p-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-inner">
             <p className="text-sm font-medium text-white">Current Focus</p>
             <p className="mt-2 text-sm text-slate-400">
               Review weekly trends and update your latest entries
             </p>
+            <div className="mt-4 h-2 rounded-full bg-slate-800">
+              <div className="h-2 w-3/4 rounded-full bg-teal-400" />
+            </div>
           </div>
         </div>
       </div>

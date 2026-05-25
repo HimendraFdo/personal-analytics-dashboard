@@ -1,15 +1,8 @@
 "use client";
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { useUser } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
@@ -18,9 +11,15 @@ type DashboardSectionProps = {
   entries: Entry[];
 };
 
-export default function DashboardSection({
-  entries,
-}: DashboardSectionProps) {
+const ActivityTrendChart = dynamic(
+  () => import("@/components/dashboard/ActivityTrendChart"),
+  {
+    ssr: false,
+    loading: () => <ChartSkeleton label="Preparing trend" />,
+  }
+);
+
+export default function DashboardSection({ entries }: DashboardSectionProps) {
   const { isLoaded, user } = useUser();
   const metadataDisplayName = user?.unsafeMetadata.displayName;
   const displayName =
@@ -29,37 +28,28 @@ export default function DashboardSection({
       : user?.firstName || user?.username || "there";
 
   const totalEntries = entries.length;
-
   const recentEntries = entries.slice(0, 4);
-
   const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
-
-  const averagePerDay = uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
+  const averagePerDay =
+    uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
 
   const categoryCounts: Record<string, number> = {};
-
-  // Calculate the count of entries for each category
   for (const entry of entries) {
     categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
   }
 
   let topCategory = "N/A";
   let maxCount = 0;
-
-  // Determine the category with the highest count
-  for(const category in categoryCounts) {
-    if(categoryCounts[category] > maxCount) {
+  for (const category in categoryCounts) {
+    if (categoryCounts[category] > maxCount) {
       maxCount = categoryCounts[category];
       topCategory = category;
     }
   }
 
-  // Calculate entries in the last 7 days
   const today = new Date();
   const weekAgo = new Date();
   weekAgo.setDate(today.getDate() - 7);
-
-  // Filter entries that fall within the last 7 days
   const entriesThisWeek = entries.filter((entry) => {
     const entryDate = new Date(entry.date);
     return entryDate >= weekAgo && entryDate <= today;
@@ -72,10 +62,7 @@ export default function DashboardSection({
   }
 
   const timeSeriesChartData = Object.entries(dateTotals)
-    .map(([date, total]) => ({
-      date,
-      total,
-    }))
+    .map(([date, total]) => ({ date, total }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const chartTotal = timeSeriesChartData.reduce((sum, point) => sum + point.total, 0);
@@ -86,152 +73,106 @@ export default function DashboardSection({
 
   return (
     <div className="space-y-8">
-      {/* Dashboard Overview */}
-      <section className="rounded-3xl bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 text-white shadow-2xl shadow-slate-300/40">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_420px] lg:p-8">
           <div>
-            <p className="text-sm font-medium text-slate-500">Overview</p>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900">
+            <p className="text-sm font-semibold text-teal-200">Overview</p>
+            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
               Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
               Here is a snapshot of your recent activity, key trends, and the
               metrics you are tracking across your personal dashboard.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Period
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                This Month
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Entries
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {totalEntries}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Focus
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                {topCategory}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-100 px-4 py-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Goal
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-900">
-                On Track
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              ["Period", "This Month"],
+              ["Entries", totalEntries.toString()],
+              ["Focus", topCategory],
+              ["Goal", "On Track"],
+            ].map(([label, value], index) => (
+              <div
+                key={label}
+                className={`rounded-2xl border px-4 py-3 backdrop-blur ${
+                  index === 3
+                    ? "border-teal-300/30 bg-teal-300/15"
+                    : "border-white/10 bg-white/10"
+                }`}
+              >
+                <p className="text-xs font-semibold uppercase text-slate-400">{label}</p>
+                <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Summary Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total Entries" value={totalEntries.toString()} />
-        <SummaryCard title="This Week" value={entriesThisWeek.toString()} />
-        <SummaryCard title="Top Category" value={topCategory} />
-        <SummaryCard title="Average per Day" value={averagePerDay} />
+        <SummaryCard title="Total Entries" value={totalEntries.toString()} accent="teal" detail="Tracked" />
+        <SummaryCard title="This Week" value={entriesThisWeek.toString()} accent="blue" detail="7 days" />
+        <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
+        <SummaryCard title="Average per Day" value={averagePerDay} accent="rose" detail="Daily" />
       </section>
 
-      {/* Main Analytics Chart */}
       <section className="grid gap-6 xl:grid-cols-12">
-        <div className="rounded-3xl bg-white p-6 shadow-sm xl:col-span-8">
-          <div className="flex items-start justify-between">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70 xl:col-span-8">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-xl font-semibold text-slate-900">
-                Activity Trend
-              </h3>
+              <h3 className="text-xl font-semibold text-slate-900">Activity Trend</h3>
               <p className="mt-1 text-sm text-slate-500">
                 Total tracked value by day across your entries.
               </p>
             </div>
 
-            <div className="rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-600">
+            <div className="rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-700">
               By day
             </div>
           </div>
 
           <div className="mt-6 h-80">
-            {timeSeriesChartData.length === 0 ? (
-              <div className="flex h-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
-                Add entries to see your activity trend.
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={timeSeriesChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="total"
-                    stroke="#0f172a"
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+            <ActivityTrendChart data={timeSeriesChartData} />
           </div>
 
           {timeSeriesChartData.length > 0 && (
             <p className="mt-4 text-sm text-slate-600">
               {chartTotal.toFixed(1)} total value tracked
-              {chartPeak.date
-                ? ` · peak on ${chartPeak.date} (${chartPeak.total})`
-                : ""}
+              {chartPeak.date ? ` - peak on ${chartPeak.date} (${chartPeak.total})` : ""}
             </p>
           )}
         </div>
 
-        {/* Insights List */}
         <div className="space-y-6 xl:col-span-4">
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
             <h3 className="text-lg font-semibold text-slate-900">Insights</h3>
             <p className="mt-1 text-sm text-slate-500">
               Quick highlights based on recent trends.
             </p>
 
             <div className="mt-5 space-y-3">
-              <div className="rounded-2xl bg-slate-100 p-4">
-                <p className="text-sm font-medium text-slate-900">
-                  You currently have {totalEntries} tracked entries.
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-100 p-4">
-                <p className="text-sm font-medium text-slate-900">
-                  Your most common category is {topCategory}.
-                </p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-100 p-4">
-                <p className="text-sm font-medium text-slate-900">
-                  Your average activity is {averagePerDay} entries per day.
-                </p>
-              </div>
+              {[
+                `You currently have ${totalEntries} tracked entries.`,
+                `Your most common category is ${topCategory}.`,
+                `Your average activity is ${averagePerDay} entries per day.`,
+              ].map((insight, index) => (
+                <div
+                  key={insight}
+                  className={`rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-white ${
+                    index === 0
+                      ? "hover:border-teal-200"
+                      : index === 1
+                        ? "hover:border-blue-200"
+                        : "hover:border-amber-200"
+                  }`}
+                >
+                  <p className="text-sm font-medium text-slate-900">{insight}</p>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Progress Overview with Progress Bars */}
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
             <h3 className="text-lg font-semibold text-slate-900">Progress</h3>
             <p className="mt-1 text-sm text-slate-500">
               Keep this area for goals or performance summaries.
@@ -241,13 +182,11 @@ export default function DashboardSection({
               <div>
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Weekly Goal</span>
-                  <span className="font-medium text-slate-900">
-                    {entriesThisWeek}/7
-                    </span>
+                  <span className="font-medium text-slate-900">{entriesThisWeek}/7</span>
                 </div>
-                <div className="h-3 rounded-full bg-slate-200">
+                <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-3 rounded-full bg-slate-900"
+                    className="h-3 rounded-full bg-teal-600 transition-all duration-700"
                     style={{ width: `${Math.min((entriesThisWeek / 7) * 100, 100)}%` }}
                   />
                 </div>
@@ -256,13 +195,11 @@ export default function DashboardSection({
               <div>
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Data Coverage</span>
-                  <span className="font-medium text-slate-900">
-                    {uniqueDates.size} days
-                  </span>
+                  <span className="font-medium text-slate-900">{uniqueDates.size} days</span>
                 </div>
-                <div className="h-3 rounded-full bg-slate-200">
+                <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-3 rounded-full bg-slate-700"
+                    className="h-3 rounded-full bg-blue-600 transition-all duration-700"
                     style={{ width: `${Math.min(uniqueDates.size * 10, 100)}%` }}
                   />
                 </div>
@@ -272,9 +209,8 @@ export default function DashboardSection({
         </div>
       </section>
 
-      {/* List of Recent Entries */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Recent Entries</h3>
           <p className="mt-1 text-sm text-slate-500">
             Your latest tracked items appear here.
@@ -282,55 +218,52 @@ export default function DashboardSection({
 
           <div className="mt-5 space-y-3">
             {recentEntries.length === 0 ? (
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
                 No recent entries yet.
               </div>
             ) : (
               recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between rounded-2xl bg-slate-100 p-4"
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-white hover:shadow-md"
                 >
                   <div>
                     <span className="text-sm font-medium text-slate-900">
                       {entry.title}
                     </span>
                     <p className="mt-1 text-xs text-slate-500">
-                      {entry.category} • {formatDisplayDate(entry.date)}
+                      {entry.category} - {formatDisplayDate(entry.date)}
                     </p>
                   </div>
 
-                  <span className="text-sm text-slate-600">{entry.value}</span>
+                  <span className="text-sm font-semibold text-slate-700">{entry.value}</span>
                 </div>
               ))
             )}
           </div>
         </div>
 
-        {/* Summary of Categories */}
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Category Breakdown
-          </h3>
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+          <h3 className="text-lg font-semibold text-slate-900">Category Breakdown</h3>
           <p className="mt-1 text-sm text-slate-500">
             A smaller secondary visualization can live here.
           </p>
 
           <div className="mt-6 space-y-3">
             {Object.keys(categoryCounts).length === 0 ? (
-              <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
                 No category data yet.
               </div>
             ) : (
               Object.entries(categoryCounts).map(([category, count]) => (
                 <div
                   key={category}
-                  className="flex items-center justify-between rounded-2xl bg-slate-100 p-4"
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-white"
                 >
-                  <span className="text-sm font-medium text-slate-900">
-                    {category}
+                  <span className="text-sm font-medium text-slate-900">{category}</span>
+                  <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+                    {count}
                   </span>
-                  <span className="text-sm text-slate-600">{count}</span>
                 </div>
               ))
             )}
