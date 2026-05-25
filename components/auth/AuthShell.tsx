@@ -19,7 +19,7 @@ export default function AuthShell({
           <div className="relative flex h-full flex-col justify-between gap-12">
             <div>
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-teal-400 text-sm font-black text-slate-950 shadow-lg shadow-teal-500/25">
-                PA
+                PAD
               </div>
               <p className="mt-8 text-sm font-semibold uppercase tracking-[0.18em] text-teal-200">
                 Personal Analytics Dashboard
