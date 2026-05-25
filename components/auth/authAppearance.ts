@@ -14,12 +14,12 @@ export const authAppearance = {
     card: "w-full border-0 bg-transparent p-0 shadow-none",
     cardBox: "w-full bg-transparent shadow-none",
     footer:
-      "rounded-b-3xl border-t border-slate-100 bg-white px-6 py-5 text-slate-600",
-    footerAction: "text-sm text-slate-600",
-    footerActionLink: "font-semibold text-teal-700 hover:text-teal-800",
-    footerActionText: "text-slate-600",
-    footerPages: "text-slate-500",
-    footerPagesLink: "font-medium text-slate-600 hover:text-teal-700",
+      "rounded-b-3xl border-t border-slate-100 bg-white px-6 py-5 !text-teal-700",
+    footerAction: "text-sm !text-teal-700",
+    footerActionLink: "font-semibold !text-teal-700 hover:!text-teal-800",
+    footerActionText: "!text-teal-700",
+    footerPages: "!text-teal-700",
+    footerPagesLink: "font-medium !text-teal-700 hover:!text-teal-800",
     formButtonPrimary:
       "h-11 rounded-xl bg-slate-950 text-sm font-semibold shadow-lg shadow-slate-900/15 transition hover:bg-teal-700",
     formFieldInput:
