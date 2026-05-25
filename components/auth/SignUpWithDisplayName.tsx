@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { SignUp } from "@clerk/nextjs";
+import AuthShell from "@/components/auth/AuthShell";
+import { authAppearance } from "@/components/auth/authAppearance";
 
 export default function SignUpWithDisplayName() {
   const [displayName, setDisplayName] = useState("");
@@ -18,9 +20,14 @@ export default function SignUpWithDisplayName() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
+    <AuthShell
+      description="Create a profile, set your display name and start building a clearer picture of your personal metrics."
+      eyebrow="Create account"
+      title="Start tracking with PAD"
+    >
       {confirmedDisplayName ? (
         <SignUp
+          appearance={authAppearance}
           fallbackRedirectUrl="/dashboard"
           signInUrl="/sign-in"
           routing="path"
@@ -28,12 +35,14 @@ export default function SignUpWithDisplayName() {
           unsafeMetadata={{ displayName: confirmedDisplayName }}
         />
       ) : (
-        <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
+        <section>
           <div>
-            <p className="text-sm font-medium text-slate-500">Create account</p>
-            <h1 className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="text-sm font-semibold text-teal-700">
+              Display name
+            </p>
+            <h3 className="mt-2 text-2xl font-bold text-slate-950">
               What should we call you?
-            </h1>
+            </h3>
             <p className="mt-2 text-sm text-slate-600">
               This name will be used in your dashboard greeting.
             </p>
@@ -46,7 +55,7 @@ export default function SignUpWithDisplayName() {
               </span>
               <input
                 autoComplete="given-name"
-                className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
                 maxLength={40}
                 onChange={(event) => setDisplayName(event.target.value)}
                 placeholder="e.g. Alex"
@@ -57,7 +66,7 @@ export default function SignUpWithDisplayName() {
             </label>
 
             <button
-              className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+              className="h-11 w-full rounded-xl bg-slate-950 px-4 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:bg-teal-700"
               type="submit"
             >
               Continue
@@ -66,12 +75,12 @@ export default function SignUpWithDisplayName() {
 
           <p className="mt-6 text-center text-sm text-slate-600">
             Already have an account?{" "}
-            <Link className="font-medium text-slate-900" href="/sign-in">
+            <Link className="font-semibold text-teal-700" href="/sign-in">
               Sign in
             </Link>
           </p>
         </section>
       )}
-    </main>
+    </AuthShell>
   );
 }
