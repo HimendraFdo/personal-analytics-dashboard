@@ -160,10 +160,10 @@ export default function EntryForm({
           onChange={handleChange}
           disabled={disabled || submitting}
           placeholder="e.g. Study Hours"
-          className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
+          className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.title
-              ? "border-red-500 focus:border-red-500"
-              : "border-slate-300 focus:border-slate-500"
+              ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
           }`}
         />
         {errors.title && (
@@ -183,10 +183,10 @@ export default function EntryForm({
           onChange={handleChange}
           disabled={disabled || submitting}
           placeholder="e.g. 2.5"
-          className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
+          className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.value
-              ? "border-red-500 focus:border-red-500"
-              : "border-slate-300 focus:border-slate-500"
+              ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
           }`}
         />
         {errors.value && (
@@ -203,7 +203,7 @@ export default function EntryForm({
           value={formData.category}
           onChange={handleChange}
           disabled={disabled || submitting}
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
         >
           {CATEGORIES.map((option) => (
             <option key={option} value={option}>
@@ -223,10 +223,10 @@ export default function EntryForm({
           value={formData.date}
           onChange={handleChange}
           disabled={disabled || submitting}
-          className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition ${
+          className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.date
-              ? "border-red-500 focus:border-red-500"
-              : "border-slate-300 focus:border-slate-500"
+              ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
           }`}
         />
         {errors.date && (
@@ -245,7 +245,7 @@ export default function EntryForm({
           disabled={disabled || submitting}
           placeholder="Optional note"
           rows={4}
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-500"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
         />
       </div>
 
@@ -253,7 +253,7 @@ export default function EntryForm({
         <button
           type="submit"
           disabled={disabled || submitting}
-          className="flex-1 rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-60"
+          className="flex-1 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-teal-700 disabled:opacity-60"
         >
           {submitting
             ? "Saving..."
@@ -267,7 +267,7 @@ export default function EntryForm({
             type="button"
             onClick={onCancelEdit}
             disabled={disabled || submitting}
-            className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
           >
             Cancel
           </button>
