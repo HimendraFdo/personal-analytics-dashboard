@@ -16,16 +16,20 @@ type CategoryTotalsChartProps = {
     total: number;
   }>;
   valueFormatter?: (value: number) => string;
+  emptyMessage?: string;
+  tooltipLabel?: string;
 };
 
 export default function CategoryTotalsChart({
   data,
   valueFormatter = (value) => String(value),
+  emptyMessage = "No chart data yet.",
+  tooltipLabel = "Total",
 }: CategoryTotalsChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
-        No chart data yet.
+        {emptyMessage}
       </div>
     );
   }
@@ -40,11 +44,17 @@ export default function CategoryTotalsChart({
           tickLine={false}
           tick={{ fill: "#64748b", fontSize: 12 }}
         />
-        <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#64748b", fontSize: 12 }}
+          tickFormatter={(value) => valueFormatter(Number(value))}
+          width={80}
+        />
         <Tooltip
           formatter={(value) => [
             valueFormatter(Number(value)),
-            "Total",
+            tooltipLabel,
           ]}
           cursor={{ fill: "rgba(15, 118, 110, 0.08)" }}
           contentStyle={{

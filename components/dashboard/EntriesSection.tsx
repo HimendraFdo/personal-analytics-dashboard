@@ -40,7 +40,7 @@ export default function EntriesSection({
   onDeleteEntry,
   onUpdateEntry,
 }: EntriesSectionProps) {
-  const { activeMetric, metricConfig } = useMetricSelection();
+  const { metricConfig } = useMetricSelection();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
@@ -144,12 +144,10 @@ export default function EntriesSection({
       {hasNoEntries && (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white/70 p-6 text-center shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">
-            No {metricConfig.label.toLowerCase()} entries yet
+            {metricConfig.emptyState.heading}
           </h3>
           <p className="mt-2 text-sm text-slate-600">
-            {activeMetric === "time"
-              ? "Start tracking study, finance, health, or personal time in minutes with your first entry."
-              : `${metricConfig.label} tracking is visible as a placeholder in this first slice.`}
+            {metricConfig.emptyState.description}
           </p>
         </section>
       )}

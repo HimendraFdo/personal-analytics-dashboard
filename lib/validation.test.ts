@@ -39,6 +39,19 @@ describe("createEntrySchema", () => {
     expect(result.metricType).toBe("time");
   });
 
+  it("accepts decimal money values", () => {
+    const result = createEntrySchema.parse({
+      title: "Coffee",
+      value: "12.50",
+      metricType: "money",
+      category: "Finance",
+      date: "2026-05-16",
+    });
+
+    expect(result.value).toBe(12.5);
+    expect(result.metricType).toBe("money");
+  });
+
   it("rejects empty titles", () => {
     const result = createEntrySchema.safeParse({
       title: "   ",

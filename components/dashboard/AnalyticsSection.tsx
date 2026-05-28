@@ -27,7 +27,7 @@ const CategoryTotalsChart = dynamic(
 );
 
 export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
-  const { activeMetric, metricConfig } = useMetricSelection();
+  const { metricConfig } = useMetricSelection();
   const totalEntries = entries.length;
   const totalMetricValue = entries.reduce((total, entry) => total + entry.value, 0);
   const averageMetricValue = totalEntries > 0 ? totalMetricValue / totalEntries : 0.0;
@@ -84,16 +84,16 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         {[
           ["Total Entries", totalEntries.toString(), "bg-teal-50 text-teal-700"],
           [
-            activeMetric === "time" ? "Total Minutes" : `Total ${metricConfig.label}`,
+            metricConfig.analyticsLabels.total,
             metricConfig.formatValue(totalMetricValue),
             "bg-blue-50 text-blue-700",
           ],
           [
-            activeMetric === "time" ? "Avg Minutes / Entry" : `Avg ${metricConfig.label} / Entry`,
+            metricConfig.analyticsLabels.averagePerEntry,
             metricConfig.formatValue(averageMetricValue),
             "bg-amber-50 text-amber-700",
           ],
-          [`Top ${metricConfig.label} Category`, topMetricCategory, "bg-rose-50 text-rose-700"],
+          [metricConfig.analyticsLabels.topCategory, topMetricCategory, "bg-rose-50 text-rose-700"],
         ].map(([label, value, tone]) => (
           <div
             key={label}
@@ -114,7 +114,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Total {metricConfig.label.toLowerCase()} accumulated within each category.
+            {metricConfig.analyticsLabels.categoryTotalsDescription}
           </p>
 
           <div className="mt-5 space-y-3">
@@ -166,7 +166,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                No entries available yet.
+                {metricConfig.analyticsLabels.latestEmpty}
               </div>
             )}
           </div>
@@ -184,22 +184,26 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
             <CategoryTotalsChart
               data={categoryChartData}
               valueFormatter={metricConfig.formatValue}
+              emptyMessage={metricConfig.analyticsLabels.chartEmpty}
+              tooltipLabel={metricConfig.analyticsLabels.tooltipLabel}
             />
           </div>
         </div>
 
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">
-            {metricConfig.label} Over Time
+            {metricConfig.analyticsLabels.trendTitle}
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Line chart showing total tracked {metricConfig.label.toLowerCase()} over time.
+            {metricConfig.analyticsLabels.trendDescription}
           </p>
 
           <div className="mt-6 h-72">
             <ActivityTrendChart
               data={timeSeriesChartData}
               valueFormatter={metricConfig.formatValue}
+              emptyMessage={metricConfig.analyticsLabels.chartEmpty}
+              tooltipLabel={metricConfig.analyticsLabels.tooltipLabel}
             />
           </div>
         </div>
