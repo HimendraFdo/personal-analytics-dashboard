@@ -69,6 +69,7 @@ export default function EntryForm({
   disabled = false,
 }: EntryFormProps) {
   const { metricConfig } = useMetricSelection();
+  const { placeholders, valueInput } = metricConfig;
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(editingEntry)
   );
@@ -161,7 +162,7 @@ export default function EntryForm({
           value={formData.title}
           onChange={handleChange}
           disabled={disabled || submitting}
-          placeholder="e.g. Deep work session"
+          placeholder={placeholders.title}
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.title
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
@@ -179,12 +180,12 @@ export default function EntryForm({
         </label>
         <input
           type="number"
-          step="1"
+          step={valueInput.step}
           name="value"
           value={formData.value}
           onChange={handleChange}
           disabled={disabled || submitting}
-          placeholder="e.g. 45"
+          placeholder={valueInput.placeholder}
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.value
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
@@ -245,7 +246,7 @@ export default function EntryForm({
           value={formData.note}
           onChange={handleChange}
           disabled={disabled || submitting}
-          placeholder="Optional note"
+          placeholder={placeholders.note}
           rows={4}
           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
         />

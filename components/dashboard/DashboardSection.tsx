@@ -21,7 +21,7 @@ const ActivityTrendChart = dynamic(
 );
 
 export default function DashboardSection({ entries }: DashboardSectionProps) {
-  const { activeMetric, metricConfig } = useMetricSelection();
+  const { metricConfig } = useMetricSelection();
   const { isLoaded, user } = useUser();
   const metadataDisplayName = user?.unsafeMetadata.displayName;
   const displayName =
@@ -118,10 +118,10 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title={activeMetric === "time" ? "Total Minutes" : `Total ${metricConfig.label}`} value={metricConfig.formatValue(totalValue)} accent="teal" detail="Tracked" />
+        <SummaryCard title={metricConfig.dashboardLabels.total} value={metricConfig.formatValue(totalValue)} accent="teal" detail="Tracked" />
         <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="blue" detail="7 days" />
         <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
-        <SummaryCard title={activeMetric === "time" ? "Avg Minutes / Day" : `Avg ${metricConfig.label} / Day`} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
+        <SummaryCard title={metricConfig.dashboardLabels.averagePerDay} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-12">
@@ -143,6 +143,8 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             <ActivityTrendChart
               data={timeSeriesChartData}
               valueFormatter={metricConfig.formatValue}
+              emptyMessage={metricConfig.analyticsLabels.chartEmpty}
+              tooltipLabel={metricConfig.analyticsLabels.tooltipLabel}
             />
           </div>
 

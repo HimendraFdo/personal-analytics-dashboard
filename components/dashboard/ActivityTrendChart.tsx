@@ -16,16 +16,20 @@ type ActivityTrendChartProps = {
     total: number;
   }>;
   valueFormatter?: (value: number) => string;
+  emptyMessage?: string;
+  tooltipLabel?: string;
 };
 
 export default function ActivityTrendChart({
   data,
   valueFormatter = (value) => String(value),
+  emptyMessage = "Add entries to see your activity trend.",
+  tooltipLabel = "Total",
 }: ActivityTrendChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
-        Add entries to see your activity trend.
+        {emptyMessage}
       </div>
     );
   }
@@ -47,11 +51,17 @@ export default function ActivityTrendChart({
           tickLine={false}
           tick={{ fill: "#64748b", fontSize: 12 }}
         />
-        <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: "#64748b", fontSize: 12 }}
+          tickFormatter={(value) => valueFormatter(Number(value))}
+          width={80}
+        />
         <Tooltip
           formatter={(value) => [
             valueFormatter(Number(value)),
-            "Total",
+            tooltipLabel,
           ]}
           cursor={{ stroke: "#cbd5e1", strokeWidth: 1 }}
           contentStyle={{
