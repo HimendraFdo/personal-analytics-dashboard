@@ -1,6 +1,9 @@
 import type { MetricType } from "@/types/entry";
 
 export const METRIC_TYPES: MetricType[] = ["time", "money", "calories"];
+const compactNumberFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 1,
+});
 
 export type MetricAccent = "teal" | "emerald" | "orange";
 
@@ -144,7 +147,7 @@ export const metricConfigs: Record<MetricType, MetricConfig> = {
     emptyState: {
       heading: "No calories entries yet",
       description:
-        "Calories tracking is visible as a placeholder in this first slice.",
+        "Log calories manually or search for a food to capture calories, protein, carbs, and fats.",
     },
     dashboardLabels: {
       total: "Total Calories",
@@ -159,10 +162,10 @@ export const metricConfigs: Record<MetricType, MetricConfig> = {
       categoryTotalsDescription:
         "Total calories accumulated within each category.",
       tooltipLabel: "Total Calories",
-      chartEmpty: "Add entries to see your activity trend.",
-      latestEmpty: "No entries available yet.",
+      chartEmpty: "Add calorie entries to see your nutrition trend.",
+      latestEmpty: "No calorie entries available yet.",
     },
-    formatValue: (value) => `${Number.isInteger(value) ? value : value.toFixed(1)} kcal`,
+    formatValue: (value) => `${compactNumberFormatter.format(value)} kcal`,
     sortLabels: {
       highest: "Highest Calories",
       lowest: "Lowest Calories",

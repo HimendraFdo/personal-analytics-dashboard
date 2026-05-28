@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { searchFoods } from "@/lib/api";
+import {
+  calculatePortionNutrition,
+  type FoodSearchResult,
+} from "@/lib/nutrition";
 import type { Entry, EntryCategory } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
@@ -26,6 +31,12 @@ type FormData = {
   category: EntryCategory;
   date: string;
   note: string;
+  foodName: string;
+  portionGrams: string;
+  proteinGrams: string;
+  carbsGrams: string;
+  fatGrams: string;
+  foodSource: string;
 };
 
 type FormErrors = {
@@ -42,6 +53,12 @@ function getInitialFormData(editingEntry: Entry | null): FormData {
       category: editingEntry.category,
       date: formatDateForInput(editingEntry.date),
       note: editingEntry.note,
+      foodName: editingEntry.foodName ?? "",
+      portionGrams: editingEntry.portionGrams?.toString() ?? "",
+      proteinGrams: editingEntry.proteinGrams?.toString() ?? "",
+      carbsGrams: editingEntry.carbsGrams?.toString() ?? "",
+      fatGrams: editingEntry.fatGrams?.toString() ?? "",
+      foodSource: editingEntry.foodSource ?? "",
     };
   }
 
@@ -51,6 +68,12 @@ function getInitialFormData(editingEntry: Entry | null): FormData {
     category: "Study",
     date: "",
     note: "",
+    foodName: "",
+    portionGrams: "",
+    proteinGrams: "",
+    carbsGrams: "",
+    fatGrams: "",
+    foodSource: "",
   };
 }
 
@@ -68,13 +91,22 @@ export default function EntryForm({
   onCancelEdit,
   disabled = false,
 }: EntryFormProps) {
-  const { metricConfig } = useMetricSelection();
+  const { activeMetric, metricConfig } = useMetricSelection();
   const { placeholders, valueInput } = metricConfig;
+  const isCalories = activeMetric === "calories";
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(editingEntry)
   );
   const [errors, setErrors] = useState<FormErrors>(() => getInitialErrors());
   const [submitting, setSubmitting] = useState(false);
+  const [calorieEntryMode, setCalorieEntryMode] = useState<"manual" | "food">(
+    editingEntry?.foodName ? "food" : "manual"
+  );
+  const [foodQuery, setFoodQuery] = useState(editingEntry?.foodName ?? "");
+  const [foodResults, setFoodResults] = useState<FoodSearchResult[]>([]);
+  const [foodSearchError, setFoodSearchError] = useState<string | null>(null);
+  const [foodSearching, setFoodSearching] = useState(false);
+  const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
 
   function validateForm(): boolean {
     const nextErrors: FormErrors = {
@@ -97,6 +129,10 @@ export default function EntryForm({
 
     if (!formData.date) {
       nextErrors.date = "Date is required.";
+    }
+
+    if (isCalories && calorieEntryMode === "food" && !formData.foodName.trim()) {
+      nextErrors.title = "Choose a food result before saving.";
     }
 
     setErrors(nextErrors);
@@ -136,6 +172,22 @@ export default function EntryForm({
       category: formData.category,
       date: new Date(formData.date),
       note: formData.note.trim(),
+      foodName: isCalories ? formData.foodName.trim() || null : null,
+      portionGrams:
+        isCalories && formData.portionGrams
+          ? Number(formData.portionGrams)
+          : null,
+      proteinGrams:
+        isCalories && formData.proteinGrams
+          ? Number(formData.proteinGrams)
+          : null,
+      carbsGrams:
+        isCalories && formData.carbsGrams
+          ? Number(formData.carbsGrams)
+          : null,
+      fatGrams:
+        isCalories && formData.fatGrams ? Number(formData.fatGrams) : null,
+      foodSource: isCalories ? formData.foodSource.trim() || null : null,
     };
 
     setSubmitting(true);
@@ -144,10 +196,85 @@ export default function EntryForm({
       setErrors(getInitialErrors());
       if (!editingEntry) {
         setFormData(getInitialFormData(null));
+        setFoodQuery("");
+        setFoodResults([]);
+        setSelectedFood(null);
       }
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleFoodSearch() {
+    const query = foodQuery.trim();
+    if (query.length < 2) {
+      setFoodSearchError("Enter at least 2 characters to search foods.");
+      return;
+    }
+
+    setFoodSearching(true);
+    setFoodSearchError(null);
+    try {
+      const foods = await searchFoods(query);
+      setFoodResults(foods);
+      if (foods.length === 0) {
+        setFoodSearchError("No matching foods found.");
+      }
+    } catch (error) {
+      setFoodSearchError(
+        error instanceof Error ? error.message : "Food lookup failed"
+      );
+    } finally {
+      setFoodSearching(false);
+    }
+  }
+
+  function handleSelectFood(food: FoodSearchResult) {
+    const portionGrams = Number(formData.portionGrams) > 0
+      ? Number(formData.portionGrams)
+      : 100;
+    const nutrition = calculatePortionNutrition(
+      food.nutrientsPer100g,
+      portionGrams
+    );
+
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      title: currentFormData.title || food.name,
+      value: String(nutrition.calories),
+      foodName: food.name,
+      portionGrams: String(portionGrams),
+      proteinGrams: String(nutrition.proteinGrams),
+      carbsGrams: String(nutrition.carbsGrams),
+      fatGrams: String(nutrition.fatGrams),
+      foodSource: food.source,
+    }));
+    setFoodQuery(food.name);
+    setFoodResults([]);
+    setSelectedFood(food);
+    setErrors((currentErrors) => ({ ...currentErrors, title: "", value: "" }));
+  }
+
+  function handlePortionChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const portionGrams = event.target.value;
+    const portionValue = Number(portionGrams);
+    const nutrition =
+      calorieEntryMode === "food" && selectedFood && portionValue > 0
+        ? calculatePortionNutrition(selectedFood.nutrientsPer100g, portionValue)
+        : null;
+
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      portionGrams,
+      ...(nutrition
+        ? {
+            value: String(nutrition.calories),
+            proteinGrams: String(nutrition.proteinGrams),
+            carbsGrams: String(nutrition.carbsGrams),
+            fatGrams: String(nutrition.fatGrams),
+          }
+        : {}),
+    }));
   }
 
   return (
@@ -196,6 +323,131 @@ export default function EntryForm({
           <p className="mt-2 text-sm text-red-600">{errors.value}</p>
         )}
       </div>
+
+      {isCalories && (
+        <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
+          <div className="grid grid-cols-2 rounded-xl border border-orange-100 bg-white p-1 text-sm font-semibold text-slate-600">
+            <button
+              type="button"
+              onClick={() => {
+                setCalorieEntryMode("manual");
+                setSelectedFood(null);
+              }}
+              className={`rounded-lg px-3 py-2 transition ${
+                calorieEntryMode === "manual"
+                  ? "bg-orange-600 text-white"
+                  : "hover:bg-orange-50"
+              }`}
+            >
+              Manual
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalorieEntryMode("food")}
+              className={`rounded-lg px-3 py-2 transition ${
+                calorieEntryMode === "food"
+                  ? "bg-orange-600 text-white"
+                  : "hover:bg-orange-50"
+              }`}
+            >
+              Food Lookup
+            </button>
+          </div>
+
+          {calorieEntryMode === "food" && (
+            <div className="space-y-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Food
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="search"
+                    value={foodQuery}
+                    onChange={(event) => setFoodQuery(event.target.value)}
+                    disabled={disabled || submitting || foodSearching}
+                    placeholder="e.g. Greek yogurt"
+                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleFoodSearch()}
+                    disabled={disabled || submitting || foodSearching}
+                    className="rounded-2xl bg-orange-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:opacity-60"
+                  >
+                    {foodSearching ? "Searching" : "Search"}
+                  </button>
+                </div>
+                {foodSearchError && (
+                  <p className="mt-2 text-sm text-orange-800">{foodSearchError}</p>
+                )}
+              </div>
+
+              {foodResults.length > 0 && (
+                <div className="space-y-2">
+                  {foodResults.map((food) => (
+                    <button
+                      key={food.id}
+                      type="button"
+                      onClick={() => handleSelectFood(food)}
+                      className="w-full rounded-2xl border border-orange-100 bg-white p-3 text-left transition hover:border-orange-300"
+                    >
+                      <span className="block text-sm font-semibold text-slate-900">
+                        {food.name}
+                      </span>
+                      <span className="mt-1 block text-xs text-slate-500">
+                        {food.brand} - {metricConfig.formatValue(food.nutrientsPer100g.calories)} / 100 g
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Portion (grams)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              name="portionGrams"
+              value={formData.portionGrams}
+              onChange={handlePortionChange}
+              disabled={disabled || submitting}
+              placeholder="e.g. 150"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              ["proteinGrams", "Protein", formData.proteinGrams],
+              ["carbsGrams", "Carbs", formData.carbsGrams],
+              ["fatGrams", "Fat", formData.fatGrams],
+            ].map(([name, label, value]) => (
+              <div key={name}>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  {label}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  name={name}
+                  value={value}
+                  onChange={handleChange}
+                  disabled={disabled || submitting}
+                  placeholder="0"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">

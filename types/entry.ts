@@ -9,6 +9,12 @@ export type Entry = {
   category: EntryCategory;
   date: Date;
   note: string;
+  foodName: string | null;
+  portionGrams: number | null;
+  proteinGrams: number | null;
+  carbsGrams: number | null;
+  fatGrams: number | null;
+  foodSource: string | null;
 };
 
 export type EntryInput = {
@@ -18,6 +24,12 @@ export type EntryInput = {
   category: EntryCategory;
   date: string;
   note?: string;
+  foodName?: string | null;
+  portionGrams?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatGrams?: number | null;
+  foodSource?: string | null;
 };
 
 export type EntryUpdateInput = Partial<EntryInput>;

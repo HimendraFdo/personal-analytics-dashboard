@@ -17,10 +17,30 @@ describe("metricConfigs", () => {
     expect(metricConfigs.money.sortLabels.highest).toBe("Highest Spend");
     expect(metricConfigs.money.sortLabels.lowest).toBe("Lowest Spend");
   });
+
+  it("formats calories with kcal and thousands separators", () => {
+    expect(metricConfigs.calories.formatValue(450)).toBe("450 kcal");
+    expect(metricConfigs.calories.formatValue(1250)).toBe("1,250 kcal");
+  });
+
+  it("exposes calories-specific labels", () => {
+    expect(metricConfigs.calories.inputLabel).toBe("Calories Eaten");
+    expect(metricConfigs.calories.dashboardLabels.total).toBe("Total Calories");
+    expect(metricConfigs.calories.dashboardLabels.averagePerDay).toBe("Avg Calories / Day");
+    expect(metricConfigs.calories.analyticsLabels.averagePerEntry).toBe("Avg Calories / Entry");
+    expect(metricConfigs.calories.analyticsLabels.trendTitle).toBe("Calories Over Time");
+    expect(metricConfigs.calories.emptyState.heading).toBe("No calories entries yet");
+    expect(metricConfigs.calories.sortLabels.highest).toBe("Highest Calories");
+    expect(metricConfigs.calories.sortLabels.lowest).toBe("Lowest Calories");
+  });
 });
 
 describe("parseMetricType", () => {
   it("accepts money from URL parameters", () => {
     expect(parseMetricType("money")).toBe("money");
+  });
+
+  it("accepts calories from URL parameters", () => {
+    expect(parseMetricType("calories")).toBe("calories");
   });
 });

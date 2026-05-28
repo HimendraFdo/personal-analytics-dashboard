@@ -1,5 +1,6 @@
 import type { Entry } from "@/types/entry";
 import { metricConfigs } from "@/lib/metrics";
+import { formatMacroValue, hasMacroData } from "@/lib/nutrition";
 import { formatDisplayDate } from "@/utils/date";
 
 type EntryListProps = {
@@ -38,6 +39,28 @@ export default function EntryList({
               </p>
               {entry.note && (
                 <p className="mt-2 text-sm leading-6 text-slate-600">{entry.note}</p>
+              )}
+              {entry.metricType === "calories" && (
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+                  {entry.portionGrams !== null && (
+                    <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
+                      {formatMacroValue(entry.portionGrams)} portion
+                    </span>
+                  )}
+                  {hasMacroData(entry) && (
+                    <>
+                      <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
+                        Protein {formatMacroValue(entry.proteinGrams ?? 0)}
+                      </span>
+                      <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
+                        Carbs {formatMacroValue(entry.carbsGrams ?? 0)}
+                      </span>
+                      <span className="rounded-full bg-white px-2.5 py-1 shadow-sm">
+                        Fat {formatMacroValue(entry.fatGrams ?? 0)}
+                      </span>
+                    </>
+                  )}
+                </div>
               )}
             </div>
 

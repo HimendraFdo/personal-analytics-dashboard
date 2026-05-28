@@ -6,6 +6,8 @@ const categorySchema = z.enum(
   ENTRY_CATEGORIES as [string, ...string[]]
 );
 const metricTypeSchema = z.enum(METRIC_TYPES as [string, ...string[]]);
+const optionalNutritionNumber = z.coerce.number().nonnegative().finite().nullable().optional();
+const optionalFoodText = z.string().trim().max(200).nullable().optional();
 
 export const createEntrySchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -14,6 +16,12 @@ export const createEntrySchema = z.object({
   category: categorySchema,
   date: z.union([z.string().min(1), z.coerce.date()]),
   note: z.string().max(2000).optional().default(""),
+  foodName: optionalFoodText,
+  portionGrams: optionalNutritionNumber,
+  proteinGrams: optionalNutritionNumber,
+  carbsGrams: optionalNutritionNumber,
+  fatGrams: optionalNutritionNumber,
+  foodSource: optionalFoodText,
 });
 
 export const updateEntrySchema = z
@@ -24,6 +32,12 @@ export const updateEntrySchema = z
     category: categorySchema.optional(),
     date: z.union([z.string().min(1), z.coerce.date()]).optional(),
     note: z.string().max(2000).optional(),
+    foodName: optionalFoodText,
+    portionGrams: optionalNutritionNumber,
+    proteinGrams: optionalNutritionNumber,
+    carbsGrams: optionalNutritionNumber,
+    fatGrams: optionalNutritionNumber,
+    foodSource: optionalFoodText,
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",

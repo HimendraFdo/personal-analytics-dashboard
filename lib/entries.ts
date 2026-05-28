@@ -11,6 +11,12 @@ export function serializeEntry(entry: PrismaEntry): Entry {
     category: entry.category as EntryCategory,
     date: entry.date,
     note: entry.note,
+    foodName: entry.foodName,
+    portionGrams: entry.portionGrams,
+    proteinGrams: entry.proteinGrams,
+    carbsGrams: entry.carbsGrams,
+    fatGrams: entry.fatGrams,
+    foodSource: entry.foodSource,
   };
 }
 
@@ -23,5 +29,11 @@ export function serializeEntryJson(entry: PrismaEntry) {
     category: entry.category,
     date: entry.date.toISOString(),
     note: entry.note,
+    foodName: entry.foodName,
+    portionGrams: entry.portionGrams,
+    proteinGrams: entry.proteinGrams,
+    carbsGrams: entry.carbsGrams,
+    fatGrams: entry.fatGrams,
+    foodSource: entry.foodSource,
   };
 }

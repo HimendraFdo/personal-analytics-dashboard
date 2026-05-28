@@ -13,6 +13,12 @@ describe("serializeEntryJson", () => {
       category: EntryCategory.Health,
       date: new Date("2026-05-16T00:00:00.000Z"),
       note: "Felt good",
+      foodName: null,
+      portionGrams: null,
+      proteinGrams: null,
+      carbsGrams: null,
+      fatGrams: null,
+      foodSource: null,
       createdAt: new Date("2026-05-16T00:00:00.000Z"),
       updatedAt: new Date("2026-05-16T00:00:00.000Z"),
     };
@@ -25,6 +31,12 @@ describe("serializeEntryJson", () => {
       category: "Health",
       date: "2026-05-16T00:00:00.000Z",
       note: "Felt good",
+      foodName: null,
+      portionGrams: null,
+      proteinGrams: null,
+      carbsGrams: null,
+      fatGrams: null,
+      foodSource: null,
     });
   });
 });

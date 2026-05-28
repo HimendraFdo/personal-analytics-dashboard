@@ -35,7 +35,39 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return jsonError("Entry not found", "NOT_FOUND", 404);
     }
 
-    const { title, value, metricType, category, date, note } = parsed.data;
+    const {
+      title,
+      value,
+      metricType,
+      category,
+      date,
+      note,
+      foodName,
+      portionGrams,
+      proteinGrams,
+      carbsGrams,
+      fatGrams,
+      foodSource,
+    } = parsed.data;
+    const nextMetricType = metricType ?? existing.metricType;
+    const nutritionData =
+      nextMetricType === "calories"
+        ? {
+            ...(foodName !== undefined ? { foodName } : {}),
+            ...(portionGrams !== undefined ? { portionGrams } : {}),
+            ...(proteinGrams !== undefined ? { proteinGrams } : {}),
+            ...(carbsGrams !== undefined ? { carbsGrams } : {}),
+            ...(fatGrams !== undefined ? { fatGrams } : {}),
+            ...(foodSource !== undefined ? { foodSource } : {}),
+          }
+        : {
+            foodName: null,
+            portionGrams: null,
+            proteinGrams: null,
+            carbsGrams: null,
+            fatGrams: null,
+            foodSource: null,
+          };
 
     const entry = await prisma.entry.update({
       where: { id },
@@ -48,6 +80,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           : {}),
         ...(date !== undefined ? { date: parseEntryDate(date) } : {}),
         ...(note !== undefined ? { note } : {}),
+        ...nutritionData,
       },
     });
 

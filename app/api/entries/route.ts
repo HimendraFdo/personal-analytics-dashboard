@@ -88,7 +88,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, value, metricType, category, date, note } = parsed.data;
+    const {
+      title,
+      value,
+      metricType,
+      category,
+      date,
+      note,
+      foodName,
+      portionGrams,
+      proteinGrams,
+      carbsGrams,
+      fatGrams,
+      foodSource,
+    } = parsed.data;
+    const nutritionData =
+      metricType === "calories"
+        ? {
+            foodName: foodName ?? null,
+            portionGrams: portionGrams ?? null,
+            proteinGrams: proteinGrams ?? null,
+            carbsGrams: carbsGrams ?? null,
+            fatGrams: fatGrams ?? null,
+            foodSource: foodSource ?? null,
+          }
+        : {
+            foodName: null,
+            portionGrams: null,
+            proteinGrams: null,
+            carbsGrams: null,
+            fatGrams: null,
+            foodSource: null,
+          };
 
     const entry = await prisma.entry.create({
       data: {
@@ -99,6 +130,7 @@ export async function POST(request: NextRequest) {
         category: category as EntryCategory,
         date: parseEntryDate(date),
         note: note ?? "",
+        ...nutritionData,
       },
     });
 

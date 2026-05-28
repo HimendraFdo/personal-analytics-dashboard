@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
+import { formatMacroValue, getMacroTotals } from "@/lib/nutrition";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
 
@@ -21,7 +22,8 @@ const ActivityTrendChart = dynamic(
 );
 
 export default function DashboardSection({ entries }: DashboardSectionProps) {
-  const { metricConfig } = useMetricSelection();
+  const { activeMetric, metricConfig } = useMetricSelection();
+  const isCalories = activeMetric === "calories";
   const { isLoaded, user } = useUser();
   const metadataDisplayName = user?.unsafeMetadata.displayName;
   const displayName =
@@ -62,6 +64,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
     (total, entry) => total + entry.value,
     0
   );
+  const macroTotals = getMacroTotals(entries);
 
   const dateTotals: Record<string, number> = {};
   for (const entry of entries) {
@@ -123,6 +126,14 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
         <SummaryCard title={metricConfig.dashboardLabels.averagePerDay} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
       </section>
+
+      {isCalories && (
+        <section className="grid gap-4 sm:grid-cols-3">
+          <SummaryCard title="Protein" value={formatMacroValue(macroTotals.proteinGrams)} accent="teal" detail="Total" />
+          <SummaryCard title="Carbs" value={formatMacroValue(macroTotals.carbsGrams)} accent="blue" detail="Total" />
+          <SummaryCard title="Fat" value={formatMacroValue(macroTotals.fatGrams)} accent="amber" detail="Total" />
+        </section>
+      )}
 
       <section className="grid gap-6 xl:grid-cols-12">
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70 xl:col-span-8">
@@ -249,9 +260,18 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                     </p>
                   </div>
 
-                  <span className="text-sm font-semibold text-slate-700">
-                    {metricConfig.formatValue(entry.value)}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-sm font-semibold text-slate-700">
+                      {metricConfig.formatValue(entry.value)}
+                    </span>
+                    {isCalories && (
+                      <p className="mt-1 text-xs text-slate-500">
+                        P {formatMacroValue(entry.proteinGrams ?? 0)} / C{" "}
+                        {formatMacroValue(entry.carbsGrams ?? 0)} / F{" "}
+                        {formatMacroValue(entry.fatGrams ?? 0)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))
             )}
