@@ -5,6 +5,7 @@ import EntryForm from "./EntryForm";
 import EntryList from "./EntryList";
 import type { Entry, EntryCategory } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
+import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { formatDateForInput } from "@/utils/date";
 
 type EntriesSectionProps = {
@@ -15,13 +16,13 @@ type EntriesSectionProps = {
   onUpdateEntry: (id: string, payload: EntryFormPayload) => Promise<void>;
 };
 
-type SortOption = "Newest" | "Oldest" | "Highest Time" | "Lowest Time";
+type SortOption = "Newest" | "Oldest" | "Highest" | "Lowest";
 
 const SORT_OPTIONS: SortOption[] = [
   "Newest",
   "Oldest",
-  "Highest Time",
-  "Lowest Time",
+  "Highest",
+  "Lowest",
 ];
 
 const CATEGORY_OPTIONS: Array<"All" | EntryCategory> = [
@@ -39,6 +40,7 @@ export default function EntriesSection({
   onDeleteEntry,
   onUpdateEntry,
 }: EntriesSectionProps) {
+  const { activeMetric, metricConfig } = useMetricSelection();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
@@ -104,9 +106,9 @@ export default function EntriesSection({
       next.sort((a, b) => b.date.getTime() - a.date.getTime());
     } else if (selectedSort === "Oldest") {
       next.sort((a, b) => a.date.getTime() - b.date.getTime());
-    } else if (selectedSort === "Highest Time") {
+    } else if (selectedSort === "Highest") {
       next.sort((a, b) => b.value - a.value);
-    } else if (selectedSort === "Lowest Time") {
+    } else if (selectedSort === "Lowest") {
       next.sort((a, b) => a.value - b.value);
     }
     return next;
@@ -124,7 +126,7 @@ export default function EntriesSection({
           <div>
             <h2 className="text-3xl font-bold text-slate-950">Entries</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Add, edit, filter, and review your tracked time entries.
+              Add, edit, filter, and review your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
           </div>
           <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
@@ -141,9 +143,13 @@ export default function EntriesSection({
 
       {hasNoEntries && (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white/70 p-6 text-center shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">No entries yet</h3>
+          <h3 className="text-lg font-semibold text-slate-900">
+            No {metricConfig.label.toLowerCase()} entries yet
+          </h3>
           <p className="mt-2 text-sm text-slate-600">
-            Start tracking study, finance, health, or personal time with your first entry.
+            {activeMetric === "time"
+              ? "Start tracking study, finance, health, or personal time in minutes with your first entry."
+              : `${metricConfig.label} tracking is visible as a placeholder in this first slice.`}
           </p>
         </section>
       )}
@@ -168,7 +174,11 @@ export default function EntriesSection({
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option} value={option}>
-                  {option}
+                  {option === "Highest"
+                    ? metricConfig.sortLabels.highest
+                    : option === "Lowest"
+                      ? metricConfig.sortLabels.lowest
+                      : option}
                 </option>
               ))}
             </select>

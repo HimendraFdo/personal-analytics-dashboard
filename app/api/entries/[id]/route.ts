@@ -35,13 +35,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return jsonError("Entry not found", "NOT_FOUND", 404);
     }
 
-    const { title, value, category, date, note } = parsed.data;
+    const { title, value, metricType, category, date, note } = parsed.data;
 
     const entry = await prisma.entry.update({
       where: { id },
       data: {
         ...(title !== undefined ? { title } : {}),
         ...(value !== undefined ? { value } : {}),
+        ...(metricType !== undefined ? { metricType } : {}),
         ...(category !== undefined
           ? { category: category as EntryCategory }
           : {}),

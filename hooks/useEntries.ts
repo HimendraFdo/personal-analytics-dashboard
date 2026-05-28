@@ -8,6 +8,7 @@ import {
   updateEntry as updateEntryApi,
 } from "@/lib/api";
 import type { Entry, EntryInput } from "@/types/entry";
+import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { formatDateForInput } from "@/utils/date";
 
 export type EntryFormPayload = {
@@ -19,6 +20,7 @@ export type EntryFormPayload = {
 };
 
 export function useEntries() {
+  const { activeMetric } = useMetricSelection();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,14 +29,14 @@ export function useEntries() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchEntries();
+      const data = await fetchEntries({ metricType: activeMetric });
       setEntries(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load entries");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeMetric]);
 
   useEffect(() => {
     void loadEntries();
@@ -44,6 +46,7 @@ export function useEntries() {
     const input: EntryInput = {
       title: payload.title,
       value: payload.value,
+      metricType: activeMetric,
       category: payload.category,
       date: formatDateForInput(payload.date),
       note: payload.note,
@@ -51,13 +54,14 @@ export function useEntries() {
     const created = await createEntry(input);
     setEntries((current) => [created, ...current]);
     return created;
-  }, []);
+  }, [activeMetric]);
 
   const updateEntry = useCallback(
     async (id: string, payload: EntryFormPayload) => {
       const updated = await updateEntryApi(id, {
         title: payload.title,
         value: payload.value,
+        metricType: activeMetric,
         category: payload.category,
         date: formatDateForInput(payload.date),
         note: payload.note,
@@ -67,7 +71,7 @@ export function useEntries() {
       );
       return updated;
     },
-    []
+    [activeMetric]
   );
 
   const deleteEntry = useCallback(async (id: string) => {

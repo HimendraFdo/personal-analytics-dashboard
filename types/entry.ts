@@ -1,9 +1,11 @@
 export type EntryCategory = "Study" | "Finance" | "Health" | "Personal";
+export type MetricType = "time" | "money" | "calories";
 
 export type Entry = {
   id: string;
   title: string;
   value: number;
+  metricType: MetricType;
   category: EntryCategory;
   date: Date;
   note: string;
@@ -12,6 +14,7 @@ export type Entry = {
 export type EntryInput = {
   title: string;
   value: number;
+  metricType?: MetricType;
   category: EntryCategory;
   date: string;
   note?: string;

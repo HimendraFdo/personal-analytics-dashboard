@@ -20,7 +20,8 @@ describe("createEntrySchema", () => {
   it("accepts valid entry payloads", () => {
     const result = createEntrySchema.safeParse({
       title: "Study session",
-      value: 2.5,
+      value: 45,
+      metricType: "time",
       category: "Study",
       date: "2026-05-16",
       note: "",
@@ -28,11 +29,31 @@ describe("createEntrySchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("defaults metric type to time", () => {
+    const result = createEntrySchema.parse({
+      title: "Study session",
+      value: 45,
+      category: "Study",
+      date: "2026-05-16",
+    });
+    expect(result.metricType).toBe("time");
+  });
+
   it("rejects empty titles", () => {
     const result = createEntrySchema.safeParse({
       title: "   ",
       value: 1,
       category: "Health",
+      date: "2026-05-16",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects non-positive values", () => {
+    const result = createEntrySchema.safeParse({
+      title: "Study session",
+      value: 0,
+      category: "Study",
       date: "2026-05-16",
     });
     expect(result.success).toBe(false);

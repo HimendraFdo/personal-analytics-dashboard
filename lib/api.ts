@@ -21,11 +21,15 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 
 export async function fetchEntries(params?: {
   category?: string;
+  metricType?: string;
   sort?: string;
 }): Promise<Entry[]> {
   const search = new URLSearchParams();
   if (params?.category) {
     search.set("category", params.category);
+  }
+  if (params?.metricType) {
+    search.set("metric", params.metricType);
   }
   if (params?.sort) {
     search.set("sort", params.sort);

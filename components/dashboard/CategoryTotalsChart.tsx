@@ -15,9 +15,13 @@ type CategoryTotalsChartProps = {
     category: string;
     total: number;
   }>;
+  valueFormatter?: (value: number) => string;
 };
 
-export default function CategoryTotalsChart({ data }: CategoryTotalsChartProps) {
+export default function CategoryTotalsChart({
+  data,
+  valueFormatter = (value) => String(value),
+}: CategoryTotalsChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
@@ -38,6 +42,10 @@ export default function CategoryTotalsChart({ data }: CategoryTotalsChartProps) 
         />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
         <Tooltip
+          formatter={(value) => [
+            valueFormatter(Number(value)),
+            "Total",
+          ]}
           cursor={{ fill: "rgba(15, 118, 110, 0.08)" }}
           contentStyle={{
             border: "1px solid #e2e8f0",
