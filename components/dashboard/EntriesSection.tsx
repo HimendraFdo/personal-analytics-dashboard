@@ -15,13 +15,13 @@ type EntriesSectionProps = {
   onUpdateEntry: (id: string, payload: EntryFormPayload) => Promise<void>;
 };
 
-type SortOption = "Newest" | "Oldest" | "Highest Value" | "Lowest Value";
+type SortOption = "Newest" | "Oldest" | "Highest Time" | "Lowest Time";
 
 const SORT_OPTIONS: SortOption[] = [
   "Newest",
   "Oldest",
-  "Highest Value",
-  "Lowest Value",
+  "Highest Time",
+  "Lowest Time",
 ];
 
 const CATEGORY_OPTIONS: Array<"All" | EntryCategory> = [
@@ -104,9 +104,9 @@ export default function EntriesSection({
       next.sort((a, b) => b.date.getTime() - a.date.getTime());
     } else if (selectedSort === "Oldest") {
       next.sort((a, b) => a.date.getTime() - b.date.getTime());
-    } else if (selectedSort === "Highest Value") {
+    } else if (selectedSort === "Highest Time") {
       next.sort((a, b) => b.value - a.value);
-    } else if (selectedSort === "Lowest Value") {
+    } else if (selectedSort === "Lowest Time") {
       next.sort((a, b) => a.value - b.value);
     }
     return next;
@@ -124,7 +124,7 @@ export default function EntriesSection({
           <div>
             <h2 className="text-3xl font-bold text-slate-950">Entries</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Add, edit, filter, and review your tracked entries.
+              Add, edit, filter, and review your tracked time entries.
             </p>
           </div>
           <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
@@ -143,7 +143,7 @@ export default function EntriesSection({
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white/70 p-6 text-center shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">No entries yet</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Start tracking study, finance, health, or personal metrics with your first entry.
+            Start tracking study, finance, health, or personal time with your first entry.
           </p>
         </section>
       )}

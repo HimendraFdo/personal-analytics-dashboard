@@ -28,7 +28,7 @@ const CategoryTotalsChart = dynamic(
 export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
   const totalEntries = entries.length;
   const totalTimeSpent = entries.reduce((total, entry) => total + entry.value, 0);
-  const averageValue = totalEntries > 0 ? totalTimeSpent / totalEntries : 0.0;
+  const averageTimeSpent = totalEntries > 0 ? totalTimeSpent / totalEntries : 0.0;
 
   const categoryTotals: Record<string, number> = {};
   const categoryCounts: Record<string, number> = {};
@@ -41,12 +41,12 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
     dateTotals[dateKey] = (dateTotals[dateKey] || 0) + entry.value;
   }
 
-  let mostFrequentCategory = "N/A";
-  let highestCategoryValue = 0;
+  let topTimeCategory = "N/A";
+  let highestCategoryTime = 0;
   for (const category in categoryTotals) {
-    if (categoryTotals[category] > highestCategoryValue) {
-      highestCategoryValue = categoryTotals[category];
-      mostFrequentCategory = category;
+    if (categoryTotals[category] > highestCategoryTime) {
+      highestCategoryTime = categoryTotals[category];
+      topTimeCategory = category;
     }
   }
 
@@ -69,7 +69,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           <div>
             <h2 className="text-3xl font-bold text-slate-950">Analytics</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Review derived insights based on your tracked entries.
+              Review derived insights based on your tracked time entries.
             </p>
           </div>
           <div className="rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700">
@@ -81,9 +81,9 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           ["Total Entries", totalEntries.toString(), "bg-teal-50 text-teal-700"],
-          ["Total Time Spent", totalTimeSpent.toString(), "bg-blue-50 text-blue-700"],
-          ["Average Time Spent", averageValue.toFixed(2), "bg-amber-50 text-amber-700"],
-          ["Most Frequent Category", mostFrequentCategory, "bg-rose-50 text-rose-700"],
+          ["Total Time Spent", `${totalTimeSpent}h`, "bg-blue-50 text-blue-700"],
+          ["Average Time Spent", `${averageTimeSpent.toFixed(2)}h`, "bg-amber-50 text-amber-700"],
+          ["Top Time Category", topTimeCategory, "bg-rose-50 text-rose-700"],
         ].map(([label, value, tone]) => (
           <div
             key={label}
@@ -104,7 +104,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Total value accumulated within each category.
+            Total time accumulated within each category.
           </p>
 
           <div className="mt-5 space-y-3">
@@ -126,7 +126,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
                   </div>
 
                   <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
-                    {total}
+                    {total}h
                   </span>
                 </div>
               ))
@@ -148,7 +148,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
                   {latestEntry.category} - {formatDisplayDate(latestEntry.date)}
                 </p>
                 <p className="mt-3 text-sm font-medium text-slate-700">
-                  Value: {latestEntry.value}
+                  Time spent: {latestEntry.value}h
                 </p>
                 {latestEntry.note && (
                   <p className="mt-2 text-sm leading-6 text-slate-600">{latestEntry.note}</p>
@@ -167,7 +167,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals Chart</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Bar chart showing total tracked value by category.
+            Bar chart showing total tracked time by category.
           </p>
 
           <div className="mt-6 h-72">
@@ -176,9 +176,9 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         </div>
 
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
-          <h3 className="text-lg font-semibold text-slate-900">Value Over Time</h3>
+          <h3 className="text-lg font-semibold text-slate-900">Time Over Time</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Line chart showing total tracked value over time.
+            Line chart showing total tracked time over time.
           </p>
 
           <div className="mt-6 h-72">

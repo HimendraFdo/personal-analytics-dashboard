@@ -28,10 +28,11 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       : user?.firstName || user?.username || "there";
 
   const totalEntries = entries.length;
+  const totalHours = entries.reduce((total, entry) => total + entry.value, 0);
   const recentEntries = entries.slice(0, 4);
   const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
-  const averagePerDay =
-    uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
+  const averageHoursPerDay =
+    uniqueDates.size > 0 ? (totalHours / uniqueDates.size).toFixed(1) : "0.0";
 
   const categoryCounts: Record<string, number> = {};
   for (const entry of entries) {
@@ -53,7 +54,12 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
   const entriesThisWeek = entries.filter((entry) => {
     const entryDate = new Date(entry.date);
     return entryDate >= weekAgo && entryDate <= today;
-  }).length;
+  });
+  const weeklyEntryCount = entriesThisWeek.length;
+  const hoursThisWeek = entriesThisWeek.reduce(
+    (total, entry) => total + entry.value,
+    0
+  );
 
   const dateTotals: Record<string, number> = {};
   for (const entry of entries) {
@@ -82,7 +88,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
               Here is a snapshot of your recent activity, key trends, and the
-              metrics you are tracking across your personal dashboard.
+              time you are tracking across your personal dashboard.
             </p>
           </div>
 
@@ -110,10 +116,10 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total Entries" value={totalEntries.toString()} accent="teal" detail="Tracked" />
-        <SummaryCard title="This Week" value={entriesThisWeek.toString()} accent="blue" detail="7 days" />
+        <SummaryCard title="Total Hours" value={`${totalHours.toFixed(1)}h`} accent="teal" detail="Tracked" />
+        <SummaryCard title="This Week" value={`${hoursThisWeek.toFixed(1)}h`} accent="blue" detail="7 days" />
         <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
-        <SummaryCard title="Average per Day" value={averagePerDay} accent="rose" detail="Daily" />
+        <SummaryCard title="Avg Hours / Day" value={`${averageHoursPerDay}h`} accent="rose" detail="Daily" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-12">
@@ -122,7 +128,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             <div>
               <h3 className="text-xl font-semibold text-slate-900">Activity Trend</h3>
               <p className="mt-1 text-sm text-slate-500">
-                Total tracked value by day across your entries.
+                Total tracked time by day across your entries.
               </p>
             </div>
 
@@ -137,8 +143,8 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
 
           {timeSeriesChartData.length > 0 && (
             <p className="mt-4 text-sm text-slate-600">
-              {chartTotal.toFixed(1)} total value tracked
-              {chartPeak.date ? ` - peak on ${chartPeak.date} (${chartPeak.total})` : ""}
+              {chartTotal.toFixed(1)} total hours tracked
+              {chartPeak.date ? ` - peak on ${chartPeak.date} (${chartPeak.total}h)` : ""}
             </p>
           )}
         </div>
@@ -154,7 +160,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               {[
                 `You currently have ${totalEntries} tracked entries.`,
                 `Your most common category is ${topCategory}.`,
-                `Your average activity is ${averagePerDay} entries per day.`,
+                `Your average activity is ${averageHoursPerDay} hours per day.`,
               ].map((insight, index) => (
                 <div
                   key={insight}
@@ -182,12 +188,12 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               <div>
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Weekly Goal</span>
-                  <span className="font-medium text-slate-900">{entriesThisWeek}/7</span>
+                  <span className="font-medium text-slate-900">{weeklyEntryCount}/7</span>
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
                     className="h-3 rounded-full bg-teal-600 transition-all duration-700"
-                    style={{ width: `${Math.min((entriesThisWeek / 7) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((weeklyEntryCount / 7) * 100, 100)}%` }}
                   />
                 </div>
               </div>
@@ -236,7 +242,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                     </p>
                   </div>
 
-                  <span className="text-sm font-semibold text-slate-700">{entry.value}</span>
+                  <span className="text-sm font-semibold text-slate-700">{entry.value}h</span>
                 </div>
               ))
             )}
