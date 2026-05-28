@@ -1,19 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { METRIC_TYPES, metricConfigs } from "@/lib/metrics";
+import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { getNavItemFromPath, NAV_PATHS, NAVIGATION_ITEMS } from "@/constants/navigation";
+
+const metricTabActiveClasses = {
+  teal: "bg-teal-700 text-white shadow-sm",
+  emerald: "bg-emerald-700 text-white shadow-sm",
+  orange: "bg-orange-600 text-white shadow-sm",
+};
 
 export default function Topbar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const activeItem = getNavItemFromPath(pathname);
+  const { activeMetric, setActiveMetric } = useMetricSelection();
   const { user } = useUser();
   const displayName = user?.unsafeMetadata.displayName;
   const fallbackInitial =
     typeof displayName === "string" && displayName.trim()
       ? displayName.trim().charAt(0).toUpperCase()
       : user?.firstName?.charAt(0).toUpperCase() ?? "U";
+
+  const addEntryParams = new URLSearchParams(searchParams.toString());
+  addEntryParams.set("metric", activeMetric);
+  const addEntryHref = `${NAV_PATHS[NAVIGATION_ITEMS.ENTRIES]}?${addEntryParams.toString()}`;
 
   return (
     <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:flex-row lg:items-center lg:justify-between">
@@ -25,6 +39,32 @@ export default function Topbar() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div
+          className="grid grid-cols-3 rounded-2xl border border-slate-200 bg-white/80 p-1 text-sm font-semibold text-slate-600 shadow-sm"
+          aria-label="Metric tabs"
+        >
+          {METRIC_TYPES.map((metricType) => {
+            const config = metricConfigs[metricType];
+            const isActive = metricType === activeMetric;
+
+            return (
+              <button
+                key={metricType}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setActiveMetric(metricType)}
+                className={`rounded-xl px-3 py-2 transition ${
+                  isActive
+                    ? metricTabActiveClasses[config.accent]
+                    : "hover:bg-slate-100 hover:text-slate-950"
+                }`}
+              >
+                {config.label}
+              </button>
+            );
+          })}
+        </div>
+
         <label className="relative block">
           <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -39,7 +79,7 @@ export default function Topbar() {
         </label>
 
         <Link
-          href={NAV_PATHS[NAVIGATION_ITEMS.ENTRIES]}
+          href={addEntryHref}
           className="rounded-2xl bg-slate-950 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-teal-700"
         >
           Add Entry

@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import SummaryCard from "@/components/dashboard/SummaryCard";
+import { useMetricSelection } from "@/hooks/useMetricSelection";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
 
@@ -20,6 +21,7 @@ const ActivityTrendChart = dynamic(
 );
 
 export default function DashboardSection({ entries }: DashboardSectionProps) {
+  const { activeMetric, metricConfig } = useMetricSelection();
   const { isLoaded, user } = useUser();
   const metadataDisplayName = user?.unsafeMetadata.displayName;
   const displayName =
@@ -28,11 +30,11 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       : user?.firstName || user?.username || "there";
 
   const totalEntries = entries.length;
-  const totalHours = entries.reduce((total, entry) => total + entry.value, 0);
+  const totalValue = entries.reduce((total, entry) => total + entry.value, 0);
   const recentEntries = entries.slice(0, 4);
   const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
-  const averageHoursPerDay =
-    uniqueDates.size > 0 ? (totalHours / uniqueDates.size).toFixed(1) : "0.0";
+  const averageValuePerDay =
+    uniqueDates.size > 0 ? totalValue / uniqueDates.size : 0;
 
   const categoryCounts: Record<string, number> = {};
   for (const entry of entries) {
@@ -56,7 +58,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
     return entryDate >= weekAgo && entryDate <= today;
   });
   const weeklyEntryCount = entriesThisWeek.length;
-  const hoursThisWeek = entriesThisWeek.reduce(
+  const valueThisWeek = entriesThisWeek.reduce(
     (total, entry) => total + entry.value,
     0
   );
@@ -88,7 +90,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
               Here is a snapshot of your recent activity, key trends, and the
-              time you are tracking across your personal dashboard.
+              {` ${metricConfig.label.toLowerCase()} you are tracking across your personal dashboard.`}
             </p>
           </div>
 
@@ -116,10 +118,10 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total Hours" value={`${totalHours.toFixed(1)}h`} accent="teal" detail="Tracked" />
-        <SummaryCard title="This Week" value={`${hoursThisWeek.toFixed(1)}h`} accent="blue" detail="7 days" />
+        <SummaryCard title={activeMetric === "time" ? "Total Minutes" : `Total ${metricConfig.label}`} value={metricConfig.formatValue(totalValue)} accent="teal" detail="Tracked" />
+        <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="blue" detail="7 days" />
         <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
-        <SummaryCard title="Avg Hours / Day" value={`${averageHoursPerDay}h`} accent="rose" detail="Daily" />
+        <SummaryCard title={activeMetric === "time" ? "Avg Minutes / Day" : `Avg ${metricConfig.label} / Day`} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-12">
@@ -128,7 +130,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             <div>
               <h3 className="text-xl font-semibold text-slate-900">Activity Trend</h3>
               <p className="mt-1 text-sm text-slate-500">
-                Total tracked time by day across your entries.
+                Total tracked {metricConfig.label.toLowerCase()} by day across your entries.
               </p>
             </div>
 
@@ -138,13 +140,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           </div>
 
           <div className="mt-6 h-80">
-            <ActivityTrendChart data={timeSeriesChartData} />
+            <ActivityTrendChart
+              data={timeSeriesChartData}
+              valueFormatter={metricConfig.formatValue}
+            />
           </div>
 
           {timeSeriesChartData.length > 0 && (
             <p className="mt-4 text-sm text-slate-600">
-              {chartTotal.toFixed(1)} total hours tracked
-              {chartPeak.date ? ` - peak on ${chartPeak.date} (${chartPeak.total}h)` : ""}
+              {metricConfig.formatValue(chartTotal)} total tracked {metricConfig.label.toLowerCase()}
+              {chartPeak.date ? ` - peak on ${chartPeak.date} (${metricConfig.formatValue(chartPeak.total)})` : ""}
             </p>
           )}
         </div>
@@ -160,7 +165,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               {[
                 `You currently have ${totalEntries} tracked entries.`,
                 `Your most common category is ${topCategory}.`,
-                `Your average activity is ${averageHoursPerDay} hours per day.`,
+                `Your average activity is ${metricConfig.formatValue(averageValuePerDay)} per day.`,
               ].map((insight, index) => (
                 <div
                   key={insight}
@@ -242,7 +247,9 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                     </p>
                   </div>
 
-                  <span className="text-sm font-semibold text-slate-700">{entry.value}h</span>
+                  <span className="text-sm font-semibold text-slate-700">
+                    {metricConfig.formatValue(entry.value)}
+                  </span>
                 </div>
               ))
             )}

@@ -4,6 +4,7 @@ import { EntryCategory, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
+import { parseMetricType } from "@/lib/metrics";
 import {
   createEntrySchema,
   parseEntryDate,
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = request.nextUrl;
     const category = searchParams.get("category");
+    const metricType = parseMetricType(searchParams.get("metric"));
     const sortResult = sortSchema.safeParse(
       searchParams.get("sort") ?? undefined
     );
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
     const entries = await prisma.entry.findMany({
       where: {
         userId,
+        metricType,
         ...(category ? { category: category as EntryCategory } : {}),
       },
       orderBy: getOrderBy(sortResult.data),
@@ -85,13 +88,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, value, category, date, note } = parsed.data;
+    const { title, value, metricType, category, date, note } = parsed.data;
 
     const entry = await prisma.entry.create({
       data: {
         userId,
         title,
         value,
+        metricType,
         category: category as EntryCategory,
         date: parseEntryDate(date),
         note: note ?? "",

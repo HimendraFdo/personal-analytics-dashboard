@@ -15,9 +15,13 @@ type ActivityTrendChartProps = {
     date: string;
     total: number;
   }>;
+  valueFormatter?: (value: number) => string;
 };
 
-export default function ActivityTrendChart({ data }: ActivityTrendChartProps) {
+export default function ActivityTrendChart({
+  data,
+  valueFormatter = (value) => String(value),
+}: ActivityTrendChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
@@ -45,6 +49,10 @@ export default function ActivityTrendChart({ data }: ActivityTrendChartProps) {
         />
         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
         <Tooltip
+          formatter={(value) => [
+            valueFormatter(Number(value)),
+            "Total",
+          ]}
           cursor={{ stroke: "#cbd5e1", strokeWidth: 1 }}
           contentStyle={{
             border: "1px solid #e2e8f0",

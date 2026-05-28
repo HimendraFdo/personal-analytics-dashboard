@@ -1,13 +1,16 @@
 import { z } from "zod";
+import { METRIC_TYPES } from "@/lib/metrics";
 import { ENTRY_CATEGORIES } from "@/types/entry";
 
 const categorySchema = z.enum(
   ENTRY_CATEGORIES as [string, ...string[]]
 );
+const metricTypeSchema = z.enum(METRIC_TYPES as [string, ...string[]]);
 
 export const createEntrySchema = z.object({
   title: z.string().trim().min(1).max(200),
-  value: z.coerce.number().finite(),
+  value: z.coerce.number().positive().finite(),
+  metricType: metricTypeSchema.optional().default("time"),
   category: categorySchema,
   date: z.union([z.string().min(1), z.coerce.date()]),
   note: z.string().max(2000).optional().default(""),
@@ -16,7 +19,8 @@ export const createEntrySchema = z.object({
 export const updateEntrySchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
-    value: z.coerce.number().finite().optional(),
+    value: z.coerce.number().positive().finite().optional(),
+    metricType: metricTypeSchema.optional(),
     category: categorySchema.optional(),
     date: z.union([z.string().min(1), z.coerce.date()]).optional(),
     note: z.string().max(2000).optional(),

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Entry, EntryCategory } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
+import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { formatDateForInput } from "@/utils/date";
 
 type EntryFormProps = {
@@ -67,6 +68,7 @@ export default function EntryForm({
   onCancelEdit,
   disabled = false,
 }: EntryFormProps) {
+  const { metricConfig } = useMetricSelection();
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(editingEntry)
   );
@@ -85,11 +87,11 @@ export default function EntryForm({
     }
 
     if (!formData.value.trim()) {
-      nextErrors.value = "Time spent is required.";
+      nextErrors.value = `${metricConfig.label} is required.`;
     } else if (Number.isNaN(Number(formData.value))) {
-      nextErrors.value = "Time spent must be a valid number.";
+      nextErrors.value = `${metricConfig.label} must be a valid number.`;
     } else if (Number(formData.value) <= 0) {
-      nextErrors.value = "Time spent must be greater than 0.";
+      nextErrors.value = `${metricConfig.label} must be greater than 0.`;
     }
 
     if (!formData.date) {
@@ -159,7 +161,7 @@ export default function EntryForm({
           value={formData.title}
           onChange={handleChange}
           disabled={disabled || submitting}
-          placeholder="e.g. Study Hours"
+          placeholder="e.g. Deep work session"
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.title
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
@@ -173,16 +175,16 @@ export default function EntryForm({
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
-          Time Spent (hours)
+          {metricConfig.inputLabel}
         </label>
         <input
           type="number"
-          step="0.1"
+          step="1"
           name="value"
           value={formData.value}
           onChange={handleChange}
           disabled={disabled || submitting}
-          placeholder="e.g. 2.5"
+          placeholder="e.g. 45"
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.value
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"

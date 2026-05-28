@@ -1,4 +1,5 @@
 import type { Entry } from "@/types/entry";
+import { metricConfigs } from "@/lib/metrics";
 import { formatDisplayDate } from "@/utils/date";
 
 type EntryListProps = {
@@ -42,7 +43,7 @@ export default function EntryList({
 
             <div className="text-right">
               <div className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
-                {entry.value}h
+                {metricConfigs[entry.metricType].formatValue(entry.value)}
               </div>
 
               <div className="mt-3 flex gap-2">
