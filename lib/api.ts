@@ -1,5 +1,6 @@
 import type { Entry, EntryInput, EntryUpdateInput } from "@/types/entry";
 import { getErrorMessage } from "@/lib/errors";
+import type { FoodSearchResult } from "@/lib/nutrition";
 import { parseApiDate } from "@/utils/date";
 
 type ApiEntry = Omit<Entry, "date"> & { date: string };
@@ -73,4 +74,12 @@ export async function deleteEntry(id: string): Promise<void> {
     const body = await response.json().catch(() => null);
     throw new Error(getErrorMessage(body, "Failed to delete entry"));
   }
+}
+
+export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
+  const search = new URLSearchParams({ q: query });
+  const data = await parseJsonResponse<{ foods: FoodSearchResult[] }>(
+    await fetch(`/api/food/search?${search.toString()}`)
+  );
+  return data.foods;
 }

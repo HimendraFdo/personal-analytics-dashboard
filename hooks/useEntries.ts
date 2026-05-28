@@ -17,6 +17,12 @@ export type EntryFormPayload = {
   category: Entry["category"];
   date: Date;
   note: string;
+  foodName?: string | null;
+  portionGrams?: number | null;
+  proteinGrams?: number | null;
+  carbsGrams?: number | null;
+  fatGrams?: number | null;
+  foodSource?: string | null;
 };
 
 export function useEntries() {
@@ -50,6 +56,12 @@ export function useEntries() {
       category: payload.category,
       date: formatDateForInput(payload.date),
       note: payload.note,
+      foodName: payload.foodName ?? null,
+      portionGrams: payload.portionGrams ?? null,
+      proteinGrams: payload.proteinGrams ?? null,
+      carbsGrams: payload.carbsGrams ?? null,
+      fatGrams: payload.fatGrams ?? null,
+      foodSource: payload.foodSource ?? null,
     };
     const created = await createEntry(input);
     setEntries((current) => [created, ...current]);
@@ -65,6 +77,12 @@ export function useEntries() {
         category: payload.category,
         date: formatDateForInput(payload.date),
         note: payload.note,
+        foodName: payload.foodName ?? null,
+        portionGrams: payload.portionGrams ?? null,
+        proteinGrams: payload.proteinGrams ?? null,
+        carbsGrams: payload.carbsGrams ?? null,
+        fatGrams: payload.fatGrams ?? null,
+        foodSource: payload.foodSource ?? null,
       });
       setEntries((current) =>
         current.map((entry) => (entry.id === id ? updated : entry))

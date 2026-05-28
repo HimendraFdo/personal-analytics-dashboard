@@ -23,6 +23,12 @@ model Entry {
   category   EntryCategory
   date       DateTime
   note       String        @default("")
+  foodName   String?
+  portionGrams Float?
+  proteinGrams Float?
+  carbsGrams Float?
+  fatGrams   Float?
+  foodSource String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 

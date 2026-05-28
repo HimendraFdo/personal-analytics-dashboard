@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
+import { formatMacroValue, getMacroTotals } from "@/lib/nutrition";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
 
@@ -27,10 +28,12 @@ const CategoryTotalsChart = dynamic(
 );
 
 export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
-  const { metricConfig } = useMetricSelection();
+  const { activeMetric, metricConfig } = useMetricSelection();
+  const isCalories = activeMetric === "calories";
   const totalEntries = entries.length;
   const totalMetricValue = entries.reduce((total, entry) => total + entry.value, 0);
   const averageMetricValue = totalEntries > 0 ? totalMetricValue / totalEntries : 0.0;
+  const macroTotals = getMacroTotals(entries);
 
   const categoryTotals: Record<string, number> = {};
   const categoryCounts: Record<string, number> = {};
@@ -110,6 +113,29 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         ))}
       </section>
 
+      {isCalories && (
+        <section className="grid gap-4 sm:grid-cols-3">
+          {[
+            ["Protein", formatMacroValue(macroTotals.proteinGrams), "bg-teal-50 text-teal-700"],
+            ["Carbs", formatMacroValue(macroTotals.carbsGrams), "bg-blue-50 text-blue-700"],
+            ["Fat", formatMacroValue(macroTotals.fatGrams), "bg-amber-50 text-amber-700"],
+          ].map(([label, value, tone]) => (
+            <div
+              key={label}
+              className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60"
+            >
+              <p className="text-sm font-semibold text-slate-500">{label}</p>
+              <div className="mt-5 flex items-end justify-between gap-3">
+                <h3 className="text-3xl font-bold text-slate-950">{value}</h3>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
+                  Macro
+                </span>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       <section className="grid gap-6 xl:grid-cols-2">
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals</h3>
@@ -160,6 +186,13 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
                 <p className="mt-3 text-sm font-medium text-slate-700">
                   {metricConfig.inputLabel}: {metricConfig.formatValue(latestEntry.value)}
                 </p>
+                {isCalories && (
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
+                    <span>Protein {formatMacroValue(latestEntry.proteinGrams ?? 0)}</span>
+                    <span>Carbs {formatMacroValue(latestEntry.carbsGrams ?? 0)}</span>
+                    <span>Fat {formatMacroValue(latestEntry.fatGrams ?? 0)}</span>
+                  </div>
+                )}
                 {latestEntry.note && (
                   <p className="mt-2 text-sm leading-6 text-slate-600">{latestEntry.note}</p>
                 )}

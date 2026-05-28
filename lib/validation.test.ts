@@ -52,6 +52,26 @@ describe("createEntrySchema", () => {
     expect(result.metricType).toBe("money");
   });
 
+  it("accepts calories macro payloads", () => {
+    const result = createEntrySchema.parse({
+      title: "Greek yogurt",
+      value: "125",
+      metricType: "calories",
+      category: "Health",
+      date: "2026-05-16",
+      foodName: "Greek yogurt",
+      portionGrams: "150",
+      proteinGrams: "15.5",
+      carbsGrams: "6",
+      fatGrams: "2.3",
+      foodSource: "Open Food Facts",
+    });
+
+    expect(result.metricType).toBe("calories");
+    expect(result.portionGrams).toBe(150);
+    expect(result.proteinGrams).toBe(15.5);
+  });
+
   it("rejects empty titles", () => {
     const result = createEntrySchema.safeParse({
       title: "   ",
