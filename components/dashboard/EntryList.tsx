@@ -39,7 +39,7 @@ export default function EntryList({
 
             <div className="text-right">
               <div className="rounded-full bg-white px-3 py-1 text-sm font-medium text-slate-700">
-                {entry.value}
+                {entry.value}h
               </div>
 
               <div className="mt-3 flex gap-2">

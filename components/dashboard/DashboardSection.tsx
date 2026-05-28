@@ -29,12 +29,13 @@ export default function DashboardSection({
       : user?.firstName || user?.username || "there";
 
   const totalEntries = entries.length;
+  const totalHours = entries.reduce((total, entry) => total + entry.value, 0);
 
   const recentEntries = entries.slice(0, 4);
 
   const uniqueDates = new Set(entries.map((entry) => entry.date.toLocaleDateString()));
 
-  const averagePerDay = uniqueDates.size > 0 ? (totalEntries / uniqueDates.size).toFixed(1) : "0.0";
+  const averageHoursPerDay = uniqueDates.size > 0 ? (totalHours / uniqueDates.size).toFixed(1) : "0.0";
 
   const categoryCounts: Record<string, number> = {};
 
@@ -63,7 +64,12 @@ export default function DashboardSection({
   const entriesThisWeek = entries.filter((entry) => {
     const entryDate = new Date(entry.date);
     return entryDate >= weekAgo && entryDate <= today;
-  }).length;
+  });
+  const weeklyEntryCount = entriesThisWeek.length;
+  const hoursThisWeek = entriesThisWeek.reduce(
+    (total, entry) => total + entry.value,
+    0
+  );
 
   const dateTotals: Record<string, number> = {};
   for (const entry of entries) {
@@ -142,10 +148,10 @@ export default function DashboardSection({
 
       {/* Summary Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title="Total Entries" value={totalEntries.toString()} />
-        <SummaryCard title="This Week" value={entriesThisWeek.toString()} />
+        <SummaryCard title="Total Hours" value={`${totalHours.toFixed(1)}h`} />
+        <SummaryCard title="This Week" value={`${hoursThisWeek.toFixed(1)}h`} />
         <SummaryCard title="Top Category" value={topCategory} />
-        <SummaryCard title="Average per Day" value={averagePerDay} />
+        <SummaryCard title="Avg Hours / Day" value={`${averageHoursPerDay}h`} />
       </section>
 
       {/* Main Analytics Chart */}
@@ -157,7 +163,7 @@ export default function DashboardSection({
                 Activity Trend
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Total tracked value by day across your entries.
+                Total tracked time by day across your entries.
               </p>
             </div>
 
@@ -193,9 +199,9 @@ export default function DashboardSection({
 
           {timeSeriesChartData.length > 0 && (
             <p className="mt-4 text-sm text-slate-600">
-              {chartTotal.toFixed(1)} total value tracked
+              {chartTotal.toFixed(1)} total hours tracked
               {chartPeak.date
-                ? ` · peak on ${chartPeak.date} (${chartPeak.total})`
+                ? ` - peak on ${chartPeak.date} (${chartPeak.total}h)`
                 : ""}
             </p>
           )}
@@ -224,7 +230,7 @@ export default function DashboardSection({
 
               <div className="rounded-2xl bg-slate-100 p-4">
                 <p className="text-sm font-medium text-slate-900">
-                  Your average activity is {averagePerDay} entries per day.
+                  Your average activity is {averageHoursPerDay} hours per day.
                 </p>
               </div>
             </div>
@@ -242,13 +248,13 @@ export default function DashboardSection({
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Weekly Goal</span>
                   <span className="font-medium text-slate-900">
-                    {entriesThisWeek}/7
+                    {weeklyEntryCount}/7
                     </span>
                 </div>
                 <div className="h-3 rounded-full bg-slate-200">
                   <div
                     className="h-3 rounded-full bg-slate-900"
-                    style={{ width: `${Math.min((entriesThisWeek / 7) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((weeklyEntryCount / 7) * 100, 100)}%` }}
                   />
                 </div>
               </div>
@@ -300,7 +306,7 @@ export default function DashboardSection({
                     </p>
                   </div>
 
-                  <span className="text-sm text-slate-600">{entry.value}</span>
+                  <span className="text-sm text-slate-600">{entry.value}h</span>
                 </div>
               ))
             )}

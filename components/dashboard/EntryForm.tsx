@@ -85,11 +85,11 @@ export default function EntryForm({
     }
 
     if (!formData.value.trim()) {
-      nextErrors.value = "Value is required.";
+      nextErrors.value = "Time spent is required.";
     } else if (Number.isNaN(Number(formData.value))) {
-      nextErrors.value = "Value must be a valid number.";
+      nextErrors.value = "Time spent must be a valid number.";
     } else if (Number(formData.value) <= 0) {
-      nextErrors.value = "Value must be greater than 0.";
+      nextErrors.value = "Time spent must be greater than 0.";
     }
 
     if (!formData.date) {
@@ -173,7 +173,7 @@ export default function EntryForm({
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
-          Value
+          Time Spent (hours)
         </label>
         <input
           type="number"

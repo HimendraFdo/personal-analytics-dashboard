@@ -26,13 +26,13 @@ export default function AnalyticsSection({
 
     const totalTimeSpent = entries.reduce((total, entry) => total + entry.value, 0);
 
-    const averageValue = totalEntries > 0 ? totalTimeSpent / totalEntries : 0.0;
+    const averageTimeSpent = totalEntries > 0 ? totalTimeSpent / totalEntries : 0.0;
 
     const categoryTotals: Record<string, number> = {};
     const categoryCounts: Record<string, number> = {};
     const dateTotals: Record<string, number> = {};
 
-    // Calculate total value and count for each category
+    // Calculate total time and count for each category
     for (const entry of entries) {
         categoryTotals[entry.category] = (categoryTotals[entry.category] || 0) + entry.value;
         categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
@@ -41,12 +41,12 @@ export default function AnalyticsSection({
     }
 
     let mostFrequentCategory = "N/A";
-    let highestCategoryValue = 0;
+    let highestCategoryTime = 0;
 
-    // Determine the category with the highest total value
+    // Determine the category with the highest total time
     for(const category in categoryTotals) {
-        if(categoryTotals[category] > highestCategoryValue) {
-            highestCategoryValue = categoryTotals[category];
+        if(categoryTotals[category] > highestCategoryTime) {
+            highestCategoryTime = categoryTotals[category];
             mostFrequentCategory = category;
         }
     }
@@ -94,7 +94,7 @@ export default function AnalyticsSection({
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Total Time Spent</p>
           <h3 className="mt-3 text-2xl font-bold text-slate-900">
-            {totalTimeSpent}
+            {totalTimeSpent}h
           </h3>
         </div>
 
@@ -102,14 +102,14 @@ export default function AnalyticsSection({
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Average Time Spent</p>
           <h3 className="mt-3 text-2xl font-bold text-slate-900">
-            {averageValue.toFixed(2)}
+            {averageTimeSpent.toFixed(2)}h
           </h3>
         </div>
 
-        {/* Most Frequent Category Bubble */}
+        {/* Top Time Category Bubble */}
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">
-            Most Frequent Category
+            Top Time Category
           </p>
           <h3 className="mt-3 text-2xl font-bold text-slate-900">
             {mostFrequentCategory}
@@ -124,7 +124,7 @@ export default function AnalyticsSection({
             Category Totals
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Total value accumulated within each category.
+            Total time accumulated within each category.
           </p>
 
           <div className="mt-5 space-y-3">
@@ -148,7 +148,7 @@ export default function AnalyticsSection({
                   </div>
 
                   <span className="text-sm font-medium text-slate-700">
-                    {total}
+                    {total}h
                   </span>
                 </div>
               ))
@@ -175,7 +175,7 @@ export default function AnalyticsSection({
                   {latestEntry.category} • {formatDisplayDate(latestEntry.date)}
                 </p>
                 <p className="mt-3 text-sm text-slate-700">
-                  Value: {latestEntry.value}
+                  Time spent: {latestEntry.value}h
                 </p>
                 {latestEntry.note && (
                   <p className="mt-2 text-sm text-slate-600">
@@ -199,7 +199,7 @@ export default function AnalyticsSection({
             Category Totals Chart
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Bar chart showing total tracked value by category.
+            Bar chart showing total tracked time by category.
           </p>
 
           {/* Chart attributes */}
@@ -224,10 +224,10 @@ export default function AnalyticsSection({
 
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900">
-            Value Over Time
+            Time Over Time
           </h3>
           <p className="mt-1 text-sm text-slate-500">
-            Line chart showing total tracked value over time.
+            Line chart showing total tracked time over time.
           </p>
 
           <div className="mt-6 h-72">
