@@ -1,8 +1,15 @@
 "use client";
 
-import DashboardSection from "@/components/dashboard/DashboardSection";
+import dynamic from "next/dynamic";
 import PageStatus from "@/components/dashboard/PageStatus";
 import { useEntriesContext } from "@/contexts/EntriesContext";
+
+const DashboardSection = dynamic(
+  () => import("@/components/dashboard/DashboardSection"),
+  {
+    loading: () => <PageStatus loading error={null} />,
+  }
+);
 
 export default function DashboardPage() {
   const { entries, loading, error, reload } = useEntriesContext();

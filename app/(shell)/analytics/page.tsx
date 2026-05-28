@@ -1,8 +1,15 @@
 "use client";
 
-import AnalyticsSection from "@/components/dashboard/AnalyticsSection";
+import dynamic from "next/dynamic";
 import PageStatus from "@/components/dashboard/PageStatus";
 import { useEntriesContext } from "@/contexts/EntriesContext";
+
+const AnalyticsSection = dynamic(
+  () => import("@/components/dashboard/AnalyticsSection"),
+  {
+    loading: () => <PageStatus loading error={null} />,
+  }
+);
 
 export default function AnalyticsPage() {
   const { entries, loading, error, reload } = useEntriesContext();
