@@ -5,12 +5,23 @@ import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
+import {
+  getCategoryValueBreakdown,
+  getMacroEnergyBreakdown,
+  getWeekdayValueBreakdown,
+} from "@/lib/analytics";
 import { formatMacroValue, getMacroTotals } from "@/lib/nutrition";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
 
 type DashboardSectionProps = {
   entries: Entry[];
+};
+
+type DisplayBreakdownItem = {
+  category: string;
+  total: number;
+  detail: string;
 };
 
 const ActivityTrendChart = dynamic(
@@ -24,6 +35,7 @@ const ActivityTrendChart = dynamic(
 export default function DashboardSection({ entries }: DashboardSectionProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
   const isCalories = activeMetric === "calories";
+  const isMoney = activeMetric === "money";
   const { isLoaded, user } = useUser();
   const metadataDisplayName = user?.unsafeMetadata.displayName;
   const displayName =
@@ -38,17 +50,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
   const averageValuePerDay =
     uniqueDates.size > 0 ? totalValue / uniqueDates.size : 0;
 
-  const categoryTotals: Record<string, number> = {};
-  for (const entry of entries) {
-    categoryTotals[entry.category] = (categoryTotals[entry.category] || 0) + entry.value;
-  }
+  const categoryBreakdown = getCategoryValueBreakdown(entries);
+  const weekdayBreakdown = getWeekdayValueBreakdown(entries);
+  const macroEnergyBreakdown = getMacroEnergyBreakdown(entries);
 
   let topCategory = "N/A";
   let maxCategoryTotal = 0;
-  for (const category in categoryTotals) {
-    if (categoryTotals[category] > maxCategoryTotal) {
-      maxCategoryTotal = categoryTotals[category];
-      topCategory = category;
+  for (const item of categoryBreakdown) {
+    if (item.total > maxCategoryTotal) {
+      maxCategoryTotal = item.total;
+      topCategory = item.category;
     }
   }
 
@@ -81,6 +92,42 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
     (best, point) => (point.total > best.total ? point : best),
     timeSeriesChartData[0] ?? { date: "", total: 0 }
   );
+
+  const dashboardBreakdown = isMoney
+    ? {
+        title: "Spending by Weekday",
+        description: "Total spend grouped by the day of week it happened.",
+        emptyMessage: "Add money entries on different dates to see weekday spending.",
+        data: weekdayBreakdown.map<DisplayBreakdownItem>((item) => ({
+          category: item.category,
+          total: item.total,
+          detail: `${item.count} entries`,
+        })),
+        valueFormatter: metricConfig.formatValue,
+      }
+    : isCalories
+      ? {
+          title: "Macro Energy Breakdown",
+          description: "Calories estimated from logged protein, carbs, and fat grams.",
+          emptyMessage: "Log calorie entries with macro details to see macro energy.",
+          data: macroEnergyBreakdown.map<DisplayBreakdownItem>((item) => ({
+            category: item.category,
+            total: item.total,
+            detail: formatMacroValue(item.grams),
+          })),
+          valueFormatter: metricConfig.formatValue,
+        }
+      : {
+          title: "Category Breakdown",
+          description: `Total tracked ${metricConfig.label.toLowerCase()} grouped by category.`,
+          emptyMessage: metricConfig.analyticsLabels.chartEmpty,
+          data: categoryBreakdown.map<DisplayBreakdownItem>((item) => ({
+            category: item.category,
+            total: item.total,
+            detail: `${item.count} entries`,
+          })),
+          valueFormatter: metricConfig.formatValue,
+        };
 
   return (
     <div className="space-y-8">
@@ -279,25 +326,28 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         </div>
 
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
-          <h3 className="text-lg font-semibold text-slate-900">Category Breakdown</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{dashboardBreakdown.title}</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Total tracked {metricConfig.label.toLowerCase()} grouped by category.
+            {dashboardBreakdown.description}
           </p>
 
           <div className="mt-6 space-y-3">
-            {Object.keys(categoryTotals).length === 0 ? (
+            {dashboardBreakdown.data.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                {metricConfig.analyticsLabels.chartEmpty}
+                {dashboardBreakdown.emptyMessage}
               </div>
             ) : (
-              Object.entries(categoryTotals).map(([category, total]) => (
+              dashboardBreakdown.data.map((item) => (
                 <div
-                  key={category}
+                  key={item.category}
                   className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-[var(--metric-secondary)] hover:bg-white"
                 >
-                  <span className="text-sm font-medium text-slate-900">{category}</span>
-                  <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
-                    {metricConfig.formatValue(total)}
+                  <div>
+                    <span className="text-sm font-medium text-slate-900">{item.category}</span>
+                    <p className="mt-1 text-xs text-slate-500">{item.detail}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+                    {dashboardBreakdown.valueFormatter(item.total)}
                   </span>
                 </div>
               ))

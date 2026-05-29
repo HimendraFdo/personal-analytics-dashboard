@@ -3,12 +3,23 @@
 import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
+import {
+  getCategoryValueBreakdown,
+  getMacroEnergyBreakdown,
+  getWeekdayValueBreakdown,
+} from "@/lib/analytics";
 import { formatMacroValue, getMacroTotals } from "@/lib/nutrition";
 import type { Entry } from "@/types/entry";
 import { formatDisplayDate } from "@/utils/date";
 
 type AnalyticsSectionProps = {
   entries: Entry[];
+};
+
+type DisplayBreakdownItem = {
+  category: string;
+  total: number;
+  detail: string;
 };
 
 const ActivityTrendChart = dynamic(
@@ -30,42 +41,86 @@ const CategoryTotalsChart = dynamic(
 export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
   const isCalories = activeMetric === "calories";
+  const isMoney = activeMetric === "money";
   const totalEntries = entries.length;
   const totalMetricValue = entries.reduce((total, entry) => total + entry.value, 0);
   const averageMetricValue = totalEntries > 0 ? totalMetricValue / totalEntries : 0.0;
   const macroTotals = getMacroTotals(entries);
 
-  const categoryTotals: Record<string, number> = {};
-  const categoryCounts: Record<string, number> = {};
   const dateTotals: Record<string, number> = {};
+  const categoryBreakdown = getCategoryValueBreakdown(entries);
+  const weekdayBreakdown = getWeekdayValueBreakdown(entries);
+  const macroEnergyBreakdown = getMacroEnergyBreakdown(entries);
 
   for (const entry of entries) {
-    categoryTotals[entry.category] = (categoryTotals[entry.category] || 0) + entry.value;
-    categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
     const dateKey = entry.date.toISOString().split("T")[0];
     dateTotals[dateKey] = (dateTotals[dateKey] || 0) + entry.value;
   }
 
   let topMetricCategory = "N/A";
   let highestCategoryValue = 0;
-  for (const category in categoryTotals) {
-    if (categoryTotals[category] > highestCategoryValue) {
-      highestCategoryValue = categoryTotals[category];
-      topMetricCategory = category;
+  for (const item of categoryBreakdown) {
+    if (item.total > highestCategoryValue) {
+      highestCategoryValue = item.total;
+      topMetricCategory = item.category;
     }
   }
 
   const sortedEntries = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
   const latestEntry = sortedEntries[0] ?? null;
 
-  const categoryChartData = Object.entries(categoryTotals).map(([category, total]) => ({
-    category,
-    total,
-  }));
-
   const timeSeriesChartData = Object.entries(dateTotals)
     .map(([date, total]) => ({ date, total }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const analyticsBreakdown = isMoney
+    ? {
+        title: "Spending by Weekday",
+        chartTitle: "Weekday Spending Chart",
+        description:
+          "Total spend grouped by the day of week it happened, so you can spot spending patterns.",
+        chartDescription:
+          "Bar chart showing which weekdays carry the most spending.",
+        emptyMessage: "Add money entries on different dates to see weekday spending.",
+        data: weekdayBreakdown.map<DisplayBreakdownItem>((item) => ({
+          category: item.category,
+          total: item.total,
+          detail: `${item.count} entries - avg ${metricConfig.formatValue(item.total / item.count)}`,
+        })),
+        valueFormatter: metricConfig.formatValue,
+        tooltipLabel: "Total Spent",
+      }
+    : isCalories
+      ? {
+          title: "Macro Energy Breakdown",
+          chartTitle: "Macro Energy Chart",
+          description:
+            "Calories estimated from logged protein, carbs, and fat grams.",
+          chartDescription:
+            "Bar chart showing estimated calories contributed by each macro.",
+          emptyMessage: "Log calorie entries with macro details to see macro energy.",
+          data: macroEnergyBreakdown.map<DisplayBreakdownItem>((item) => ({
+            category: item.category,
+            total: item.total,
+            detail: `${formatMacroValue(item.grams)} logged`,
+          })),
+          valueFormatter: metricConfig.formatValue,
+          tooltipLabel: "Estimated Calories",
+        }
+      : {
+          title: "Category Totals",
+          chartTitle: "Category Totals Chart",
+          description: metricConfig.analyticsLabels.categoryTotalsDescription,
+          chartDescription: `Bar chart showing total tracked ${metricConfig.label.toLowerCase()} by category.`,
+          emptyMessage: metricConfig.analyticsLabels.chartEmpty,
+          data: categoryBreakdown.map<DisplayBreakdownItem>((item) => ({
+            category: item.category,
+            total: item.total,
+            detail: `${item.count} entries`,
+          })),
+          valueFormatter: metricConfig.formatValue,
+          tooltipLabel: metricConfig.analyticsLabels.tooltipLabel,
+        };
 
   return (
     <div className="space-y-6">
@@ -78,7 +133,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
             </p>
           </div>
           <div className="rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--metric-primary)]">
-            {categoryChartData.length} active categories
+            {analyticsBreakdown.data.length} active groups
           </div>
         </div>
       </section>
@@ -138,31 +193,31 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
 
       <section className="grid gap-6 xl:grid-cols-2">
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
-          <h3 className="text-lg font-semibold text-slate-900">Category Totals</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{analyticsBreakdown.title}</h3>
           <p className="mt-1 text-sm text-slate-500">
-            {metricConfig.analyticsLabels.categoryTotalsDescription}
+            {analyticsBreakdown.description}
           </p>
 
           <div className="mt-5 space-y-3">
-            {Object.keys(categoryTotals).length === 0 ? (
+            {analyticsBreakdown.data.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                {metricConfig.analyticsLabels.chartEmpty}
+                {analyticsBreakdown.emptyMessage}
               </div>
             ) : (
-              Object.entries(categoryTotals).map(([category, total]) => (
+              analyticsBreakdown.data.map((item) => (
                 <div
-                  key={category}
+                  key={item.category}
                   className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-900">{category}</p>
+                    <p className="text-sm font-medium text-slate-900">{item.category}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {categoryCounts[category]} entries
+                      {item.detail}
                     </p>
                   </div>
 
                   <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
-                    {metricConfig.formatValue(total)}
+                    {analyticsBreakdown.valueFormatter(item.total)}
                   </span>
                 </div>
               ))
@@ -208,17 +263,17 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
 
       <section className="grid gap-6 xl:grid-cols-2">
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
-          <h3 className="text-lg font-semibold text-slate-900">Category Totals Chart</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{analyticsBreakdown.chartTitle}</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Bar chart showing total tracked {metricConfig.label.toLowerCase()} by category.
+            {analyticsBreakdown.chartDescription}
           </p>
 
           <div className="mt-6 h-72">
             <CategoryTotalsChart
-              data={categoryChartData}
-              valueFormatter={metricConfig.formatValue}
-              emptyMessage={metricConfig.analyticsLabels.chartEmpty}
-              tooltipLabel={metricConfig.analyticsLabels.tooltipLabel}
+              data={analyticsBreakdown.data}
+              valueFormatter={analyticsBreakdown.valueFormatter}
+              emptyMessage={analyticsBreakdown.emptyMessage}
+              tooltipLabel={analyticsBreakdown.tooltipLabel}
             />
           </div>
         </div>
