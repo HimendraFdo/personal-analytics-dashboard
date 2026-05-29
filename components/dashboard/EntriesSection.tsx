@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EntryForm from "./EntryForm";
 import EntryList from "./EntryList";
 import type { Entry, EntryCategory } from "@/types/entry";
@@ -88,19 +88,24 @@ export default function EntriesSection({
     setSelectedSort("Newest");
   }
 
+  useEffect(() => {
+    setEditingEntry(null);
+    setSelectedCategory("All");
+    setSelectedDate("");
+    setSelectedSort("Newest");
+  }, [activeMetric]);
+
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
       const matchesCategory =
-        activeMetric !== "time" ||
-        selectedCategory === "All" ||
-        entry.category === selectedCategory;
+        selectedCategory === "All" || entry.category === selectedCategory;
 
       const matchesDate =
         selectedDate === "" || formatDateForInput(entry.date) === selectedDate;
 
       return matchesCategory && matchesDate;
     });
-  }, [activeMetric, entries, selectedCategory, selectedDate]);
+  }, [entries, selectedCategory, selectedDate]);
 
   const sortedEntries = useMemo(() => {
     const next = [...filteredEntries];
@@ -118,7 +123,7 @@ export default function EntriesSection({
 
   const hasNoEntries = entries.length === 0;
   const listEmptyMessage = hasNoEntries
-    ? "No entries yet. Add your first entry using the form."
+    ? metricConfig.emptyState.description
     : "No entries match your current filters.";
 
   return (
@@ -184,26 +189,24 @@ export default function EntriesSection({
             </select>
           </div>
 
-          {activeMetric === "time" && (
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Filter by Category
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(event) =>
-                  setSelectedCategory(event.target.value as "All" | EntryCategory)
-                }
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-              >
-                {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Filter by Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(event) =>
+                setSelectedCategory(event.target.value as "All" | EntryCategory)
+              }
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+            >
+              {CATEGORY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -241,7 +244,7 @@ export default function EntriesSection({
 
           <div className="mt-6">
             <EntryForm
-              key={editingEntry ? editingEntry.id : "new-entry-form"}
+              key={editingEntry ? editingEntry.id : `${activeMetric}-new-entry-form`}
               onSubmitEntry={handleSubmitEntry}
               editingEntry={editingEntry}
               onCancelEdit={handleCancelEdit}

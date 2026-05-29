@@ -104,8 +104,8 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           >
             <p className="text-sm font-semibold text-slate-500">{label}</p>
             <div className="mt-5 flex items-end justify-between gap-3">
-              <h3 className="text-3xl font-bold text-slate-950">{value}</h3>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
+              <h3 className="min-w-0 break-words text-3xl font-bold text-slate-950">{value}</h3>
+              <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
                 Live
               </span>
             </div>
@@ -146,7 +146,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           <div className="mt-5 space-y-3">
             {Object.keys(categoryTotals).length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                No analytics data yet.
+                {metricConfig.analyticsLabels.chartEmpty}
               </div>
             ) : (
               Object.entries(categoryTotals).map(([category, total]) => (

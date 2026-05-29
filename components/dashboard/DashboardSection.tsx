@@ -38,16 +38,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
   const averageValuePerDay =
     uniqueDates.size > 0 ? totalValue / uniqueDates.size : 0;
 
-  const categoryCounts: Record<string, number> = {};
+  const categoryTotals: Record<string, number> = {};
   for (const entry of entries) {
-    categoryCounts[entry.category] = (categoryCounts[entry.category] || 0) + 1;
+    categoryTotals[entry.category] = (categoryTotals[entry.category] || 0) + entry.value;
   }
 
   let topCategory = "N/A";
-  let maxCount = 0;
-  for (const category in categoryCounts) {
-    if (categoryCounts[category] > maxCount) {
-      maxCount = categoryCounts[category];
+  let maxCategoryTotal = 0;
+  for (const category in categoryTotals) {
+    if (categoryTotals[category] > maxCategoryTotal) {
+      maxCategoryTotal = categoryTotals[category];
       topCategory = category;
     }
   }
@@ -92,8 +92,8 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-              Here is a snapshot of your recent activity, key trends, and the
-              {` ${metricConfig.label.toLowerCase()} you are tracking across your personal dashboard.`}
+              Here is a snapshot of your recent {metricConfig.label.toLowerCase()} entries,
+              key trends, and category totals across your personal dashboard.
             </p>
           </div>
 
@@ -101,8 +101,8 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             {[
               ["Period", "This Month"],
               ["Entries", totalEntries.toString()],
-              ["Focus", topCategory],
-              ["Goal", "On Track"],
+              [metricConfig.analyticsLabels.topCategory, topCategory],
+              ["7-Day Total", metricConfig.formatValue(valueThisWeek)],
             ].map(([label, value], index) => (
               <div
                 key={label}
@@ -123,7 +123,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard title={metricConfig.dashboardLabels.total} value={metricConfig.formatValue(totalValue)} accent="teal" detail="Tracked" />
         <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="blue" detail="7 days" />
-        <SummaryCard title="Top Category" value={topCategory} accent="amber" detail="Focus" />
+        <SummaryCard title={metricConfig.analyticsLabels.topCategory} value={topCategory} accent="amber" detail="By value" />
         <SummaryCard title={metricConfig.dashboardLabels.averagePerDay} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
       </section>
 
@@ -139,7 +139,9 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70 xl:col-span-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-xl font-semibold text-slate-900">Activity Trend</h3>
+              <h3 className="text-xl font-semibold text-slate-900">
+                {metricConfig.analyticsLabels.trendTitle}
+              </h3>
               <p className="mt-1 text-sm text-slate-500">
                 Total tracked {metricConfig.label.toLowerCase()} by day across your entries.
               </p>
@@ -177,8 +179,8 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             <div className="mt-5 space-y-3">
               {[
                 `You currently have ${totalEntries} tracked entries.`,
-                `Your most common category is ${topCategory}.`,
-                `Your average activity is ${metricConfig.formatValue(averageValuePerDay)} per day.`,
+                `Your top category by ${metricConfig.label.toLowerCase()} is ${topCategory}.`,
+                `Your daily average is ${metricConfig.formatValue(averageValuePerDay)}.`,
               ].map((insight, index) => (
                 <div
                   key={insight}
@@ -197,16 +199,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           </div>
 
           <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
-            <h3 className="text-lg font-semibold text-slate-900">Progress</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Tracking Coverage</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Keep this area for goals or performance summaries.
+              Recent coverage for your {metricConfig.label.toLowerCase()} entries.
             </p>
 
             <div className="mt-5 space-y-4">
               <div>
                 <div className="mb-2 flex justify-between text-sm">
-                  <span className="text-slate-600">Weekly Goal</span>
-                  <span className="font-medium text-slate-900">{weeklyEntryCount}/7</span>
+                  <span className="text-slate-600">Entries This Week</span>
+                  <span className="font-medium text-slate-900">{weeklyEntryCount}</span>
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
@@ -243,7 +245,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           <div className="mt-5 space-y-3">
             {recentEntries.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                No recent entries yet.
+                {metricConfig.analyticsLabels.latestEmpty}
               </div>
             ) : (
               recentEntries.map((entry) => (
@@ -281,23 +283,23 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
           <h3 className="text-lg font-semibold text-slate-900">Category Breakdown</h3>
           <p className="mt-1 text-sm text-slate-500">
-            A smaller secondary visualization can live here.
+            Total tracked {metricConfig.label.toLowerCase()} grouped by category.
           </p>
 
           <div className="mt-6 space-y-3">
-            {Object.keys(categoryCounts).length === 0 ? (
+            {Object.keys(categoryTotals).length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                No category data yet.
+                {metricConfig.analyticsLabels.chartEmpty}
               </div>
             ) : (
-              Object.entries(categoryCounts).map(([category, count]) => (
+              Object.entries(categoryTotals).map(([category, total]) => (
                 <div
                   key={category}
                   className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-white"
                 >
                   <span className="text-sm font-medium text-slate-900">{category}</span>
                   <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
-                    {count}
+                    {metricConfig.formatValue(total)}
                   </span>
                 </div>
               ))

@@ -52,6 +52,18 @@ describe("createEntrySchema", () => {
     expect(result.metricType).toBe("money");
   });
 
+  it("rejects invalid metric types", () => {
+    const result = createEntrySchema.safeParse({
+      title: "Coffee",
+      value: "12.50",
+      metricType: "budget",
+      category: "Finance",
+      date: "2026-05-16",
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   it("accepts calories macro payloads", () => {
     const result = createEntrySchema.parse({
       title: "Greek yogurt",

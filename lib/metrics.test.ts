@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { metricConfigs, parseMetricType } from "./metrics";
 
 describe("metricConfigs", () => {
+  it("formats time values with minute units", () => {
+    expect(metricConfigs.time.formatValue(45)).toBe("45 min");
+    expect(metricConfigs.time.formatValue(12.5)).toBe("12.5 min");
+  });
+
   it("formats money values as USD currency", () => {
     expect(metricConfigs.money.formatValue(12.5)).toBe("$12.50");
     expect(metricConfigs.money.formatValue(1250)).toBe("$1,250.00");
@@ -42,5 +47,10 @@ describe("parseMetricType", () => {
 
   it("accepts calories from URL parameters", () => {
     expect(parseMetricType("calories")).toBe("calories");
+  });
+
+  it("defaults invalid URL parameters to time", () => {
+    expect(parseMetricType("invalid")).toBe("time");
+    expect(parseMetricType(null)).toBe("time");
   });
 });

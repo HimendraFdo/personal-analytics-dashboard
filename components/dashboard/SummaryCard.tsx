@@ -23,8 +23,8 @@ export default function SummaryCard({
       <div className={`rounded-2xl bg-gradient-to-br p-4 ring-1 ${accentClasses[accent]}`}>
         <p className="text-sm font-semibold text-slate-600">{title}</p>
         <div className="mt-4 flex items-end justify-between gap-4">
-          <h3 className="text-3xl font-bold text-slate-950">{value}</h3>
-          <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold shadow-sm">
+          <h3 className="min-w-0 break-words text-3xl font-bold text-slate-950">{value}</h3>
+          <span className="shrink-0 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold shadow-sm">
             {detail}
           </span>
         </div>
