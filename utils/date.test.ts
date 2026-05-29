@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatDateTimeForInput,
   formatDateForInput,
   formatDisplayDate,
   parseStoredDate,
@@ -27,6 +28,14 @@ describe("formatDateForInput", () => {
   it("falls back to today for invalid input", () => {
     const today = new Date().toISOString().split("T")[0];
     expect(formatDateForInput("invalid")).toBe(today);
+  });
+});
+
+describe("formatDateTimeForInput", () => {
+  it("formats dates as YYYY-MM-DDTHH:mm for datetime-local inputs", () => {
+    expect(formatDateTimeForInput(new Date(2026, 4, 16, 14, 30))).toBe(
+      "2026-05-16T14:30"
+    );
   });
 });
 

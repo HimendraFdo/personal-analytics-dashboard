@@ -21,7 +21,7 @@ export type EntryInput = {
   title: string;
   value: number;
   metricType?: MetricType;
-  category: EntryCategory;
+  category?: EntryCategory;
   date: string;
   note?: string;
   foodName?: string | null;
@@ -40,3 +40,9 @@ export const ENTRY_CATEGORIES: EntryCategory[] = [
   "Health",
   "Personal",
 ];
+
+export const DEFAULT_ENTRY_CATEGORIES: Record<MetricType, EntryCategory> = {
+  time: "Study",
+  money: "Finance",
+  calories: "Health",
+};
