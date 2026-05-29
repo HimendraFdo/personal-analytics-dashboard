@@ -4,7 +4,11 @@ import { EntryCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
-import { parseEntryDate, updateEntrySchema } from "@/lib/validation";
+import {
+  entryIdSchema,
+  parseEntryDate,
+  updateEntrySchema,
+} from "@/lib/validation";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -18,7 +22,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const { id } = await context.params;
+    const { id: rawId } = await context.params;
+    const idResult = entryIdSchema.safeParse(rawId);
+
+    if (!idResult.success) {
+      return jsonError("Invalid entry id", "VALIDATION_ERROR", 400);
+    }
+
+    const id = idResult.data;
     const body = await request.json();
     const parsed = updateEntrySchema.safeParse(body);
 
@@ -101,7 +112,14 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
-    const { id } = await context.params;
+    const { id: rawId } = await context.params;
+    const idResult = entryIdSchema.safeParse(rawId);
+
+    if (!idResult.success) {
+      return jsonError("Invalid entry id", "VALIDATION_ERROR", 400);
+    }
+
+    const id = idResult.data;
     const existing = await prisma.entry.findFirst({ where: { id, userId } });
 
     if (!existing) {

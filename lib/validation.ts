@@ -50,6 +50,8 @@ export const sortSchema = z
   .optional()
   .default("date_desc");
 
+export const entryIdSchema = z.string().uuid();
+
 export function parseEntryDate(input: string | Date): Date {
   if (input instanceof Date) {
     return input;

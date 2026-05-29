@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createEntrySchema,
+  entryIdSchema,
   parseEntryDate,
   sortSchema,
 } from "./validation";
@@ -27,6 +28,22 @@ describe("createEntrySchema", () => {
       note: "",
     });
     expect(result.success).toBe(true);
+  });
+
+  it("accepts SQL-looking text as plain title and note data", () => {
+    const payload = {
+      title: "' OR 1=1 --",
+      value: 45,
+      metricType: "time",
+      category: "Study",
+      date: "2026-05-16",
+      note: "Robert'); DELETE FROM Entry; --",
+    };
+
+    const result = createEntrySchema.parse(payload);
+
+    expect(result.title).toBe(payload.title);
+    expect(result.note).toBe(payload.note);
   });
 
   it("defaults metric type to time", () => {
@@ -108,5 +125,23 @@ describe("createEntrySchema", () => {
 describe("sortSchema", () => {
   it("defaults to date_desc", () => {
     expect(sortSchema.parse(undefined)).toBe("date_desc");
+  });
+
+  it("rejects malicious sort values", () => {
+    const result = sortSchema.safeParse("date_desc; DELETE FROM Entry");
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("entryIdSchema", () => {
+  it("accepts UUID entry ids", () => {
+    expect(
+      entryIdSchema.safeParse("123e4567-e89b-12d3-a456-426614174000").success
+    ).toBe(true);
+  });
+
+  it("rejects invalid UUID entry ids", () => {
+    expect(entryIdSchema.safeParse("' OR 1=1 --").success).toBe(false);
   });
 });
