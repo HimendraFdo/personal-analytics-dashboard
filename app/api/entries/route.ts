@@ -10,7 +10,7 @@ import {
   parseEntryDate,
   sortSchema,
 } from "@/lib/validation";
-import { ENTRY_CATEGORIES } from "@/types/entry";
+import { DEFAULT_ENTRY_CATEGORIES, ENTRY_CATEGORIES } from "@/types/entry";
 
 function getOrderBy(sort: string): Prisma.EntryOrderByWithRelationInput {
   switch (sort) {
@@ -127,7 +127,10 @@ export async function POST(request: NextRequest) {
         title,
         value,
         metricType,
-        category: category as EntryCategory,
+        category: (category ??
+          DEFAULT_ENTRY_CATEGORIES[
+            metricType as keyof typeof DEFAULT_ENTRY_CATEGORIES
+          ]) as EntryCategory,
         date: parseEntryDate(date),
         note: note ?? "",
         ...nutritionData,

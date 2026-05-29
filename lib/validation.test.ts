@@ -57,7 +57,6 @@ describe("createEntrySchema", () => {
       title: "Greek yogurt",
       value: "125",
       metricType: "calories",
-      category: "Health",
       date: "2026-05-16",
       foodName: "Greek yogurt",
       portionGrams: "150",
@@ -68,6 +67,7 @@ describe("createEntrySchema", () => {
     });
 
     expect(result.metricType).toBe("calories");
+    expect(result.category).toBeUndefined();
     expect(result.portionGrams).toBe(150);
     expect(result.proteinGrams).toBe(15.5);
   });

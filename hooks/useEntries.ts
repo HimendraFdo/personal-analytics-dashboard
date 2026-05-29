@@ -8,13 +8,13 @@ import {
   updateEntry as updateEntryApi,
 } from "@/lib/api";
 import type { Entry, EntryInput } from "@/types/entry";
+import { DEFAULT_ENTRY_CATEGORIES } from "@/types/entry";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
-import { formatDateForInput } from "@/utils/date";
 
 export type EntryFormPayload = {
   title: string;
   value: number;
-  category: Entry["category"];
+  category?: Entry["category"];
   date: Date;
   note: string;
   foodName?: string | null;
@@ -53,8 +53,8 @@ export function useEntries() {
       title: payload.title,
       value: payload.value,
       metricType: activeMetric,
-      category: payload.category,
-      date: formatDateForInput(payload.date),
+      category: payload.category ?? DEFAULT_ENTRY_CATEGORIES[activeMetric],
+      date: payload.date.toISOString(),
       note: payload.note,
       foodName: payload.foodName ?? null,
       portionGrams: payload.portionGrams ?? null,
@@ -74,8 +74,8 @@ export function useEntries() {
         title: payload.title,
         value: payload.value,
         metricType: activeMetric,
-        category: payload.category,
-        date: formatDateForInput(payload.date),
+        category: payload.category ?? DEFAULT_ENTRY_CATEGORIES[activeMetric],
+        date: payload.date.toISOString(),
         note: payload.note,
         foodName: payload.foodName ?? null,
         portionGrams: payload.portionGrams ?? null,

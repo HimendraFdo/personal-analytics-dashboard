@@ -13,7 +13,7 @@ export const createEntrySchema = z.object({
   title: z.string().trim().min(1).max(200),
   value: z.coerce.number().positive().finite(),
   metricType: metricTypeSchema.optional().default("time"),
-  category: categorySchema,
+  category: categorySchema.optional(),
   date: z.union([z.string().min(1), z.coerce.date()]),
   note: z.string().max(2000).optional().default(""),
   foodName: optionalFoodText,

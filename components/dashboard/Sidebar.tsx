@@ -1,18 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   MAIN_NAV_ITEMS,
   NAV_PATHS,
   type NavigationItem,
 } from "@/constants/navigation";
+import { parseMetricType } from "@/lib/metrics";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeMetric = parseMetricType(searchParams.get("metric"));
 
   function isActive(item: NavigationItem) {
     return pathname === NAV_PATHS[item];
+  }
+
+  function getHref(item: NavigationItem) {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("metric", activeMetric);
+    return `${NAV_PATHS[item]}?${nextParams.toString()}`;
   }
 
   return (
@@ -42,7 +51,7 @@ export default function Sidebar() {
             {MAIN_NAV_ITEMS.map((item) => (
               <li key={item}>
                 <Link
-                  href={NAV_PATHS[item]}
+                  href={getHref(item)}
                   className={`group flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition ${
                     isActive(item)
                       ? "bg-white text-slate-950 shadow-lg shadow-black/20"

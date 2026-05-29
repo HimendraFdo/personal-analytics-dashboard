@@ -40,7 +40,7 @@ export default function EntriesSection({
   onDeleteEntry,
   onUpdateEntry,
 }: EntriesSectionProps) {
-  const { metricConfig } = useMetricSelection();
+  const { activeMetric, metricConfig } = useMetricSelection();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
@@ -91,14 +91,16 @@ export default function EntriesSection({
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
       const matchesCategory =
-        selectedCategory === "All" || entry.category === selectedCategory;
+        activeMetric !== "time" ||
+        selectedCategory === "All" ||
+        entry.category === selectedCategory;
 
       const matchesDate =
         selectedDate === "" || formatDateForInput(entry.date) === selectedDate;
 
       return matchesCategory && matchesDate;
     });
-  }, [entries, selectedCategory, selectedDate]);
+  }, [activeMetric, entries, selectedCategory, selectedDate]);
 
   const sortedEntries = useMemo(() => {
     const next = [...filteredEntries];
@@ -182,24 +184,26 @@ export default function EntriesSection({
             </select>
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Filter by Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(event) =>
-                setSelectedCategory(event.target.value as "All" | EntryCategory)
-              }
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-            >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+          {activeMetric === "time" && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Filter by Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(event) =>
+                  setSelectedCategory(event.target.value as "All" | EntryCategory)
+                }
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+              >
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">

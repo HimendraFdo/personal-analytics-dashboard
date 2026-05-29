@@ -7,9 +7,10 @@ import {
   type FoodSearchResult,
 } from "@/lib/nutrition";
 import type { Entry, EntryCategory } from "@/types/entry";
+import { DEFAULT_ENTRY_CATEGORIES } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
-import { formatDateForInput } from "@/utils/date";
+import { formatDateTimeForInput } from "@/utils/date";
 
 type EntryFormProps = {
   onSubmitEntry: (payload: EntryFormPayload) => void | Promise<void>;
@@ -51,7 +52,7 @@ function getInitialFormData(editingEntry: Entry | null): FormData {
       title: editingEntry.title,
       value: String(editingEntry.value),
       category: editingEntry.category,
-      date: formatDateForInput(editingEntry.date),
+      date: formatDateTimeForInput(editingEntry.date),
       note: editingEntry.note,
       foodName: editingEntry.foodName ?? "",
       portionGrams: editingEntry.portionGrams?.toString() ?? "",
@@ -66,7 +67,7 @@ function getInitialFormData(editingEntry: Entry | null): FormData {
     title: "",
     value: "",
     category: "Study",
-    date: "",
+    date: formatDateTimeForInput(new Date()),
     note: "",
     foodName: "",
     portionGrams: "",
@@ -94,6 +95,7 @@ export default function EntryForm({
   const { activeMetric, metricConfig } = useMetricSelection();
   const { placeholders, valueInput } = metricConfig;
   const isCalories = activeMetric === "calories";
+  const showsCategory = activeMetric === "time";
   const [formData, setFormData] = useState<FormData>(() =>
     getInitialFormData(editingEntry)
   );
@@ -128,7 +130,7 @@ export default function EntryForm({
     }
 
     if (!formData.date) {
-      nextErrors.date = "Date is required.";
+      nextErrors.date = "Date and time are required.";
     }
 
     if (isCalories && calorieEntryMode === "food" && !formData.foodName.trim()) {
@@ -169,7 +171,9 @@ export default function EntryForm({
     const payload: EntryFormPayload = {
       title: formData.title.trim(),
       value: Number(formData.value),
-      category: formData.category,
+      category: showsCategory
+        ? formData.category
+        : DEFAULT_ENTRY_CATEGORIES[activeMetric],
       date: new Date(formData.date),
       note: formData.note.trim(),
       foodName: isCalories ? formData.foodName.trim() || null : null,
@@ -449,31 +453,33 @@ export default function EntryForm({
         </div>
       )}
 
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700">
-          Category
-        </label>
-        <select
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          disabled={disabled || submitting}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-        >
-          {CATEGORIES.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
+      {showsCategory && (
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Category
+          </label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            disabled={disabled || submitting}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+          >
+            {CATEGORIES.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
-          Date
+          Date and time
         </label>
         <input
-          type="date"
+          type="datetime-local"
           name="date"
           value={formData.date}
           onChange={handleChange}
