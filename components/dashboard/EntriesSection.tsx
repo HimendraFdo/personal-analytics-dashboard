@@ -128,7 +128,7 @@ export default function EntriesSection({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-slate-950">Entries</h2>
@@ -136,7 +136,7 @@ export default function EntriesSection({
               Add, edit, filter, and review your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
           </div>
-          <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
+          <div className="rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--metric-primary)]">
             {sortedEntries.length} visible
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function EntriesSection({
       )}
 
       {hasNoEntries && (
-        <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white/70 p-6 text-center shadow-sm">
+        <section className="rounded-[2rem] border border-dashed border-[var(--metric-primary)] bg-white/70 p-6 text-center shadow-sm shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">
             {metricConfig.emptyState.heading}
           </h3>
@@ -159,7 +159,7 @@ export default function EntriesSection({
         </section>
       )}
 
-      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
         <div className="mb-5">
           <h3 className="text-lg font-semibold text-slate-900">Filters and Sorting</h3>
           <p className="mt-1 text-sm text-slate-500">
@@ -175,7 +175,7 @@ export default function EntriesSection({
             <select
               value={selectedSort}
               onChange={(event) => setSelectedSort(event.target.value as SortOption)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -198,7 +198,7 @@ export default function EntriesSection({
               onChange={(event) =>
                 setSelectedCategory(event.target.value as "All" | EntryCategory)
               }
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
             >
               {CATEGORY_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -216,7 +216,7 @@ export default function EntriesSection({
               type="date"
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
             />
           </div>
 
@@ -224,7 +224,7 @@ export default function EntriesSection({
             <button
               type="button"
               onClick={handleClearFilters}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-teal-50"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-[var(--metric-primary-soft)]"
             >
               Clear Filters
             </button>
@@ -237,7 +237,7 @@ export default function EntriesSection({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">
             {editingEntry ? "Edit Entry" : "Add New Entry"}
           </h3>
@@ -253,7 +253,7 @@ export default function EntriesSection({
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Entry History</h3>
 
           <div className="mt-6">

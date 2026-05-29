@@ -84,10 +84,14 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
 
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 text-white shadow-2xl shadow-slate-300/40">
+      <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[var(--metric-panel-strong)] text-white shadow-2xl shadow-[var(--metric-shadow)] transition-colors duration-500">
+        <div className="pointer-events-none absolute inset-0 opacity-70">
+          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-[var(--metric-primary)] blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-[var(--metric-secondary)] opacity-50 blur-3xl" />
+        </div>
         <div className="grid gap-6 p-6 lg:grid-cols-[1fr_420px] lg:p-8">
-          <div>
-            <p className="text-sm font-semibold text-teal-200">Overview</p>
+          <div className="relative">
+            <p className="text-sm font-semibold text-[var(--metric-primary-soft)]">Overview</p>
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
               Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
@@ -97,7 +101,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="relative grid grid-cols-2 gap-3">
             {[
               ["Period", "This Month"],
               ["Entries", totalEntries.toString()],
@@ -108,7 +112,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                 key={label}
                 className={`rounded-2xl border px-4 py-3 backdrop-blur ${
                   index === 3
-                    ? "border-teal-300/30 bg-teal-300/15"
+                    ? "border-white/20 bg-[var(--metric-primary)]/20"
                     : "border-white/10 bg-white/10"
                 }`}
               >
@@ -121,22 +125,22 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard title={metricConfig.dashboardLabels.total} value={metricConfig.formatValue(totalValue)} accent="teal" detail="Tracked" />
-        <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="blue" detail="7 days" />
-        <SummaryCard title={metricConfig.analyticsLabels.topCategory} value={topCategory} accent="amber" detail="By value" />
-        <SummaryCard title={metricConfig.dashboardLabels.averagePerDay} value={metricConfig.formatValue(averageValuePerDay)} accent="rose" detail="Daily" />
+        <SummaryCard title={metricConfig.dashboardLabels.total} value={metricConfig.formatValue(totalValue)} accent="primary" detail="Tracked" />
+        <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="secondary" detail="7 days" />
+        <SummaryCard title={metricConfig.analyticsLabels.topCategory} value={topCategory} accent="tertiary" detail="By value" />
+        <SummaryCard title={metricConfig.dashboardLabels.averagePerDay} value={metricConfig.formatValue(averageValuePerDay)} accent="strong" detail="Daily" />
       </section>
 
       {isCalories && (
         <section className="grid gap-4 sm:grid-cols-3">
-          <SummaryCard title="Protein" value={formatMacroValue(macroTotals.proteinGrams)} accent="teal" detail="Total" />
-          <SummaryCard title="Carbs" value={formatMacroValue(macroTotals.carbsGrams)} accent="blue" detail="Total" />
-          <SummaryCard title="Fat" value={formatMacroValue(macroTotals.fatGrams)} accent="amber" detail="Total" />
+          <SummaryCard title="Protein" value={formatMacroValue(macroTotals.proteinGrams)} accent="primary" detail="Total" />
+          <SummaryCard title="Carbs" value={formatMacroValue(macroTotals.carbsGrams)} accent="secondary" detail="Total" />
+          <SummaryCard title="Fat" value={formatMacroValue(macroTotals.fatGrams)} accent="tertiary" detail="Total" />
         </section>
       )}
 
       <section className="grid gap-6 xl:grid-cols-12">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70 xl:col-span-8">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)] xl:col-span-8">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold text-slate-900">
@@ -147,7 +151,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               </p>
             </div>
 
-            <div className="rounded-xl border border-teal-100 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-700">
+            <div className="rounded-xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-3 py-2 text-sm font-semibold text-[var(--metric-primary)]">
               By day
             </div>
           </div>
@@ -170,7 +174,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         </div>
 
         <div className="space-y-6 xl:col-span-4">
-          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
             <h3 className="text-lg font-semibold text-slate-900">Insights</h3>
             <p className="mt-1 text-sm text-slate-500">
               Quick highlights based on recent trends.
@@ -181,16 +185,10 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                 `You currently have ${totalEntries} tracked entries.`,
                 `Your top category by ${metricConfig.label.toLowerCase()} is ${topCategory}.`,
                 `Your daily average is ${metricConfig.formatValue(averageValuePerDay)}.`,
-              ].map((insight, index) => (
+              ].map((insight) => (
                 <div
                   key={insight}
-                  className={`rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-white ${
-                    index === 0
-                      ? "hover:border-teal-200"
-                      : index === 1
-                        ? "hover:border-blue-200"
-                        : "hover:border-amber-200"
-                  }`}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white"
                 >
                   <p className="text-sm font-medium text-slate-900">{insight}</p>
                 </div>
@@ -198,7 +196,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
             <h3 className="text-lg font-semibold text-slate-900">Tracking Coverage</h3>
             <p className="mt-1 text-sm text-slate-500">
               Recent coverage for your {metricConfig.label.toLowerCase()} entries.
@@ -212,7 +210,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-3 rounded-full bg-teal-600 transition-all duration-700"
+                    className="h-3 rounded-full bg-[var(--metric-primary)] transition-all duration-700"
                     style={{ width: `${Math.min((weeklyEntryCount / 7) * 100, 100)}%` }}
                   />
                 </div>
@@ -225,7 +223,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                 </div>
                 <div className="h-3 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    className="h-3 rounded-full bg-blue-600 transition-all duration-700"
+                    className="h-3 rounded-full bg-[var(--metric-secondary)] transition-all duration-700"
                     style={{ width: `${Math.min(uniqueDates.size * 10, 100)}%` }}
                   />
                 </div>
@@ -236,7 +234,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Recent Entries</h3>
           <p className="mt-1 text-sm text-slate-500">
             Your latest tracked items appear here.
@@ -251,7 +249,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-white hover:shadow-md"
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white hover:shadow-md"
                 >
                   <div>
                     <span className="text-sm font-medium text-slate-900">
@@ -280,7 +278,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Category Breakdown</h3>
           <p className="mt-1 text-sm text-slate-500">
             Total tracked {metricConfig.label.toLowerCase()} grouped by category.
@@ -295,7 +293,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               Object.entries(categoryTotals).map(([category, total]) => (
                 <div
                   key={category}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-white"
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-[var(--metric-secondary)] hover:bg-white"
                 >
                   <span className="text-sm font-medium text-slate-900">{category}</span>
                   <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">

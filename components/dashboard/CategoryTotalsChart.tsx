@@ -56,14 +56,14 @@ export default function CategoryTotalsChart({
             valueFormatter(Number(value)),
             tooltipLabel,
           ]}
-          cursor={{ fill: "rgba(15, 118, 110, 0.08)" }}
+          cursor={{ fill: "var(--metric-primary-soft)" }}
           contentStyle={{
             border: "1px solid #e2e8f0",
             borderRadius: 16,
             boxShadow: "0 18px 45px rgba(15, 23, 42, 0.12)",
           }}
         />
-        <Bar dataKey="total" fill="#0f766e" radius={[10, 10, 4, 4]} />
+        <Bar dataKey="total" fill="var(--metric-primary)" radius={[10, 10, 4, 4]} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -14,9 +14,20 @@ body {
   color: #111827;
 }
 
+.metric-shell {
+  background:
+    radial-gradient(circle at top right, var(--metric-primary-soft), transparent 28rem),
+    linear-gradient(135deg, var(--metric-shell), var(--metric-shell-muted));
+}
+
 ::selection {
   background: #0f766e;
   color: #ffffff;
+}
+
+.metric-shell ::selection {
+  background: var(--metric-primary);
+  color: var(--metric-text-on-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

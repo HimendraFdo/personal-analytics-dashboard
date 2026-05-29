@@ -7,10 +7,31 @@ const compactNumberFormatter = new Intl.NumberFormat("en-US", {
 
 export type MetricAccent = "teal" | "emerald" | "orange";
 
+export type MetricPalette = {
+  shell: string;
+  shellMuted: string;
+  panel: string;
+  panelStrong: string;
+  primary: string;
+  primaryDark: string;
+  primarySoft: string;
+  secondary: string;
+  secondarySoft: string;
+  tertiary: string;
+  tertiarySoft: string;
+  textOnPrimary: string;
+  ring: string;
+  shadow: string;
+  chartStart: string;
+  chartMid: string;
+  chartEnd: string;
+};
+
 export type MetricConfig = {
   label: string;
   unit: string;
   accent: MetricAccent;
+  palette: MetricPalette;
   inputLabel: string;
   valueInput: {
     step: string;
@@ -51,6 +72,25 @@ export const metricConfigs: Record<MetricType, MetricConfig> = {
     label: "Time",
     unit: "min",
     accent: "teal",
+    palette: {
+      shell: "#eefdfa",
+      shellMuted: "#f7fffd",
+      panel: "#ffffff",
+      panelStrong: "#082f2e",
+      primary: "#0f766e",
+      primaryDark: "#115e59",
+      primarySoft: "#ccfbf1",
+      secondary: "#2563eb",
+      secondarySoft: "#dbeafe",
+      tertiary: "#f59e0b",
+      tertiarySoft: "#fef3c7",
+      textOnPrimary: "#ffffff",
+      ring: "rgba(20, 184, 166, 0.18)",
+      shadow: "rgba(15, 118, 110, 0.18)",
+      chartStart: "#14b8a6",
+      chartMid: "#2563eb",
+      chartEnd: "#f59e0b",
+    },
     inputLabel: "Time Spent (minutes)",
     valueInput: {
       step: "1",
@@ -91,6 +131,25 @@ export const metricConfigs: Record<MetricType, MetricConfig> = {
     label: "Money",
     unit: "$",
     accent: "emerald",
+    palette: {
+      shell: "#effcf4",
+      shellMuted: "#fbfff8",
+      panel: "#ffffff",
+      panelStrong: "#052e16",
+      primary: "#15803d",
+      primaryDark: "#166534",
+      primarySoft: "#dcfce7",
+      secondary: "#0f766e",
+      secondarySoft: "#ccfbf1",
+      tertiary: "#ca8a04",
+      tertiarySoft: "#fef9c3",
+      textOnPrimary: "#ffffff",
+      ring: "rgba(34, 197, 94, 0.18)",
+      shadow: "rgba(21, 128, 61, 0.18)",
+      chartStart: "#22c55e",
+      chartMid: "#0f766e",
+      chartEnd: "#ca8a04",
+    },
     inputLabel: "Money Spent",
     valueInput: {
       step: "0.01",
@@ -135,6 +194,25 @@ export const metricConfigs: Record<MetricType, MetricConfig> = {
     label: "Calories",
     unit: "kcal",
     accent: "orange",
+    palette: {
+      shell: "#fff7ed",
+      shellMuted: "#fffdfa",
+      panel: "#ffffff",
+      panelStrong: "#431407",
+      primary: "#ea580c",
+      primaryDark: "#c2410c",
+      primarySoft: "#ffedd5",
+      secondary: "#dc2626",
+      secondarySoft: "#fee2e2",
+      tertiary: "#65a30d",
+      tertiarySoft: "#ecfccb",
+      textOnPrimary: "#ffffff",
+      ring: "rgba(249, 115, 22, 0.2)",
+      shadow: "rgba(234, 88, 12, 0.18)",
+      chartStart: "#f97316",
+      chartMid: "#dc2626",
+      chartEnd: "#65a30d",
+    },
     inputLabel: "Calories Eaten",
     valueInput: {
       step: "1",
