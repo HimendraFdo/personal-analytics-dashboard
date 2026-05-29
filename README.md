@@ -90,16 +90,16 @@ cd personal-analytics-dashboard
 npm install
 ```
 
-Create `.env.local`:
+Create `.env.local` from `.env.example`, then replace the placeholders with values from Neon and Clerk:
 
 ```bash
-DATABASE_URL="postgresql://..."
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
-CLERK_SECRET_KEY="sk_..."
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_or_pk_live_placeholder"
+CLERK_SECRET_KEY="sk_test_or_sk_live_placeholder"
 NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL="/dashboard"
+NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL="/dashboard"
 ```
 
 Then prepare the database and start the app:
@@ -121,8 +121,8 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 | `CLERK_SECRET_KEY` | Yes | Server-side Clerk key used by protected routes |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Recommended | Points Clerk to the local `/sign-in` route |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | Points Clerk to the local `/sign-up` route |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Recommended | Sends users to `/dashboard` after sign in |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Recommended | Sends users to `/dashboard` after sign up |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign in |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign up |
 
 ---
 
