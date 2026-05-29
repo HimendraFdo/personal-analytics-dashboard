@@ -26,6 +26,9 @@ const CATEGORIES: EntryCategory[] = [
   "Personal",
 ];
 
+const inputFocusClasses =
+  "focus:border-[var(--metric-primary)] focus:ring-[var(--metric-ring)]";
+
 type FormData = {
   title: string;
   value: string;
@@ -297,7 +300,7 @@ export default function EntryForm({
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.title
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
-              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
+              : `border-slate-200 ${inputFocusClasses}`
           }`}
         />
         {errors.title && (
@@ -320,7 +323,7 @@ export default function EntryForm({
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.value
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
-              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
+              : `border-slate-200 ${inputFocusClasses}`
           }`}
         />
         {errors.value && (
@@ -329,8 +332,8 @@ export default function EntryForm({
       </div>
 
       {isCalories && (
-        <div className="space-y-4 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
-          <div className="grid grid-cols-2 rounded-xl border border-orange-100 bg-white p-1 text-sm font-semibold text-slate-600">
+        <div className="space-y-4 rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)]/60 p-4">
+          <div className="grid grid-cols-2 rounded-xl border border-[var(--metric-ring)] bg-white p-1 text-sm font-semibold text-slate-600">
             <button
               type="button"
               onClick={() => {
@@ -339,8 +342,8 @@ export default function EntryForm({
               }}
               className={`rounded-lg px-3 py-2 transition ${
                 calorieEntryMode === "manual"
-                  ? "bg-orange-600 text-white"
-                  : "hover:bg-orange-50"
+                  ? "bg-[var(--metric-primary)] text-white"
+                  : "hover:bg-[var(--metric-primary-soft)]"
               }`}
             >
               Manual
@@ -350,8 +353,8 @@ export default function EntryForm({
               onClick={() => setCalorieEntryMode("food")}
               className={`rounded-lg px-3 py-2 transition ${
                 calorieEntryMode === "food"
-                  ? "bg-orange-600 text-white"
-                  : "hover:bg-orange-50"
+                  ? "bg-[var(--metric-primary)] text-white"
+                  : "hover:bg-[var(--metric-primary-soft)]"
               }`}
             >
               Food Lookup
@@ -371,19 +374,19 @@ export default function EntryForm({
                     onChange={(event) => setFoodQuery(event.target.value)}
                     disabled={disabled || submitting || foodSearching}
                     placeholder="e.g. Greek yogurt"
-                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
                   />
                   <button
                     type="button"
                     onClick={() => void handleFoodSearch()}
                     disabled={disabled || submitting || foodSearching}
-                    className="rounded-2xl bg-orange-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--metric-primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--metric-primary-dark)] disabled:opacity-60"
                   >
                     {foodSearching ? "Searching" : "Search"}
                   </button>
                 </div>
                 {foodSearchError && (
-                  <p className="mt-2 text-sm text-orange-800">{foodSearchError}</p>
+                  <p className="mt-2 text-sm text-[var(--metric-primary-dark)]">{foodSearchError}</p>
                 )}
               </div>
 
@@ -394,7 +397,7 @@ export default function EntryForm({
                       key={food.id}
                       type="button"
                       onClick={() => handleSelectFood(food)}
-                      className="w-full rounded-2xl border border-orange-100 bg-white p-3 text-left transition hover:border-orange-300"
+                      className="w-full rounded-2xl border border-[var(--metric-ring)] bg-white p-3 text-left transition hover:border-[var(--metric-primary)]"
                     >
                       <span className="block text-sm font-semibold text-slate-900">
                         {food.name}
@@ -422,7 +425,7 @@ export default function EntryForm({
               onChange={handlePortionChange}
               disabled={disabled || submitting}
               placeholder="e.g. 150"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
             />
           </div>
 
@@ -445,7 +448,7 @@ export default function EntryForm({
                   onChange={handleChange}
                   disabled={disabled || submitting}
                   placeholder="0"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
                 />
               </div>
             ))}
@@ -463,7 +466,7 @@ export default function EntryForm({
             value={formData.category}
             onChange={handleChange}
             disabled={disabled || submitting}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
           >
             {CATEGORIES.map((option) => (
               <option key={option} value={option}>
@@ -487,7 +490,7 @@ export default function EntryForm({
           className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 ${
             errors.date
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
-              : "border-slate-200 focus:border-teal-500 focus:ring-teal-500/10"
+              : `border-slate-200 ${inputFocusClasses}`
           }`}
         />
         {errors.date && (
@@ -506,7 +509,7 @@ export default function EntryForm({
           disabled={disabled || submitting}
           placeholder={placeholders.note}
           rows={4}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
         />
       </div>
 
@@ -514,7 +517,7 @@ export default function EntryForm({
         <button
           type="submit"
           disabled={disabled || submitting}
-          className="flex-1 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-teal-700 disabled:opacity-60"
+          className="flex-1 rounded-2xl bg-[var(--metric-panel-strong)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-0.5 hover:bg-[var(--metric-primary-dark)] disabled:opacity-60"
         >
           {submitting
             ? "Saving..."

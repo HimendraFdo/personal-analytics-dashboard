@@ -69,7 +69,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+      <section className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-slate-950">Analytics</h2>
@@ -77,7 +77,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
               Review derived insights based on your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
           </div>
-          <div className="rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm font-semibold text-teal-700">
+          <div className="rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--metric-primary)]">
             {categoryChartData.length} active categories
           </div>
         </div>
@@ -85,22 +85,22 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          ["Total Entries", totalEntries.toString(), "bg-teal-50 text-teal-700"],
+          ["Total Entries", totalEntries.toString(), "bg-[var(--metric-primary-soft)] text-[var(--metric-primary)]"],
           [
             metricConfig.analyticsLabels.total,
             metricConfig.formatValue(totalMetricValue),
-            "bg-blue-50 text-blue-700",
+            "bg-[var(--metric-secondary-soft)] text-[var(--metric-secondary)]",
           ],
           [
             metricConfig.analyticsLabels.averagePerEntry,
             metricConfig.formatValue(averageMetricValue),
-            "bg-amber-50 text-amber-700",
+            "bg-[var(--metric-tertiary-soft)] text-[var(--metric-tertiary)]",
           ],
-          [metricConfig.analyticsLabels.topCategory, topMetricCategory, "bg-rose-50 text-rose-700"],
+          [metricConfig.analyticsLabels.topCategory, topMetricCategory, "bg-[var(--metric-primary-soft)] text-[var(--metric-primary-dark)]"],
         ].map(([label, value, tone]) => (
           <div
             key={label}
-            className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60 transition hover:-translate-y-1 hover:shadow-xl"
+            className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-1 hover:shadow-xl"
           >
             <p className="text-sm font-semibold text-slate-500">{label}</p>
             <div className="mt-5 flex items-end justify-between gap-3">
@@ -116,13 +116,13 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       {isCalories && (
         <section className="grid gap-4 sm:grid-cols-3">
           {[
-            ["Protein", formatMacroValue(macroTotals.proteinGrams), "bg-teal-50 text-teal-700"],
-            ["Carbs", formatMacroValue(macroTotals.carbsGrams), "bg-blue-50 text-blue-700"],
-            ["Fat", formatMacroValue(macroTotals.fatGrams), "bg-amber-50 text-amber-700"],
+            ["Protein", formatMacroValue(macroTotals.proteinGrams), "bg-[var(--metric-primary-soft)] text-[var(--metric-primary)]"],
+            ["Carbs", formatMacroValue(macroTotals.carbsGrams), "bg-[var(--metric-secondary-soft)] text-[var(--metric-secondary)]"],
+            ["Fat", formatMacroValue(macroTotals.fatGrams), "bg-[var(--metric-tertiary-soft)] text-[var(--metric-tertiary)]"],
           ].map(([label, value, tone]) => (
             <div
               key={label}
-              className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-slate-200/60"
+              className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-[var(--metric-shadow)]"
             >
               <p className="text-sm font-semibold text-slate-500">{label}</p>
               <div className="mt-5 flex items-end justify-between gap-3">
@@ -137,7 +137,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       )}
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals</h3>
           <p className="mt-1 text-sm text-slate-500">
             {metricConfig.analyticsLabels.categoryTotalsDescription}
@@ -152,7 +152,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
               Object.entries(categoryTotals).map(([category, total]) => (
                 <div
                   key={category}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-200 hover:bg-white"
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white"
                 >
                   <div>
                     <p className="text-sm font-medium text-slate-900">{category}</p>
@@ -170,7 +170,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Latest Recorded Entry</h3>
           <p className="mt-1 text-sm text-slate-500">
             Most recent item based on entry date.
@@ -178,7 +178,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
 
           <div className="mt-5">
             {latestEntry ? (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[var(--metric-primary)]">
                 <p className="text-lg font-semibold text-slate-900">{latestEntry.title}</p>
                 <p className="mt-2 text-sm text-slate-500">
                   {latestEntry.category} - {formatDisplayDate(latestEntry.date)}
@@ -207,7 +207,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">Category Totals Chart</h3>
           <p className="mt-1 text-sm text-slate-500">
             Bar chart showing total tracked {metricConfig.label.toLowerCase()} by category.
@@ -223,7 +223,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/70">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
           <h3 className="text-lg font-semibold text-slate-900">
             {metricConfig.analyticsLabels.trendTitle}
           </h3>

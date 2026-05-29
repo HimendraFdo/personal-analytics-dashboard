@@ -8,9 +8,9 @@ import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { getNavItemFromPath, NAV_PATHS, NAVIGATION_ITEMS } from "@/constants/navigation";
 
 const metricTabActiveClasses = {
-  teal: "bg-teal-700 text-white shadow-sm",
-  emerald: "bg-emerald-700 text-white shadow-sm",
-  orange: "bg-orange-600 text-white shadow-sm",
+  teal: "bg-[var(--metric-primary)] text-[var(--metric-text-on-primary)] shadow-sm shadow-[var(--metric-shadow)]",
+  emerald: "bg-[var(--metric-primary)] text-[var(--metric-text-on-primary)] shadow-sm shadow-[var(--metric-shadow)]",
+  orange: "bg-[var(--metric-primary)] text-[var(--metric-text-on-primary)] shadow-sm shadow-[var(--metric-shadow)]",
 };
 
 export default function Topbar() {
@@ -30,17 +30,17 @@ export default function Topbar() {
   const addEntryHref = `${NAV_PATHS[NAVIGATION_ITEMS.ENTRIES]}?${addEntryParams.toString()}`;
 
   return (
-    <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/80 px-4 py-4 backdrop-blur-xl sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+    <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/85 px-4 py-4 shadow-sm shadow-[var(--metric-shadow)] backdrop-blur-xl transition-colors duration-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0">
         <h1 className="text-xl font-semibold text-slate-900">{activeItem}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Monitor your activity, trends and recent entries.
+          Monitor your {metricConfigs[activeMetric].label.toLowerCase()} trends and recent entries.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div
-          className="grid grid-cols-3 rounded-2xl border border-slate-200 bg-white/80 p-1 text-sm font-semibold text-slate-600 shadow-sm"
+          className="grid grid-cols-3 rounded-2xl border border-slate-200/80 bg-white/80 p-1 text-sm font-semibold text-slate-600 shadow-sm"
           aria-label="Metric tabs"
         >
           {METRIC_TYPES.map((metricType) => {
@@ -56,7 +56,7 @@ export default function Topbar() {
                 className={`rounded-xl px-3 py-2 transition ${
                   isActive
                     ? metricTabActiveClasses[config.accent]
-                    : "hover:bg-slate-100 hover:text-slate-950"
+                    : "hover:bg-[var(--metric-primary-soft)] hover:text-slate-950"
                 }`}
               >
                 {config.label}
@@ -74,13 +74,13 @@ export default function Topbar() {
           <input
             type="search"
             placeholder="Search analytics"
-            className="h-10 w-full rounded-2xl border border-slate-200 bg-white/80 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 sm:w-56"
+            className="h-10 w-full rounded-2xl border border-slate-200 bg-white/80 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)] sm:w-56"
           />
         </label>
 
         <Link
           href={addEntryHref}
-          className="rounded-2xl bg-slate-950 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 hover:bg-teal-700"
+          className="rounded-2xl bg-[var(--metric-panel-strong)] px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-0.5 hover:bg-[var(--metric-primary-dark)]"
         >
           Add Entry
         </Link>

@@ -29,7 +29,7 @@ export default function EntryList({
       {entries.map((entry) => (
         <div
           key={entry.id}
-          className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-white hover:shadow-md"
+          className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white hover:shadow-md"
         >
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -73,7 +73,7 @@ export default function EntryList({
                 <button
                   type="button"
                   onClick={() => onEditEntry(entry)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50"
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-[var(--metric-secondary)] hover:bg-[var(--metric-secondary-soft)]"
                 >
                   Edit
                 </button>

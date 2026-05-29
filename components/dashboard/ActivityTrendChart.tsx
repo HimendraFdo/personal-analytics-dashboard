@@ -39,9 +39,9 @@ export default function ActivityTrendChart({
       <LineChart data={data} margin={{ top: 10, right: 18, left: -10, bottom: 0 }}>
         <defs>
           <linearGradient id="activityStroke" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#0f766e" />
-            <stop offset="55%" stopColor="#2563eb" />
-            <stop offset="100%" stopColor="#f59e0b" />
+            <stop offset="0%" stopColor="var(--metric-chart-start)" />
+            <stop offset="55%" stopColor="var(--metric-chart-mid)" />
+            <stop offset="100%" stopColor="var(--metric-chart-end)" />
           </linearGradient>
         </defs>
         <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 6" vertical={false} />
@@ -63,7 +63,7 @@ export default function ActivityTrendChart({
             valueFormatter(Number(value)),
             tooltipLabel,
           ]}
-          cursor={{ stroke: "#cbd5e1", strokeWidth: 1 }}
+          cursor={{ stroke: "var(--metric-primary-soft)", strokeWidth: 1 }}
           contentStyle={{
             border: "1px solid #e2e8f0",
             borderRadius: 16,
@@ -75,8 +75,8 @@ export default function ActivityTrendChart({
           dataKey="total"
           stroke="url(#activityStroke)"
           strokeWidth={4}
-          dot={{ r: 4, fill: "#ffffff", stroke: "#0f766e", strokeWidth: 2 }}
-          activeDot={{ r: 7, fill: "#0f766e", stroke: "#ffffff", strokeWidth: 3 }}
+          dot={{ r: 4, fill: "#ffffff", stroke: "var(--metric-primary)", strokeWidth: 2 }}
+          activeDot={{ r: 7, fill: "var(--metric-primary)", stroke: "#ffffff", strokeWidth: 3 }}
         />
       </LineChart>
     </ResponsiveContainer>
