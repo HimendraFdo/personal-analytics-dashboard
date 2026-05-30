@@ -4,6 +4,7 @@ import { EntryCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
+import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import {
   entryIdSchema,
   parseEntryDate,
@@ -20,6 +21,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesUpdate,
+      userId,
+    });
+    if (limited) {
+      return limited;
     }
 
     const { id: rawId } = await context.params;
@@ -120,6 +129,14 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesDelete,
+      userId,
+    });
+    if (limited) {
+      return limited;
     }
 
     const { id: rawId } = await context.params;

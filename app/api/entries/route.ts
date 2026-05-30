@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
 import { parseMetricType } from "@/lib/metrics";
+import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import {
   createEntrySchema,
   parseEntryDate,
@@ -32,6 +33,14 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesRead,
+      userId,
+    });
+    if (limited) {
+      return limited;
     }
 
     const { searchParams } = request.nextUrl;
@@ -75,6 +84,14 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesCreate,
+      userId,
+    });
+    if (limited) {
+      return limited;
     }
 
     const body = await request.json();

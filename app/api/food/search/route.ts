@@ -2,6 +2,11 @@ import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { jsonError } from "@/lib/api-response";
 import type { FoodSearchResult } from "@/lib/nutrition";
+import {
+  getClientIp,
+  RATE_LIMITS,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 
 type OpenFoodFactsProduct = {
   code?: string;
@@ -55,6 +60,22 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const ipLimited = await rateLimitResponse({
+      ...RATE_LIMITS.foodSearchIp,
+      ip: getClientIp(request),
+    });
+    if (ipLimited) {
+      return ipLimited;
+    }
+
+    const userLimited = await rateLimitResponse({
+      ...RATE_LIMITS.foodSearchUser,
+      userId,
+    });
+    if (userLimited) {
+      return userLimited;
     }
 
     const query = request.nextUrl.searchParams.get("q")?.trim();

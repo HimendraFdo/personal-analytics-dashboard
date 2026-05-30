@@ -3,6 +3,7 @@ export type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "NOT_FOUND"
   | "METHOD_NOT_ALLOWED"
+  | "RATE_LIMITED"
   | "INTERNAL_ERROR";
 
 export type ApiErrorBody = {
