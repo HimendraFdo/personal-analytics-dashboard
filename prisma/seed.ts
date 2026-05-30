@@ -8,9 +8,12 @@ async function main() {
     return;
   }
 
+  const userId = process.env.SEED_USER_ID ?? "seed_demo_user";
+
   await prisma.entry.createMany({
     data: [
       {
+        userId,
         title: "Study Session",
         value: 150,
         metricType: "time",
@@ -19,6 +22,7 @@ async function main() {
         note: "Worked on frontend layout",
       },
       {
+        userId,
         title: "Budget Review",
         value: 30,
         metricType: "time",
@@ -27,6 +31,7 @@ async function main() {
         note: "Lunch and coffee",
       },
       {
+        userId,
         title: "Workout",
         value: 45,
         metricType: "time",

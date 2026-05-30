@@ -22,7 +22,7 @@ export const createEntrySchema = z.object({
   carbsGrams: optionalNutritionNumber,
   fatGrams: optionalNutritionNumber,
   foodSource: optionalFoodText,
-});
+}).strict();
 
 export const updateEntrySchema = z
   .object({
@@ -39,6 +39,7 @@ export const updateEntrySchema = z
     fatGrams: optionalNutritionNumber,
     foodSource: optionalFoodText,
   })
+  .strict()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
   });

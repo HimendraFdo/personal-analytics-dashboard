@@ -80,8 +80,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             foodSource: null,
           };
 
-    const entry = await prisma.entry.update({
-      where: { id },
+    const result = await prisma.entry.updateMany({
+      where: { id, userId },
       data: {
         ...(title !== undefined ? { title } : {}),
         ...(value !== undefined ? { value } : {}),
@@ -94,6 +94,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         ...nutritionData,
       },
     });
+
+    if (result.count === 0) {
+      return jsonError("Entry not found", "NOT_FOUND", 404);
+    }
+
+    const entry = await prisma.entry.findFirst({ where: { id, userId } });
+
+    if (!entry) {
+      return jsonError("Entry not found", "NOT_FOUND", 404);
+    }
 
     return Response.json(serializeEntryJson(entry));
   } catch (error) {
@@ -120,13 +130,12 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     }
 
     const id = idResult.data;
-    const existing = await prisma.entry.findFirst({ where: { id, userId } });
+    const result = await prisma.entry.deleteMany({ where: { id, userId } });
 
-    if (!existing) {
+    if (result.count === 0) {
       return jsonError("Entry not found", "NOT_FOUND", 404);
     }
 
-    await prisma.entry.delete({ where: { id } });
     return new Response(null, { status: 204 });
   } catch {
     return jsonError("Failed to delete entry", "INTERNAL_ERROR", 500);

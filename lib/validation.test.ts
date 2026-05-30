@@ -4,6 +4,7 @@ import {
   entryIdSchema,
   parseEntryDate,
   sortSchema,
+  updateEntrySchema,
 } from "./validation";
 
 describe("parseEntryDate", () => {
@@ -118,6 +119,29 @@ describe("createEntrySchema", () => {
       category: "Study",
       date: "2026-05-16",
     });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects ownership fields", () => {
+    const result = createEntrySchema.safeParse({
+      userId: "user_attacker",
+      title: "Study session",
+      value: 45,
+      category: "Study",
+      date: "2026-05-16",
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("updateEntrySchema", () => {
+  it("rejects ownership fields", () => {
+    const result = updateEntrySchema.safeParse({
+      userId: "user_attacker",
+      title: "Updated",
+    });
+
     expect(result.success).toBe(false);
   });
 });

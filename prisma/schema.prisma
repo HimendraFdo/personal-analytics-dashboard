@@ -16,7 +16,7 @@ enum EntryCategory {
 
 model Entry {
   id         String        @id @default(uuid()) @db.Uuid
-  userId     String?
+  userId     String
   title      String
   value      Float
   metricType String        @default("time")
