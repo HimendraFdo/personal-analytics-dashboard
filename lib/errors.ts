@@ -1,8 +1,12 @@
 export type ApiErrorCode =
   | "UNAUTHORIZED"
+  | "FORBIDDEN"
   | "VALIDATION_ERROR"
+  | "UNSUPPORTED_MEDIA_TYPE"
+  | "PAYLOAD_TOO_LARGE"
   | "NOT_FOUND"
   | "METHOD_NOT_ALLOWED"
+  | "RATE_LIMITED"
   | "INTERNAL_ERROR";
 
 export type ApiErrorBody = {

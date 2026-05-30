@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { EntryCategory, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { withRlsUserContext } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
 import { parseMetricType } from "@/lib/metrics";
+import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { validateMutationRequest } from "@/lib/request-security";
 import {
   createEntrySchema,
   parseEntryDate,
@@ -34,6 +36,14 @@ export async function GET(request: NextRequest) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
     }
 
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesRead,
+      userId,
+    });
+    if (limited) {
+      return limited;
+    }
+
     const { searchParams } = request.nextUrl;
     const category = searchParams.get("category");
     const metricType = parseMetricType(searchParams.get("metric"));
@@ -52,14 +62,16 @@ export async function GET(request: NextRequest) {
       return jsonError("Invalid category", "VALIDATION_ERROR", 400);
     }
 
-    const entries = await prisma.entry.findMany({
-      where: {
-        userId,
-        metricType,
-        ...(category ? { category: category as EntryCategory } : {}),
-      },
-      orderBy: getOrderBy(sortResult.data),
-    });
+    const entries = await withRlsUserContext(userId, (tx) =>
+      tx.entry.findMany({
+        where: {
+          userId,
+          metricType,
+          ...(category ? { category: category as EntryCategory } : {}),
+        },
+        orderBy: getOrderBy(sortResult.data),
+      })
+    );
 
     return Response.json({
       entries: entries.map(serializeEntryJson),
@@ -75,6 +87,21 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const securityError = validateMutationRequest(request, {
+      requireJson: true,
+    });
+    if (securityError) {
+      return securityError;
+    }
+
+    const limited = await rateLimitResponse({
+      ...RATE_LIMITS.entriesCreate,
+      userId,
+    });
+    if (limited) {
+      return limited;
     }
 
     const body = await request.json();
@@ -121,21 +148,23 @@ export async function POST(request: NextRequest) {
             foodSource: null,
           };
 
-    const entry = await prisma.entry.create({
-      data: {
-        userId,
-        title,
-        value,
-        metricType,
-        category: (category ??
-          DEFAULT_ENTRY_CATEGORIES[
-            metricType as keyof typeof DEFAULT_ENTRY_CATEGORIES
-          ]) as EntryCategory,
-        date: parseEntryDate(date),
-        note: note ?? "",
-        ...nutritionData,
-      },
-    });
+    const entry = await withRlsUserContext(userId, (tx) =>
+      tx.entry.create({
+        data: {
+          userId,
+          title,
+          value,
+          metricType,
+          category: (category ??
+            DEFAULT_ENTRY_CATEGORIES[
+              metricType as keyof typeof DEFAULT_ENTRY_CATEGORIES
+            ]) as EntryCategory,
+          date: parseEntryDate(date),
+          note: note ?? "",
+          ...nutritionData,
+        },
+      })
+    );
 
     return Response.json(serializeEntryJson(entry), { status: 201 });
   } catch (error) {

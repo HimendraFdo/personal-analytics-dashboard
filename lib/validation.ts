@@ -22,7 +22,7 @@ export const createEntrySchema = z.object({
   carbsGrams: optionalNutritionNumber,
   fatGrams: optionalNutritionNumber,
   foodSource: optionalFoodText,
-});
+}).strict();
 
 export const updateEntrySchema = z
   .object({
@@ -39,6 +39,7 @@ export const updateEntrySchema = z
     fatGrams: optionalNutritionNumber,
     foodSource: optionalFoodText,
   })
+  .strict()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
   });
@@ -49,6 +50,8 @@ export const sortSchema = z
   .enum(["date_desc", "date_asc", "value_desc", "value_asc"])
   .optional()
   .default("date_desc");
+
+export const entryIdSchema = z.string().uuid();
 
 export function parseEntryDate(input: string | Date): Date {
   if (input instanceof Date) {

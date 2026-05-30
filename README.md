@@ -90,16 +90,16 @@ cd personal-analytics-dashboard
 npm install
 ```
 
-Create `.env.local`:
+Create `.env.local` from `.env.example`, then replace the placeholders with values from Neon and Clerk:
 
 ```bash
-DATABASE_URL="postgresql://..."
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
-CLERK_SECRET_KEY="sk_..."
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_or_pk_live_placeholder"
+CLERK_SECRET_KEY="sk_test_or_sk_live_placeholder"
 NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL="/dashboard"
+NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL="/dashboard"
 ```
 
 Then prepare the database and start the app:
@@ -117,12 +117,22 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string, usually Neon in production |
+| `DIRECT_DATABASE_URL` | Recommended for production migrations | Migration/admin PostgreSQL connection string, preferably a direct Neon URL |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Public Clerk browser key |
 | `CLERK_SECRET_KEY` | Yes | Server-side Clerk key used by protected routes |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Recommended | Points Clerk to the local `/sign-in` route |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | Points Clerk to the local `/sign-up` route |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | Recommended | Sends users to `/dashboard` after sign in |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | Recommended | Sends users to `/dashboard` after sign up |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign in |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign up |
+
+### Database roles and RLS
+
+`Entry` rows are protected by PostgreSQL row level security in addition to the API's Clerk `userId` filters. Production should use separate database roles:
+
+- `DATABASE_URL`: runtime app role. It must not own the `Entry` table and must not have `BYPASSRLS`.
+- `DIRECT_DATABASE_URL`: migration/admin role. Use this for Prisma migrations and schema changes.
+
+The runtime role needs only the privileges required to read and mutate app tables. On Neon, the runtime URL may use the pooled `-pooler` host. RLS user context is set with `set_config(..., true)` inside the same Prisma transaction as protected `Entry` queries, so it is safe with PgBouncer transaction pooling.
 
 ---
 
