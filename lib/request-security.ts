@@ -40,6 +40,10 @@ function getAllowedOrigins(options: RequestSecurityOptions): Set<string> {
   return new Set(options.allowedOrigins ?? getConfiguredAllowedOrigins());
 }
 
+function getRequestUrlOrigin(request: Request): string | null {
+  return normalizeOrigin(request.url);
+}
+
 function getRefererOrigin(headers: Headers): string | null {
   const referer = headers.get("referer");
 
@@ -98,7 +102,16 @@ export function validateMutationRequest(
   request: Request,
   options: RequestSecurityOptions = {}
 ): Response | null {
-  if (!hasAllowedRequestOrigin(request.headers, options)) {
+  const configuredOrigins = options.allowedOrigins ?? getConfiguredAllowedOrigins();
+  const requestUrlOrigin = getRequestUrlOrigin(request);
+  const allowedOrigins =
+    configuredOrigins.length > 0
+      ? configuredOrigins
+      : requestUrlOrigin
+        ? [requestUrlOrigin]
+        : [];
+
+  if (!hasAllowedRequestOrigin(request.headers, { ...options, allowedOrigins })) {
     return jsonError("Forbidden", "FORBIDDEN", 403);
   }
 

@@ -3,6 +3,7 @@ import {
   hasAllowedRequestOrigin,
   hasJsonContentType,
   isContentLengthAllowed,
+  validateMutationRequest,
 } from "@/lib/request-security";
 
 describe("request security helpers", () => {
@@ -34,6 +35,69 @@ describe("request security helpers", () => {
         allowedOrigins: ["https://app.example"],
       })
     ).toBe(false);
+  });
+
+  it("allows same-origin mutations when APP_ORIGIN is not configured", () => {
+    const originalAppOrigin = process.env.APP_ORIGIN;
+    const originalAllowedOrigins = process.env.APP_ALLOWED_ORIGINS;
+    delete process.env.APP_ORIGIN;
+    delete process.env.APP_ALLOWED_ORIGINS;
+
+    try {
+      const request = new Request("http://localhost:3000/api/entries", {
+        method: "POST",
+        headers: {
+          origin: "http://localhost:3000",
+          "content-type": "application/json",
+        },
+      });
+
+      expect(validateMutationRequest(request, { requireJson: true })).toBeNull();
+    } finally {
+      if (originalAppOrigin === undefined) {
+        delete process.env.APP_ORIGIN;
+      } else {
+        process.env.APP_ORIGIN = originalAppOrigin;
+      }
+
+      if (originalAllowedOrigins === undefined) {
+        delete process.env.APP_ALLOWED_ORIGINS;
+      } else {
+        process.env.APP_ALLOWED_ORIGINS = originalAllowedOrigins;
+      }
+    }
+  });
+
+  it("still rejects cross-origin mutations when APP_ORIGIN is not configured", () => {
+    const originalAppOrigin = process.env.APP_ORIGIN;
+    const originalAllowedOrigins = process.env.APP_ALLOWED_ORIGINS;
+    delete process.env.APP_ORIGIN;
+    delete process.env.APP_ALLOWED_ORIGINS;
+
+    try {
+      const request = new Request("http://localhost:3000/api/entries", {
+        method: "POST",
+        headers: {
+          origin: "https://attacker.example",
+          "content-type": "application/json",
+        },
+      });
+
+      const response = validateMutationRequest(request, { requireJson: true });
+      expect(response?.status).toBe(403);
+    } finally {
+      if (originalAppOrigin === undefined) {
+        delete process.env.APP_ORIGIN;
+      } else {
+        process.env.APP_ORIGIN = originalAppOrigin;
+      }
+
+      if (originalAllowedOrigins === undefined) {
+        delete process.env.APP_ALLOWED_ORIGINS;
+      } else {
+        process.env.APP_ALLOWED_ORIGINS = originalAllowedOrigins;
+      }
+    }
   });
 
   it("accepts JSON content types with charset parameters", () => {
