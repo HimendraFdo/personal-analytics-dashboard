@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { EntryCategory } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { withRlsUserContext } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
 import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
@@ -58,65 +58,67 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const existing = await prisma.entry.findFirst({ where: { id, userId } });
-    if (!existing) {
-      return jsonError("Entry not found", "NOT_FOUND", 404);
-    }
+    const entry = await withRlsUserContext(userId, async (tx) => {
+      const existing = await tx.entry.findFirst({ where: { id, userId } });
+      if (!existing) {
+        return null;
+      }
 
-    const {
-      title,
-      value,
-      metricType,
-      category,
-      date,
-      note,
-      foodName,
-      portionGrams,
-      proteinGrams,
-      carbsGrams,
-      fatGrams,
-      foodSource,
-    } = parsed.data;
-    const nextMetricType = metricType ?? existing.metricType;
-    const nutritionData =
-      nextMetricType === "calories"
-        ? {
-            ...(foodName !== undefined ? { foodName } : {}),
-            ...(portionGrams !== undefined ? { portionGrams } : {}),
-            ...(proteinGrams !== undefined ? { proteinGrams } : {}),
-            ...(carbsGrams !== undefined ? { carbsGrams } : {}),
-            ...(fatGrams !== undefined ? { fatGrams } : {}),
-            ...(foodSource !== undefined ? { foodSource } : {}),
-          }
-        : {
-            foodName: null,
-            portionGrams: null,
-            proteinGrams: null,
-            carbsGrams: null,
-            fatGrams: null,
-            foodSource: null,
-          };
+      const {
+        title,
+        value,
+        metricType,
+        category,
+        date,
+        note,
+        foodName,
+        portionGrams,
+        proteinGrams,
+        carbsGrams,
+        fatGrams,
+        foodSource,
+      } = parsed.data;
+      const nextMetricType = metricType ?? existing.metricType;
+      const nutritionData =
+        nextMetricType === "calories"
+          ? {
+              ...(foodName !== undefined ? { foodName } : {}),
+              ...(portionGrams !== undefined ? { portionGrams } : {}),
+              ...(proteinGrams !== undefined ? { proteinGrams } : {}),
+              ...(carbsGrams !== undefined ? { carbsGrams } : {}),
+              ...(fatGrams !== undefined ? { fatGrams } : {}),
+              ...(foodSource !== undefined ? { foodSource } : {}),
+            }
+          : {
+              foodName: null,
+              portionGrams: null,
+              proteinGrams: null,
+              carbsGrams: null,
+              fatGrams: null,
+              foodSource: null,
+            };
 
-    const result = await prisma.entry.updateMany({
-      where: { id, userId },
-      data: {
-        ...(title !== undefined ? { title } : {}),
-        ...(value !== undefined ? { value } : {}),
-        ...(metricType !== undefined ? { metricType } : {}),
-        ...(category !== undefined
-          ? { category: category as EntryCategory }
-          : {}),
-        ...(date !== undefined ? { date: parseEntryDate(date) } : {}),
-        ...(note !== undefined ? { note } : {}),
-        ...nutritionData,
-      },
+      const result = await tx.entry.updateMany({
+        where: { id, userId },
+        data: {
+          ...(title !== undefined ? { title } : {}),
+          ...(value !== undefined ? { value } : {}),
+          ...(metricType !== undefined ? { metricType } : {}),
+          ...(category !== undefined
+            ? { category: category as EntryCategory }
+            : {}),
+          ...(date !== undefined ? { date: parseEntryDate(date) } : {}),
+          ...(note !== undefined ? { note } : {}),
+          ...nutritionData,
+        },
+      });
+
+      if (result.count === 0) {
+        return null;
+      }
+
+      return tx.entry.findFirst({ where: { id, userId } });
     });
-
-    if (result.count === 0) {
-      return jsonError("Entry not found", "NOT_FOUND", 404);
-    }
-
-    const entry = await prisma.entry.findFirst({ where: { id, userId } });
 
     if (!entry) {
       return jsonError("Entry not found", "NOT_FOUND", 404);
@@ -160,7 +162,9 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     const id = idResult.data;
-    const result = await prisma.entry.deleteMany({ where: { id, userId } });
+    const result = await withRlsUserContext(userId, (tx) =>
+      tx.entry.deleteMany({ where: { id, userId } })
+    );
 
     if (result.count === 0) {
       return jsonError("Entry not found", "NOT_FOUND", 404);

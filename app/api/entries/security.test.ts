@@ -16,6 +16,16 @@ vi.mock("@clerk/nextjs/server", () => ({
 }));
 
 vi.mock("@/lib/prisma", () => ({
+  withRlsUserContext: (_userId: string, callback: (tx: unknown) => unknown) =>
+    callback({
+      entry: {
+        create: mocks.create,
+        findFirst: mocks.findFirst,
+        findMany: mocks.findMany,
+        updateMany: mocks.updateMany,
+        deleteMany: mocks.deleteMany,
+      },
+    }),
   prisma: {
     entry: {
       create: mocks.create,
