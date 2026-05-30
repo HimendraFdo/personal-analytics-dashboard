@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { jsonError } from "@/lib/api-response";
+import { validateFoodSearchQuery } from "@/lib/food-search";
 import type { FoodSearchResult } from "@/lib/nutrition";
 import {
   getClientIp,
@@ -25,6 +26,8 @@ type OpenFoodFactsProduct = {
 type OpenFoodFactsSearchResponse = {
   products?: OpenFoodFactsProduct[];
 };
+
+const FOOD_SEARCH_TIMEOUT_MS = 5_000;
 
 function toNumber(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -78,13 +81,13 @@ export async function GET(request: NextRequest) {
       return userLimited;
     }
 
-    const query = request.nextUrl.searchParams.get("q")?.trim();
-    if (!query || query.length < 2) {
-      return jsonError("Search query must be at least 2 characters", "VALIDATION_ERROR", 400);
+    const query = validateFoodSearchQuery(request.nextUrl.searchParams.get("q"));
+    if (!query.success) {
+      return jsonError(query.message, "VALIDATION_ERROR", 400);
     }
 
     const params = new URLSearchParams({
-      search_terms: query,
+      search_terms: query.query,
       search_simple: "1",
       action: "process",
       json: "1",
@@ -93,16 +96,27 @@ export async function GET(request: NextRequest) {
         "code,product_name,generic_name,brands,serving_size,nutriments",
     });
 
-    const response = await fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?${params.toString()}`,
-      {
-        headers: {
-          "User-Agent":
-            "PersonalAnalyticsDashboard/1.0 (food lookup for user-entered nutrition)",
-        },
-        next: { revalidate: 60 * 60 * 24 },
-      }
-    );
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FOOD_SEARCH_TIMEOUT_MS);
+    let response: Response;
+
+    try {
+      response = await fetch(
+        `https://world.openfoodfacts.org/cgi/search.pl?${params.toString()}`,
+        {
+          headers: {
+            "User-Agent":
+              "PersonalAnalyticsDashboard/1.0 (food lookup for user-entered nutrition)",
+          },
+          next: { revalidate: 60 * 60 * 24 },
+          signal: controller.signal,
+        }
+      );
+    } catch {
+      return jsonError("Food lookup failed", "INTERNAL_ERROR", 502);
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
       return jsonError("Food lookup failed", "INTERNAL_ERROR", 502);
