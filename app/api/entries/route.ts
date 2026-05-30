@@ -6,6 +6,7 @@ import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
 import { parseMetricType } from "@/lib/metrics";
 import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { validateMutationRequest } from "@/lib/request-security";
 import {
   createEntrySchema,
   parseEntryDate,
@@ -84,6 +85,13 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const securityError = validateMutationRequest(request, {
+      requireJson: true,
+    });
+    if (securityError) {
+      return securityError;
     }
 
     const limited = await rateLimitResponse({

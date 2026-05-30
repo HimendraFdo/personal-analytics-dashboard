@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
 import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
+import { validateMutationRequest } from "@/lib/request-security";
 import {
   entryIdSchema,
   parseEntryDate,
@@ -21,6 +22,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const securityError = validateMutationRequest(request, {
+      requireJson: true,
+    });
+    if (securityError) {
+      return securityError;
     }
 
     const limited = await rateLimitResponse({
@@ -123,12 +131,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(_request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const { userId } = await auth();
 
     if (!userId) {
       return jsonError("Unauthorized", "UNAUTHORIZED", 401);
+    }
+
+    const securityError = validateMutationRequest(request);
+    if (securityError) {
+      return securityError;
     }
 
     const limited = await rateLimitResponse({
