@@ -20,6 +20,26 @@ type ActivityTrendChartProps = {
   tooltipLabel?: string;
 };
 
+function formatAxisValue(value: number): string {
+  const absoluteValue = Math.abs(value);
+
+  if (absoluteValue >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}m`;
+  }
+
+  if (absoluteValue >= 1_000) {
+    return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function formatDateTick(date: string): string {
+  const [, month, day] = date.split("-");
+
+  return month && day ? `${Number(month)}/${Number(day)}` : date;
+}
+
 export default function ActivityTrendChart({
   data,
   valueFormatter = (value) => String(value),
@@ -36,7 +56,7 @@ export default function ActivityTrendChart({
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 10, right: 18, left: -10, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="activityStroke" x1="0" x2="1" y1="0" y2="0">
             <stop offset="0%" stopColor="var(--metric-chart-start)" />
@@ -49,14 +69,16 @@ export default function ActivityTrendChart({
           dataKey="date"
           axisLine={false}
           tickLine={false}
+          tickFormatter={formatDateTick}
           tick={{ fill: "#64748b", fontSize: 12 }}
+          tickMargin={8}
         />
         <YAxis
           axisLine={false}
           tickLine={false}
           tick={{ fill: "#64748b", fontSize: 12 }}
-          tickFormatter={(value) => valueFormatter(Number(value))}
-          width={80}
+          tickFormatter={(value) => formatAxisValue(Number(value))}
+          width={44}
         />
         <Tooltip
           formatter={(value) => [
