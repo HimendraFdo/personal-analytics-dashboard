@@ -30,15 +30,15 @@ export default function Topbar() {
   const addEntryHref = `${NAV_PATHS[NAVIGATION_ITEMS.ENTRIES]}?${addEntryParams.toString()}`;
 
   return (
-    <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-white/70 bg-white/85 px-4 py-4 shadow-sm shadow-[var(--metric-shadow)] backdrop-blur-xl transition-colors duration-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+    <header className="sticky top-0 z-10 flex flex-col gap-3 border-b border-white/70 bg-white/85 px-3 py-3 shadow-sm shadow-[var(--metric-shadow)] backdrop-blur-xl transition-colors duration-500 sm:px-6 sm:py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold text-slate-900">{activeItem}</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-lg font-semibold text-slate-900 sm:text-xl">{activeItem}</h1>
+        <p className="mt-1 hidden text-sm text-slate-500 sm:block">
           Monitor your {metricConfigs[activeMetric].label.toLowerCase()} trends and recent entries.
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
         <div
           className="grid grid-cols-3 rounded-2xl border border-slate-200/80 bg-white/80 p-1 text-sm font-semibold text-slate-600 shadow-sm"
           aria-label="Metric tabs"
@@ -53,7 +53,7 @@ export default function Topbar() {
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => setActiveMetric(metricType)}
-                className={`rounded-xl px-3 py-2 transition ${
+                className={`min-h-11 rounded-xl px-2 py-2 transition sm:px-3 ${
                   isActive
                     ? metricTabActiveClasses[config.accent]
                     : "hover:bg-[var(--metric-primary-soft)] hover:text-slate-950"
@@ -65,40 +65,45 @@ export default function Topbar() {
           })}
         </div>
 
-        <label className="relative block">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
-          <input
-            type="search"
-            placeholder="Search analytics"
-            className="h-10 w-full rounded-2xl border border-slate-200 bg-white/80 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)] sm:w-56"
-          />
-        </label>
+        <div className="flex min-w-0 items-center gap-2 lg:gap-3">
+          <label className="relative min-w-0 flex-1 lg:block lg:flex-none">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:left-4">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              placeholder="Search analytics"
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-white/80 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)] sm:pl-10 sm:pr-4 lg:w-56"
+            />
+          </label>
 
-        <Link
-          href={addEntryHref}
-          className="rounded-2xl bg-[var(--metric-panel-strong)] px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-0.5 hover:bg-[var(--metric-primary-dark)]"
-        >
-          Add Entry
-        </Link>
+          <Link
+            href={addEntryHref}
+            className="flex min-h-11 shrink-0 items-center rounded-2xl bg-[var(--metric-panel-strong)] px-3 text-center text-sm font-semibold text-white shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-0.5 hover:bg-[var(--metric-primary-dark)] sm:px-4"
+          >
+            Add Entry
+          </Link>
 
-        {user ? (
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-10 w-10",
-              },
-            }}
-            fallback={
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
-                {fallbackInitial}
-              </div>
-            }
-          />
-        ) : null}
+          {user ? (
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center">
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonTrigger: "h-11 w-11",
+                    avatarBox: "h-10 w-10",
+                  },
+                }}
+                fallback={
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-700">
+                    {fallbackInitial}
+                  </div>
+                }
+              />
+            </div>
+          ) : null}
+        </div>
       </div>
     </header>
   );
