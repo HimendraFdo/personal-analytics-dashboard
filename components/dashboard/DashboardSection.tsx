@@ -130,16 +130,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         };
 
   return (
-    <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-[var(--metric-panel-strong)] text-white shadow-2xl shadow-[var(--metric-shadow)] transition-colors duration-500">
+    <div className="space-y-6 sm:space-y-8">
+      <section className="relative overflow-hidden rounded-3xl border border-white/70 bg-[var(--metric-panel-strong)] text-white shadow-2xl shadow-[var(--metric-shadow)] transition-colors duration-500 sm:rounded-[2rem]">
         <div className="pointer-events-none absolute inset-0 opacity-70">
           <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-[var(--metric-primary)] blur-3xl" />
           <div className="absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-[var(--metric-secondary)] opacity-50 blur-3xl" />
         </div>
-        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_420px] lg:p-8">
+        <div className="grid gap-4 p-4 sm:gap-6 sm:p-6 lg:grid-cols-[1fr_420px] lg:p-8">
           <div className="relative">
             <p className="text-sm font-semibold text-[var(--metric-primary-soft)]">Overview</p>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="mt-2 text-2xl font-bold text-white sm:text-4xl">
               Welcome back{isLoaded ? `, ${displayName}` : ""}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
@@ -148,7 +148,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </p>
           </div>
 
-          <div className="relative grid grid-cols-2 gap-3">
+          <div className="relative grid grid-cols-2 gap-2 sm:gap-3">
             {[
               ["Period", "This Month"],
               ["Entries", totalEntries.toString()],
@@ -157,21 +157,21 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             ].map(([label, value], index) => (
               <div
                 key={label}
-                className={`rounded-2xl border px-4 py-3 backdrop-blur ${
+                className={`min-w-0 rounded-2xl border px-3 py-2.5 backdrop-blur sm:px-4 sm:py-3 ${
                   index === 3
                     ? "border-white/20 bg-[var(--metric-primary)]/20"
                     : "border-white/10 bg-white/10"
                 }`}
               >
                 <p className="text-xs font-semibold uppercase text-slate-400">{label}</p>
-                <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+                <p className="mt-1 break-all text-xs font-semibold text-white sm:break-normal sm:text-sm">{value}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         <SummaryCard title={metricConfig.dashboardLabels.total} value={metricConfig.formatValue(totalValue)} accent="primary" detail="Tracked" />
         <SummaryCard title="This Week" value={metricConfig.formatValue(valueThisWeek)} accent="secondary" detail="7 days" />
         <SummaryCard title={metricConfig.analyticsLabels.topCategory} value={topCategory} accent="tertiary" detail="By value" />
@@ -179,16 +179,16 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
       </section>
 
       {isCalories && (
-        <section className="grid gap-4 sm:grid-cols-3">
+        <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
           <SummaryCard title="Protein" value={formatMacroValue(macroTotals.proteinGrams)} accent="primary" detail="Total" />
           <SummaryCard title="Carbs" value={formatMacroValue(macroTotals.carbsGrams)} accent="secondary" detail="Total" />
           <SummaryCard title="Fat" value={formatMacroValue(macroTotals.fatGrams)} accent="tertiary" detail="Total" />
         </section>
       )}
 
-      <section className="grid gap-6 xl:grid-cols-12">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)] xl:col-span-8">
-          <div className="flex items-start justify-between gap-4">
+      <section className="grid gap-4 sm:gap-6 xl:grid-cols-12">
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6 xl:col-span-8">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
             <div>
               <h3 className="text-xl font-semibold text-slate-900">
                 {metricConfig.analyticsLabels.trendTitle}
@@ -203,7 +203,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </div>
           </div>
 
-          <div className="mt-6 h-80">
+          <div className="mt-4 h-64 sm:mt-6 sm:h-80">
             <ActivityTrendChart
               data={timeSeriesChartData}
               valueFormatter={metricConfig.formatValue}
@@ -220,14 +220,14 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           )}
         </div>
 
-        <div className="space-y-6 xl:col-span-4">
-          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="space-y-4 sm:space-y-6 xl:col-span-4">
+          <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
             <h3 className="text-lg font-semibold text-slate-900">Insights</h3>
             <p className="mt-1 text-sm text-slate-500">
               Quick highlights based on recent trends.
             </p>
 
-            <div className="mt-5 space-y-3">
+            <div className="mt-4 space-y-3 sm:mt-5">
               {[
                 `You currently have ${totalEntries} tracked entries.`,
                 `Your top category by ${metricConfig.label.toLowerCase()} is ${topCategory}.`,
@@ -235,7 +235,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               ].map((insight) => (
                 <div
                   key={insight}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white sm:p-4"
                 >
                   <p className="text-sm font-medium text-slate-900">{insight}</p>
                 </div>
@@ -243,13 +243,13 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+          <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
             <h3 className="text-lg font-semibold text-slate-900">Tracking Coverage</h3>
             <p className="mt-1 text-sm text-slate-500">
               Recent coverage for your {metricConfig.label.toLowerCase()} entries.
             </p>
 
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 space-y-4 sm:mt-5">
               <div>
                 <div className="mb-2 flex justify-between text-sm">
                   <span className="text-slate-600">Entries This Week</span>
@@ -280,14 +280,14 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+      <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">Recent Entries</h3>
           <p className="mt-1 text-sm text-slate-500">
             Your latest tracked items appear here.
           </p>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-4 space-y-3 sm:mt-5">
             {recentEntries.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
                 {metricConfig.analyticsLabels.latestEmpty}
@@ -296,9 +296,9 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               recentEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white hover:shadow-md"
+                  className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-4"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-sm font-medium text-slate-900">
                       {entry.title}
                     </span>
@@ -307,7 +307,7 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
                     </p>
                   </div>
 
-                  <div className="text-right">
+                  <div className="min-w-0 text-left sm:text-right">
                     <span className="text-sm font-semibold text-slate-700">
                       {metricConfig.formatValue(entry.value)}
                     </span>
@@ -325,13 +325,13 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">{dashboardBreakdown.title}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {dashboardBreakdown.description}
           </p>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 space-y-3 sm:mt-6">
             {dashboardBreakdown.data.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
                 {dashboardBreakdown.emptyMessage}
@@ -340,13 +340,13 @@ export default function DashboardSection({ entries }: DashboardSectionProps) {
               dashboardBreakdown.data.map((item) => (
                 <div
                   key={item.category}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-[var(--metric-secondary)] hover:bg-white"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:border-[var(--metric-secondary)] hover:bg-white sm:p-4"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-sm font-medium text-slate-900">{item.category}</span>
                     <p className="mt-1 text-xs text-slate-500">{item.detail}</p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+                  <span className="max-w-full break-all rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm sm:break-normal">
                     {dashboardBreakdown.valueFormatter(item.total)}
                   </span>
                 </div>
