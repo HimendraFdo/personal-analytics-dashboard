@@ -123,11 +123,11 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         };
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+    <div className="space-y-4 sm:space-y-6">
+      <section className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-slate-950">Analytics</h2>
+            <h2 className="text-2xl font-bold text-slate-950 sm:text-3xl">Analytics</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Review derived insights based on your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
@@ -155,11 +155,11 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
         ].map(([label, value, tone]) => (
           <div
             key={label}
-            className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-1 hover:shadow-xl"
+            className="rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-lg shadow-[var(--metric-shadow)] transition hover:-translate-y-1 hover:shadow-xl sm:p-5"
           >
             <p className="text-sm font-semibold text-slate-500">{label}</p>
-            <div className="mt-5 flex items-end justify-between gap-3">
-              <h3 className="min-w-0 break-words text-3xl font-bold text-slate-950">{value}</h3>
+            <div className="mt-4 flex items-end justify-between gap-3 sm:mt-5">
+              <h3 className="min-w-0 break-words text-2xl font-bold text-slate-950 sm:text-3xl">{value}</h3>
               <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
                 Live
               </span>
@@ -177,12 +177,12 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           ].map(([label, value, tone]) => (
             <div
               key={label}
-              className="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-lg shadow-[var(--metric-shadow)]"
+              className="rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-lg shadow-[var(--metric-shadow)] sm:p-5"
             >
               <p className="text-sm font-semibold text-slate-500">{label}</p>
-              <div className="mt-5 flex items-end justify-between gap-3">
-                <h3 className="text-3xl font-bold text-slate-950">{value}</h3>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
+              <div className="mt-4 flex items-end justify-between gap-3 sm:mt-5">
+                <h3 className="min-w-0 break-words text-2xl font-bold text-slate-950 sm:text-3xl">{value}</h3>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
                   Macro
                 </span>
               </div>
@@ -192,7 +192,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       )}
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">{analyticsBreakdown.title}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {analyticsBreakdown.description}
@@ -207,16 +207,16 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
               analyticsBreakdown.data.map((item) => (
                 <div
                   key={item.category}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white"
+                  className="flex flex-col items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{item.category}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium text-slate-900">{item.category}</p>
+                    <p className="mt-1 break-words text-xs text-slate-500">
                       {item.detail}
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
+                  <span className="max-w-full break-words rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 shadow-sm">
                     {analyticsBreakdown.valueFormatter(item.total)}
                   </span>
                 </div>
@@ -225,7 +225,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">Latest Recorded Entry</h3>
           <p className="mt-1 text-sm text-slate-500">
             Most recent item based on entry date.
@@ -234,22 +234,22 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           <div className="mt-5">
             {latestEntry ? (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[var(--metric-primary)]">
-                <p className="text-lg font-semibold text-slate-900">{latestEntry.title}</p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="break-words text-lg font-semibold text-slate-900">{latestEntry.title}</p>
+                <p className="mt-2 break-words text-sm text-slate-500">
                   {latestEntry.category} - {formatDisplayDate(latestEntry.date)}
                 </p>
-                <p className="mt-3 text-sm font-medium text-slate-700">
+                <p className="mt-3 break-words text-sm font-medium text-slate-700">
                   {metricConfig.inputLabel}: {metricConfig.formatValue(latestEntry.value)}
                 </p>
                 {isCalories && (
                   <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-3">
-                    <span>Protein {formatMacroValue(latestEntry.proteinGrams ?? 0)}</span>
-                    <span>Carbs {formatMacroValue(latestEntry.carbsGrams ?? 0)}</span>
-                    <span>Fat {formatMacroValue(latestEntry.fatGrams ?? 0)}</span>
+                    <span className="break-words">Protein {formatMacroValue(latestEntry.proteinGrams ?? 0)}</span>
+                    <span className="break-words">Carbs {formatMacroValue(latestEntry.carbsGrams ?? 0)}</span>
+                    <span className="break-words">Fat {formatMacroValue(latestEntry.fatGrams ?? 0)}</span>
                   </div>
                 )}
                 {latestEntry.note && (
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{latestEntry.note}</p>
+                  <p className="mt-2 break-words text-sm leading-6 text-slate-600">{latestEntry.note}</p>
                 )}
               </div>
             ) : (
@@ -262,13 +262,13 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="min-w-0 rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">{analyticsBreakdown.chartTitle}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {analyticsBreakdown.chartDescription}
           </p>
 
-          <div className="mt-6 h-72">
+          <div className="mt-5 h-64 min-w-0 sm:mt-6 sm:h-72">
             <CategoryTotalsChart
               data={analyticsBreakdown.data}
               valueFormatter={analyticsBreakdown.valueFormatter}
@@ -278,7 +278,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="min-w-0 rounded-[2rem] border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">
             {metricConfig.analyticsLabels.trendTitle}
           </h3>
@@ -286,7 +286,7 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
             {metricConfig.analyticsLabels.trendDescription}
           </p>
 
-          <div className="mt-6 h-72">
+          <div className="mt-5 h-64 min-w-0 sm:mt-6 sm:h-72">
             <ActivityTrendChart
               data={timeSeriesChartData}
               valueFormatter={metricConfig.formatValue}

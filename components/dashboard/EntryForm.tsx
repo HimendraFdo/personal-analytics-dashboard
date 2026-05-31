@@ -332,7 +332,7 @@ export default function EntryForm({
       </div>
 
       {isCalories && (
-        <div className="space-y-4 rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)]/60 p-4">
+        <div className="space-y-4 rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)]/60 p-3 sm:p-4">
           <div className="grid grid-cols-2 rounded-xl border border-[var(--metric-ring)] bg-white p-1 text-sm font-semibold text-slate-600">
             <button
               type="button"
@@ -367,7 +367,7 @@ export default function EntryForm({
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Food
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <input
                     type="search"
                     value={foodQuery}
@@ -380,7 +380,7 @@ export default function EntryForm({
                     type="button"
                     onClick={() => void handleFoodSearch()}
                     disabled={disabled || submitting || foodSearching}
-                    className="rounded-2xl bg-[var(--metric-primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--metric-primary-dark)] disabled:opacity-60"
+                    className="w-full rounded-2xl bg-[var(--metric-primary)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--metric-primary-dark)] disabled:opacity-60 sm:w-auto"
                   >
                     {foodSearching ? "Searching" : "Search"}
                   </button>
@@ -513,7 +513,7 @@ export default function EntryForm({
         />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="submit"
           disabled={disabled || submitting}
@@ -531,7 +531,7 @@ export default function EntryForm({
             type="button"
             onClick={onCancelEdit}
             disabled={disabled || submitting}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60 sm:w-auto"
           >
             Cancel
           </button>

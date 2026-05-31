@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  getNavItemFromPath,
   MAIN_NAV_ITEMS,
   NAV_PATHS,
   type NavigationItem,
@@ -12,11 +13,12 @@ import { metricConfigs, parseMetricType } from "@/lib/metrics";
 export default function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const activeItem = getNavItemFromPath(pathname);
   const activeMetric = parseMetricType(searchParams.get("metric"));
   const metricConfig = metricConfigs[activeMetric];
 
   function isActive(item: NavigationItem) {
-    return pathname === NAV_PATHS[item];
+    return item === activeItem;
   }
 
   function getHref(item: NavigationItem) {
