@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties, ReactNode } from "react";
+import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
@@ -41,7 +42,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="relative flex-1 overflow-y-auto bg-[var(--metric-shell)] p-4 transition-colors duration-500 sm:p-6">
+        <main className="relative flex-1 overflow-y-auto bg-[var(--metric-shell)] p-4 pb-24 transition-colors duration-500 sm:p-6 sm:pb-24 md:pb-6">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -right-20 top-8 h-72 w-72 rounded-full bg-[var(--metric-primary)] opacity-10 blur-3xl" />
             <div className="absolute bottom-10 left-1/4 h-80 w-80 rounded-full bg-[var(--metric-secondary)] opacity-10 blur-3xl" />
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }
