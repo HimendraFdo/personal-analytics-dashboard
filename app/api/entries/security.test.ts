@@ -136,6 +136,22 @@ describe("entry API SQL injection safety", () => {
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 
+  it("falls back to the safe default metric for invalid metric values", async () => {
+    mocks.auth.mockResolvedValue({ userId });
+    mocks.findMany.mockResolvedValue([]);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/entries?metric=not-a-metric")
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ metricType: "time" }),
+      })
+    );
+  });
+
   it("stores SQL-looking title and note text as data", async () => {
     mocks.auth.mockResolvedValue({ userId });
     mocks.create.mockResolvedValue({

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inside Personal Analytics Dashboard</title>
+
+  <!-- Google Fonts: Bricolage Grotesque, DM Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">Inside Personal Analytics Dashboard</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="The User Journey" role="tab" aria-label="Module 1: The User Journey"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the Actors" role="tab" aria-label="Module 2: Meet the Actors"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="Saving an Entry" role="tab" aria-label="Module 3: Saving an Entry"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Metrics and Nutrition" role="tab" aria-label="Module 4: Metrics and Nutrition"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="When Things Break" role="tab" aria-label="Module 5: When Things Break"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What Happens When You Use the Dashboard</h1>
+      <p class="module-subtitle">This app is a private logbook for time, money, and calories. You add entries, then the dashboard turns them into totals, charts, recent history, and trends.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Start with the click you already understand</h2>
+      <p>Imagine you sign in, choose the calories tab, search for a food, and press Add Entry. That one action travels through a <span class="term" data-definition="A frontend is the part of the app running in the browser: buttons, forms, charts, and page interactions.">frontend</span>, an <span class="term" data-definition="An API is a controlled doorway that lets one part of software ask another part to do work, usually by sending and receiving JSON data.">API</span>, validation, authentication, and a database.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+          <div class="pattern-icon" style="background: var(--color-actor-1)">UI</div>
+          <h4 class="pattern-title">You see pages</h4>
+          <p class="pattern-desc">Dashboard, entries, and analytics live under the protected app shell.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+          <div class="pattern-icon" style="background: var(--color-actor-2)">API</div>
+          <h4 class="pattern-title">The browser asks</h4>
+          <p class="pattern-desc">Fetch calls send create, edit, delete, and search requests.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+          <div class="pattern-icon" style="background: var(--color-actor-5)">DB</div>
+          <h4 class="pattern-title">Postgres remembers</h4>
+          <p class="pattern-desc">Prisma writes each entry with the signed-in user's ID.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The shell wraps every protected page</h2>
+      <p>Think of the app shell like a reusable dashboard frame: side navigation, top bar, metric color theme, and shared entry data all stay in place while the page content changes.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">export default function ShellLayout({</span>
+<span class="code-line">  children,</span>
+<span class="code-line">}: Readonly&lt;{</span>
+<span class="code-line">  children: React.ReactNode;</span>
+<span class="code-line">}&gt;) {</span>
+<span class="code-line">  return (</span>
+<span class="code-line">    &lt;Suspense fallback={null}&gt;</span>
+<span class="code-line">      &lt;EntriesProvider&gt;</span>
+<span class="code-line">        &lt;DashboardLayout&gt;{children}&lt;/DashboardLayout&gt;</span>
+<span class="code-line">      &lt;/EntriesProvider&gt;</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">This layout receives whatever page is being viewed.</p>
+            <p class="tl">Suspense lets the page wait safely for browser-only state.</p>
+            <p class="tl">EntriesProvider makes entry data available everywhere inside the shell.</p>
+            <p class="tl">DashboardLayout supplies the shared sidebar, topbar, and page frame.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-accent">
+        <div class="callout-icon">AI</div>
+        <div class="callout-content">
+          <strong class="callout-title">How this helps you steer AI</strong>
+          <p>When you ask for a new protected dashboard page, tell AI to place it inside the shell route group so it gets the same shared provider and layout.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module1">
+      <div class="quiz-question-block" data-correct="option-b" data-explanation-right="Exactly. A new protected page should live inside the shell so it inherits shared data and layout." data-explanation-wrong="Not quite. The public sign-in pages do not receive the dashboard shell or entries provider.">
+        <h3 class="quiz-question">You ask AI to add a new Goals page that should share the sidebar and current metric tab. Where should that work fit?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only in the public sign-in page</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Inside the protected shell area, using the same dashboard layout</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Directly inside Prisma schema first</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Actors</h1>
+      <p class="module-subtitle">A good codebase is easier to steer when you know who is responsible for what. This app has a small cast with clear jobs.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The file tree is the map</h2>
+      <p>Think of the project like an office building. Each floor has a purpose: pages greet visitors, components do visible work, hooks coordinate state, and lib files handle shared rules.</p>
+      <div class="file-tree">
+        <div class="ft-folder open"><span class="ft-name">app/</span><span class="ft-desc">Next.js pages, layouts, loading states, and API routes</span>
+          <div class="ft-children">
+            <div class="ft-folder"><span class="ft-name">(shell)/</span><span class="ft-desc">Protected dashboard, entries, analytics pages</span></div>
+            <div class="ft-folder"><span class="ft-name">api/entries/</span><span class="ft-desc">Server endpoints for entry data</span></div>
+          </div>
+        </div>
+        <div class="ft-folder"><span class="ft-name">components/</span><span class="ft-desc">Visible dashboard pieces like forms, lists, cards, and charts</span></div>
+        <div class="ft-folder"><span class="ft-name">contexts/</span><span class="ft-desc">Shared entry state for every page inside the shell</span></div>
+        <div class="ft-folder"><span class="ft-name">hooks/</span><span class="ft-desc">Browser logic for loading entries and choosing a metric</span></div>
+        <div class="ft-folder"><span class="ft-name">lib/</span><span class="ft-desc">API helpers, validation, analytics, Prisma, nutrition math</span></div>
+        <div class="ft-folder"><span class="ft-name">prisma/</span><span class="ft-desc">Database shape and migrations</span></div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The actors talk like a group chat</h2>
+      <p>When something changes, these pieces do not all mutate the database directly. They pass messages through the right channels.</p>
+      <div class="chat-window" id="chat-actors">
+        <div class="chat-messages">
+          <div class="chat-message" data-msg="0" data-sender="page" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-1)">P</div>
+            <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">Page</span><p>I need entries for the current metric before I can render.</p></div>
+          </div>
+          <div class="chat-message" data-msg="1" data-sender="context" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-2)">C</div>
+            <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">EntriesContext</span><p>I provide loading, error, entries, and mutation functions to every protected page.</p></div>
+          </div>
+          <div class="chat-message" data-msg="2" data-sender="hook" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-3)">H</div>
+            <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">useEntries</span><p>I call fetchEntries, createEntry, updateEntry, and deleteEntry, then update browser state.</p></div>
+          </div>
+          <div class="chat-message" data-msg="3" data-sender="api" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-4)">A</div>
+            <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">API Route</span><p>I check auth, validate input, and talk to Prisma.</p></div>
+          </div>
+          <div class="chat-message" data-msg="4" data-sender="db" style="display:none">
+            <div class="chat-avatar" style="background: var(--color-actor-5)">D</div>
+            <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-5)">Database</span><p>I store only the entries that belong to the signed-in user.</p></div>
+          </div>
+        </div>
+        <div class="chat-typing" id="chat-actors-typing" style="display:none">
+          <div class="chat-avatar" id="chat-actors-typing-avatar">?</div>
+          <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+        </div>
+        <div class="chat-controls">
+          <button class="btn chat-next-btn">Next Message</button>
+          <button class="btn chat-all-btn">Play All</button>
+          <button class="btn chat-reset-btn">Replay</button>
+          <span class="chat-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The provider is the meeting room</h2>
+      <p>A <span class="term" data-definition="A React context is a shared value that many components can read without manually passing it through every layer.">context</span> is useful when many pages need the same live data. Here, it prevents dashboard, entries, and analytics from each fetching separate copies in separate styles.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">export function EntriesProvider({ children }: { children: ReactNode }) {</span>
+<span class="code-line">  const value = useEntries();</span>
+<span class="code-line">  return (</span>
+<span class="code-line">    &lt;EntriesContext.Provider value={value}&gt;{children}&lt;/EntriesContext.Provider&gt;</span>
+<span class="code-line">  );</span>
+<span class="code-line">}</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Run the entry-loading hook once for this part of the app.</p>
+            <p class="tl">Package the entries, loading state, errors, and actions into one value.</p>
+            <p class="tl">Make that value available to everything nested inside the provider.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module2">
+      <div class="quiz-question-block" data-correct="option-c" data-explanation-right="Exactly. Put shared browser state in the hook/context layer, then let pages consume it." data-explanation-wrong="Not quite. A server route should not manage browser tab state, and a chart component should not own global entry loading.">
+        <h3 class="quiz-question">You want every page to know which metric tab is active. Which actor is the best fit?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The Prisma schema</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A single chart component</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A shared hook or context used by the shell</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">How an Entry Gets Saved</h1>
+      <p class="module-subtitle">Saving data is a relay race. Each runner has one job, and the baton is a small object containing title, value, date, note, metric type, and optional nutrition fields.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Follow the baton</h2>
+      <p>The <span class="term" data-definition="JSON is a plain text data format used to send structured values like strings, numbers, arrays, and objects between browser and server.">JSON</span> packet starts in the browser and ends as a row in Postgres. Click through the flow to see which layer owns each step.</p>
+      <div class="flow-animation" data-steps='[
+        {"highlight":"flow-actor-1","label":"User fills EntryForm and presses Add Entry"},
+        {"highlight":"flow-actor-2","label":"useEntries adds metric type and default category","packet":true,"from":"actor-1","to":"actor-2"},
+        {"highlight":"flow-actor-3","label":"lib api sends POST to slash api slash entries","packet":true,"from":"actor-2","to":"actor-3"},
+        {"highlight":"flow-actor-4","label":"route checks Clerk auth and Zod validation","packet":true,"from":"actor-3","to":"actor-4"},
+        {"highlight":"flow-actor-5","label":"Prisma writes the entry and returns a serialized record","packet":true,"from":"actor-4","to":"actor-5"}
+      ]'>
+        <div class="flow-actors">
+          <div class="flow-actor" id="flow-actor-1"><div class="flow-actor-icon">1</div><span>EntryForm</span></div>
+          <div class="flow-actor" id="flow-actor-2"><div class="flow-actor-icon">2</div><span>useEntries</span></div>
+          <div class="flow-actor" id="flow-actor-3"><div class="flow-actor-icon">3</div><span>lib/api</span></div>
+          <div class="flow-actor" id="flow-actor-4"><div class="flow-actor-icon">4</div><span>Route</span></div>
+          <div class="flow-actor" id="flow-actor-5"><div class="flow-actor-icon">5</div><span>Prisma</span></div>
+        </div>
+        <div class="flow-packet" id="flow-packet"></div>
+        <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+        <div class="flow-controls">
+          <button class="btn flow-next-btn">Next Step</button>
+          <button class="btn flow-reset-btn">Restart</button>
+          <span class="flow-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The browser builds the request</h2>
+      <p>A <span class="term" data-definition="A hook is a React function that packages reusable browser behavior, such as loading data or responding to a route change.">hook</span> is a tidy place for repeated browser behavior. Here it turns form data into the exact shape the server expects.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const input: EntryInput = {</span>
+<span class="code-line">  title: payload.title,</span>
+<span class="code-line">  value: payload.value,</span>
+<span class="code-line">  metricType: activeMetric,</span>
+<span class="code-line">  category: payload.category ?? DEFAULT_ENTRY_CATEGORIES[activeMetric],</span>
+<span class="code-line">  date: payload.date.toISOString(),</span>
+<span class="code-line">  note: payload.note,</span>
+<span class="code-line">};</span>
+<span class="code-line">const created = await createEntry(input);</span>
+<span class="code-line">setEntries((current) =&gt; [created, ...current]);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Create the object that will travel to the backend.</p>
+            <p class="tl">Attach the active metric tab, such as time, money, or calories.</p>
+            <p class="tl">Use a default category if the form did not provide one.</p>
+            <p class="tl">Convert the date into a safe string for the API.</p>
+            <p class="tl">Send it, wait for the saved copy, then put it at the top of the visible list.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The server checks the badge before the database</h2>
+      <p>Server routes are the security desk. They verify the signed-in user and reject bad shapes before Prisma is allowed to write anything.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const { userId } = await auth();</span>
+<span class="code-line"></span>
+<span class="code-line">if (!userId) {</span>
+<span class="code-line">  return jsonError("Unauthorized", "UNAUTHORIZED", 401);</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">const body = await request.json();</span>
+<span class="code-line">const parsed = createEntrySchema.safeParse(body);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Ask Clerk who is making this request.</p>
+            <p class="tl">If nobody is signed in, stop immediately with a 401 response.</p>
+            <p class="tl">Read the submitted JSON body.</p>
+            <p class="tl">Use Zod to check that the body has valid fields before writing.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-info">
+        <div class="callout-icon">CS</div>
+        <div class="callout-content"><strong class="callout-title">Universal pattern</strong><p>Good apps validate at the boundary. The moment data enters the server, the code checks whether it is allowed and shaped correctly.</p></div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module3">
+      <div class="quiz-question-block" data-correct="option-a" data-explanation-right="Exactly. If a record belongs to the wrong user, the route should never update it." data-explanation-wrong="Not quite. Frontend hiding is helpful, but the server must enforce ownership because browser code can be bypassed.">
+        <h3 class="quiz-question">A user reports they can edit an entry URL that is not theirs. Where should AI look first?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The API route ownership check using userId</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The chart color palette</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The README image paths</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Metrics Change the Whole App</h1>
+      <p class="module-subtitle">The metric tab is a lens. Switch from time to money to calories and the same entry system changes labels, colors, default categories, formatting, and analytics.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">One route, three personalities</h2>
+      <p>The app stores the active metric in the URL query string. That means a link like <code>?metric=money</code> can reopen the dashboard in the money view.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const activeMetric = parseMetricType(searchParams.get("metric"));</span>
+<span class="code-line"></span>
+<span class="code-line">const setActiveMetric = useCallback(</span>
+<span class="code-line">  (metricType: MetricType) =&gt; {</span>
+<span class="code-line">    const nextParams = new URLSearchParams(searchParams.toString());</span>
+<span class="code-line">    nextParams.set("metric", metricType);</span>
+<span class="code-line">    router.push(`${pathname}?${nextParams.toString()}`);</span>
+<span class="code-line">  },</span>
+<span class="code-line">  [pathname, router, searchParams]</span>
+<span class="code-line">);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Read the current metric from the page URL.</p>
+            <p class="tl">When the user chooses a tab, copy the existing query parameters.</p>
+            <p class="tl">Replace only the metric value.</p>
+            <p class="tl">Navigate to the same page with the new metric in the URL.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Configs keep conditionals under control</h2>
+      <p>A <span class="term" data-definition="A config object is a bundle of settings that lets code choose behavior from data instead of hard-coding many separate if statements.">config object</span> works like a wardrobe for each metric: labels, placeholders, chart colors, and formatting are picked from one place.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)"><div class="pattern-icon" style="background: var(--color-actor-1)">T</div><h4 class="pattern-title">Time</h4><p class="pattern-desc">Minutes, study default, time-over-time labels, teal palette.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)"><div class="pattern-icon" style="background: var(--color-actor-5)">M</div><h4 class="pattern-title">Money</h4><p class="pattern-desc">Currency formatting, finance default, spending-by-weekday analytics.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)"><div class="pattern-icon" style="background: var(--color-actor-4)">C</div><h4 class="pattern-title">Calories</h4><p class="pattern-desc">Food lookup, macros, orange palette, nutrition-specific summaries.</p></div>
+      </div>
+      <div class="callout callout-accent">
+        <div class="callout-icon">AI</div>
+        <div class="callout-content"><strong class="callout-title">Better prompt wording</strong><p>Say "add a new metric config and wire it through parseMetricType, DEFAULT_ENTRY_CATEGORIES, validation, and analytics labels" instead of "add another tab."</p></div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Calories have an extra lookup path</h2>
+      <p>Food search is an external-style helper inside the app. The form asks for matching foods, then calculates nutrition for the chosen portion.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const nutrition = calculatePortionNutrition(</span>
+<span class="code-line">  food.nutrientsPer100g,</span>
+<span class="code-line">  portionGrams</span>
+<span class="code-line">);</span>
+<span class="code-line"></span>
+<span class="code-line">setFormData((currentFormData) =&gt; ({</span>
+<span class="code-line">  ...currentFormData,</span>
+<span class="code-line">  title: currentFormData.title || food.name,</span>
+<span class="code-line">  value: String(nutrition.calories),</span>
+<span class="code-line">  foodName: food.name,</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Take the nutrition facts for 100 grams.</p>
+            <p class="tl">Scale them to the portion the user typed.</p>
+            <p class="tl">Keep the existing form values, then fill in food-specific fields.</p>
+            <p class="tl">Use the food name as the title if the user has not typed one.</p>
+            <p class="tl">Store calories as the main entry value.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module4">
+      <div class="quiz-question-block" data-correct="option-b" data-explanation-right="Exactly. The app centralizes metric-specific words, colors, defaults, and formatting in metric configs and related type lists." data-explanation-wrong="Not quite. Changing only the button text leaves validation, defaults, formatting, and analytics inconsistent.">
+        <h3 class="quiz-question">You ask AI to add a Hydration metric. What instruction gives it the best architectural direction?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Rename the calories button to hydration</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add hydration to the metric type list, config, defaults, validation, and analytics labels</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only add a new database table first</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">When Things Break</h1>
+      <p class="module-subtitle">Debugging this app is about tracing symptoms to the right layer. Is the user signed in? Did validation reject the data? Did the browser state update? Did Prisma return the right records?</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Use symptoms like street signs</h2>
+      <p>Every failure leaves a clue. A blank chart, a 401 error, and a form validation message point to different layers.</p>
+      <div class="arch-diagram">
+        <div class="arch-zone arch-zone-browser">
+          <h4 class="arch-zone-label">Browser</h4>
+          <div class="arch-component" data-desc="Look here when the form accepts input but the visible list or chart does not update." onclick="showArchDesc(this)">
+            <div class="arch-icon">UI</div><span>React state</span>
+          </div>
+          <div class="arch-component" data-desc="Look here when switching metric tabs shows the wrong wording, color, or filter." onclick="showArchDesc(this)">
+            <div class="arch-icon">URL</div><span>Metric query</span>
+          </div>
+        </div>
+        <div class="arch-zone arch-zone-server">
+          <h4 class="arch-zone-label">Server</h4>
+          <div class="arch-component" data-desc="Look here for Unauthorized, invalid input, or records leaking across users." onclick="showArchDesc(this)">
+            <div class="arch-icon">API</div><span>Route handlers</span>
+          </div>
+          <div class="arch-component" data-desc="Look here when a title, value, date, metric, or nutrition field is rejected." onclick="showArchDesc(this)">
+            <div class="arch-icon">ZOD</div><span>Validation</span>
+          </div>
+        </div>
+        <div class="arch-zone arch-zone-external">
+          <h4 class="arch-zone-label">Persistence</h4>
+          <div class="arch-component" data-desc="Look here when saved data is missing, incorrectly scoped, or sorted unexpectedly." onclick="showArchDesc(this)">
+            <div class="arch-icon">DB</div><span>Prisma + Postgres</span>
+          </div>
+        </div>
+        <div class="arch-description" id="arch-desc">Click any component to learn where to debug.</div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The API returns consistent error envelopes</h2>
+      <p>An error helper is like a standard incident report form. Instead of every route inventing a different failure shape, callers can expect message, code, and status.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">if (!sortResult.success) {</span>
+<span class="code-line">  return jsonError("Invalid sort parameter", "VALIDATION_ERROR", 400);</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">if (</span>
+<span class="code-line">  category &amp;&amp;</span>
+<span class="code-line">  !ENTRY_CATEGORIES.includes(category as (typeof ENTRY_CATEGORIES)[number])</span>
+<span class="code-line">) {</span>
+<span class="code-line">  return jsonError("Invalid category", "VALIDATION_ERROR", 400);</span>
+<span class="code-line">}</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">If the sort option is not one of the accepted values, stop.</p>
+            <p class="tl">Return a clear validation error instead of guessing.</p>
+            <p class="tl">If a category filter exists, check it against the known category list.</p>
+            <p class="tl">Reject unknown categories before asking the database for records.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The best debugging prompts are specific</h2>
+      <p>When AI gets stuck, give it the layer and symptom. That keeps it from randomly changing UI when the real bug is in the route, validation, or database query.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)"><div class="pattern-icon" style="background: var(--color-actor-1)">401</div><h4 class="pattern-title">Unauthorized</h4><p class="pattern-desc">Inspect middleware, Clerk auth, and protected API routes.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)"><div class="pattern-icon" style="background: var(--color-actor-4)">400</div><h4 class="pattern-title">Validation error</h4><p class="pattern-desc">Inspect Zod schemas, date parsing, metric type, and category lists.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)"><div class="pattern-icon" style="background: var(--color-actor-5)">DB</div><h4 class="pattern-title">Missing records</h4><p class="pattern-desc">Inspect userId scoping, metric filter, sort order, and Prisma migrations.</p></div>
+      </div>
+      <div class="callout callout-warning">
+        <div class="callout-icon">DBG</div>
+        <div class="callout-content"><strong class="callout-title">Practical rule</strong><p>Do not ask AI to "fix the dashboard" first. Say what broke, where you saw it, and which layer you suspect.</p></div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module5">
+      <div class="quiz-question-block" data-correct="option-c" data-explanation-right="Exactly. The visible list is filtered from entries already loaded in the browser, so start with activeMetric and filter state before changing the database." data-explanation-wrong="Not quite. A database migration is unlikely if the same records appear elsewhere, and auth would usually fail the whole request.">
+        <h3 class="quiz-question">The dashboard shows money entries, but the Entries page says no entries match after switching tabs. Where do you investigate first?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete and recreate the database</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Rewrite authentication middleware</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Check activeMetric, filters, and sortedEntries in the Entries page</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

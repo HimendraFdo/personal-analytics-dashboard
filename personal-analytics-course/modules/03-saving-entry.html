@@ -1,0 +1,111 @@
+<section class="module" id="module-3">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">How an Entry Gets Saved</h1>
+      <p class="module-subtitle">Saving data is a relay race. Each runner has one job, and the baton is a small object containing title, value, date, note, metric type, and optional nutrition fields.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Follow the baton</h2>
+      <p>The <span class="term" data-definition="JSON is a plain text data format used to send structured values like strings, numbers, arrays, and objects between browser and server.">JSON</span> packet starts in the browser and ends as a row in Postgres. Click through the flow to see which layer owns each step.</p>
+      <div class="flow-animation" data-steps='[
+        {"highlight":"flow-actor-1","label":"User fills EntryForm and presses Add Entry"},
+        {"highlight":"flow-actor-2","label":"useEntries adds metric type and default category","packet":true,"from":"actor-1","to":"actor-2"},
+        {"highlight":"flow-actor-3","label":"lib api sends POST to slash api slash entries","packet":true,"from":"actor-2","to":"actor-3"},
+        {"highlight":"flow-actor-4","label":"route checks Clerk auth and Zod validation","packet":true,"from":"actor-3","to":"actor-4"},
+        {"highlight":"flow-actor-5","label":"Prisma writes the entry and returns a serialized record","packet":true,"from":"actor-4","to":"actor-5"}
+      ]'>
+        <div class="flow-actors">
+          <div class="flow-actor" id="flow-actor-1"><div class="flow-actor-icon">1</div><span>EntryForm</span></div>
+          <div class="flow-actor" id="flow-actor-2"><div class="flow-actor-icon">2</div><span>useEntries</span></div>
+          <div class="flow-actor" id="flow-actor-3"><div class="flow-actor-icon">3</div><span>lib/api</span></div>
+          <div class="flow-actor" id="flow-actor-4"><div class="flow-actor-icon">4</div><span>Route</span></div>
+          <div class="flow-actor" id="flow-actor-5"><div class="flow-actor-icon">5</div><span>Prisma</span></div>
+        </div>
+        <div class="flow-packet" id="flow-packet"></div>
+        <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+        <div class="flow-controls">
+          <button class="btn flow-next-btn">Next Step</button>
+          <button class="btn flow-reset-btn">Restart</button>
+          <span class="flow-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The browser builds the request</h2>
+      <p>A <span class="term" data-definition="A hook is a React function that packages reusable browser behavior, such as loading data or responding to a route change.">hook</span> is a tidy place for repeated browser behavior. Here it turns form data into the exact shape the server expects.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const input: EntryInput = {</span>
+<span class="code-line">  title: payload.title,</span>
+<span class="code-line">  value: payload.value,</span>
+<span class="code-line">  metricType: activeMetric,</span>
+<span class="code-line">  category: payload.category ?? DEFAULT_ENTRY_CATEGORIES[activeMetric],</span>
+<span class="code-line">  date: payload.date.toISOString(),</span>
+<span class="code-line">  note: payload.note,</span>
+<span class="code-line">};</span>
+<span class="code-line">const created = await createEntry(input);</span>
+<span class="code-line">setEntries((current) =&gt; [created, ...current]);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Create the object that will travel to the backend.</p>
+            <p class="tl">Attach the active metric tab, such as time, money, or calories.</p>
+            <p class="tl">Use a default category if the form did not provide one.</p>
+            <p class="tl">Convert the date into a safe string for the API.</p>
+            <p class="tl">Send it, wait for the saved copy, then put it at the top of the visible list.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The server checks the badge before the database</h2>
+      <p>Server routes are the security desk. They verify the signed-in user and reject bad shapes before Prisma is allowed to write anything.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const { userId } = await auth();</span>
+<span class="code-line"></span>
+<span class="code-line">if (!userId) {</span>
+<span class="code-line">  return jsonError("Unauthorized", "UNAUTHORIZED", 401);</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">const body = await request.json();</span>
+<span class="code-line">const parsed = createEntrySchema.safeParse(body);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Ask Clerk who is making this request.</p>
+            <p class="tl">If nobody is signed in, stop immediately with a 401 response.</p>
+            <p class="tl">Read the submitted JSON body.</p>
+            <p class="tl">Use Zod to check that the body has valid fields before writing.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-info">
+        <div class="callout-icon">CS</div>
+        <div class="callout-content"><strong class="callout-title">Universal pattern</strong><p>Good apps validate at the boundary. The moment data enters the server, the code checks whether it is allowed and shaped correctly.</p></div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module3">
+      <div class="quiz-question-block" data-correct="option-a" data-explanation-right="Exactly. If a record belongs to the wrong user, the route should never update it." data-explanation-wrong="Not quite. Frontend hiding is helpful, but the server must enforce ownership because browser code can be bypassed.">
+        <h3 class="quiz-question">A user reports they can edit an entry URL that is not theirs. Where should AI look first?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The API route ownership check using userId</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The chart color palette</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The README image paths</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+    </div>
+  </div>
+</section>

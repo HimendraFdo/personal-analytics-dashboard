@@ -1,0 +1,96 @@
+<section class="module" id="module-4">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Metrics Change the Whole App</h1>
+      <p class="module-subtitle">The metric tab is a lens. Switch from time to money to calories and the same entry system changes labels, colors, default categories, formatting, and analytics.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">One route, three personalities</h2>
+      <p>The app stores the active metric in the URL query string. That means a link like <code>?metric=money</code> can reopen the dashboard in the money view.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const activeMetric = parseMetricType(searchParams.get("metric"));</span>
+<span class="code-line"></span>
+<span class="code-line">const setActiveMetric = useCallback(</span>
+<span class="code-line">  (metricType: MetricType) =&gt; {</span>
+<span class="code-line">    const nextParams = new URLSearchParams(searchParams.toString());</span>
+<span class="code-line">    nextParams.set("metric", metricType);</span>
+<span class="code-line">    router.push(`${pathname}?${nextParams.toString()}`);</span>
+<span class="code-line">  },</span>
+<span class="code-line">  [pathname, router, searchParams]</span>
+<span class="code-line">);</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Read the current metric from the page URL.</p>
+            <p class="tl">When the user chooses a tab, copy the existing query parameters.</p>
+            <p class="tl">Replace only the metric value.</p>
+            <p class="tl">Navigate to the same page with the new metric in the URL.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Configs keep conditionals under control</h2>
+      <p>A <span class="term" data-definition="A config object is a bundle of settings that lets code choose behavior from data instead of hard-coding many separate if statements.">config object</span> works like a wardrobe for each metric: labels, placeholders, chart colors, and formatting are picked from one place.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)"><div class="pattern-icon" style="background: var(--color-actor-1)">T</div><h4 class="pattern-title">Time</h4><p class="pattern-desc">Minutes, study default, time-over-time labels, teal palette.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)"><div class="pattern-icon" style="background: var(--color-actor-5)">M</div><h4 class="pattern-title">Money</h4><p class="pattern-desc">Currency formatting, finance default, spending-by-weekday analytics.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)"><div class="pattern-icon" style="background: var(--color-actor-4)">C</div><h4 class="pattern-title">Calories</h4><p class="pattern-desc">Food lookup, macros, orange palette, nutrition-specific summaries.</p></div>
+      </div>
+      <div class="callout callout-accent">
+        <div class="callout-icon">AI</div>
+        <div class="callout-content"><strong class="callout-title">Better prompt wording</strong><p>Say "add a new metric config and wire it through parseMetricType, DEFAULT_ENTRY_CATEGORIES, validation, and analytics labels" instead of "add another tab."</p></div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Calories have an extra lookup path</h2>
+      <p>Food search is an external-style helper inside the app. The form asks for matching foods, then calculates nutrition for the chosen portion.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">const nutrition = calculatePortionNutrition(</span>
+<span class="code-line">  food.nutrientsPer100g,</span>
+<span class="code-line">  portionGrams</span>
+<span class="code-line">);</span>
+<span class="code-line"></span>
+<span class="code-line">setFormData((currentFormData) =&gt; ({</span>
+<span class="code-line">  ...currentFormData,</span>
+<span class="code-line">  title: currentFormData.title || food.name,</span>
+<span class="code-line">  value: String(nutrition.calories),</span>
+<span class="code-line">  foodName: food.name,</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">Take the nutrition facts for 100 grams.</p>
+            <p class="tl">Scale them to the portion the user typed.</p>
+            <p class="tl">Keep the existing form values, then fill in food-specific fields.</p>
+            <p class="tl">Use the food name as the title if the user has not typed one.</p>
+            <p class="tl">Store calories as the main entry value.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module4">
+      <div class="quiz-question-block" data-correct="option-b" data-explanation-right="Exactly. The app centralizes metric-specific words, colors, defaults, and formatting in metric configs and related type lists." data-explanation-wrong="Not quite. Changing only the button text leaves validation, defaults, formatting, and analytics inconsistent.">
+        <h3 class="quiz-question">You ask AI to add a Hydration metric. What instruction gives it the best architectural direction?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Rename the calories button to hydration</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add hydration to the metric type list, config, defaults, validation, and analytics labels</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only add a new database table first</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+    </div>
+  </div>
+</section>
