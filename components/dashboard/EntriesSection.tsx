@@ -127,11 +127,11 @@ export default function EntriesSection({
     : "No entries match your current filters.";
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+    <div className="space-y-4 sm:space-y-6">
+      <section className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-slate-950">Entries</h2>
+            <h2 className="text-2xl font-bold text-slate-950 sm:text-3xl">Entries</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Add, edit, filter, and review your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
@@ -149,7 +149,7 @@ export default function EntriesSection({
       )}
 
       {hasNoEntries && (
-        <section className="rounded-[2rem] border border-dashed border-[var(--metric-primary)] bg-white/70 p-6 text-center shadow-sm shadow-[var(--metric-shadow)]">
+        <section className="rounded-3xl border border-dashed border-[var(--metric-primary)] bg-white/70 p-4 text-center shadow-sm shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">
             {metricConfig.emptyState.heading}
           </h3>
@@ -159,7 +159,7 @@ export default function EntriesSection({
         </section>
       )}
 
-      <section className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+      <section className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
         <div className="mb-5">
           <h3 className="text-lg font-semibold text-slate-900">Filters and Sorting</h3>
           <p className="mt-1 text-sm text-slate-500">
@@ -236,13 +236,13 @@ export default function EntriesSection({
         </p>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+      <section className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">
             {editingEntry ? "Edit Entry" : "Add New Entry"}
           </h3>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <EntryForm
               key={editingEntry ? editingEntry.id : `${activeMetric}-new-entry-form`}
               onSubmitEntry={handleSubmitEntry}
@@ -253,10 +253,10 @@ export default function EntriesSection({
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-xl shadow-[var(--metric-shadow)]">
+        <div className="rounded-3xl border border-white/80 bg-white/90 p-4 shadow-xl shadow-[var(--metric-shadow)] sm:rounded-[2rem] sm:p-6">
           <h3 className="text-lg font-semibold text-slate-900">Entry History</h3>
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <EntryList
               entries={sortedEntries}
               onDeleteEntry={(id) => void handleDelete(id)}
