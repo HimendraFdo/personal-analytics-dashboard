@@ -1,6 +1,6 @@
 # Personal Analytics Dashboard
 
-Authenticated personal metrics tracker for logging study, finance, health, and personal activity, then reviewing those entries through dashboard summaries, filtered history, and analytics charts.
+Authenticated, mobile-responsive personal metrics tracker for logging time, spending, and nutrition, then reviewing those entries through dashboard summaries, filtered history, and analytics charts.
 
 **Live demo:** [personalanalyticsdashboard.vercel.app](https://personalanalyticsdashboard.vercel.app)
 
@@ -22,12 +22,14 @@ Authenticated personal metrics tracker for logging study, finance, health, and p
 
 ## What the app does
 
-- Protects dashboard, entries, analytics, and entry API routes with Clerk authentication
-- Stores entries per signed-in user so each user only sees and manages their own data
-- Supports creating, editing, deleting, sorting, and filtering tracked entries
-- Tracks four categories: `Study`, `Finance`, `Health`, and `Personal`
-- Shows dashboard summaries for total entries, weekly activity, top category, average entries per day, recent entries, and progress
-- Shows analytics for category totals, latest entry, total tracked value, average value, and value over time
+- Separates tracking into `Time`, `Money`, and `Calories` metric tabs with metric-specific labels, units, palettes, dashboards, entries, and analytics
+- Tracks time across `Study`, `Finance`, `Health`, and `Personal` categories, spending in dollars, and nutrition in kilocalories
+- Supports creating, editing, deleting, sorting, and filtering entries for the selected metric
+- Supports manual calorie logging or authenticated food lookup through [Open Food Facts](https://world.openfoodfacts.org), including portion-based calories, protein, carbs, and fat
+- Shows metric-specific summaries, 7-day totals, daily trends, recent entries, category or weekday breakdowns, and nutrition macro breakdowns
+- Uses a responsive desktop sidebar, mobile bottom navigation, compact topbar, and mobile-friendly cards and charts
+- Protects dashboard, entries, analytics, and API routes with Clerk authentication and scopes every entry to its signed-in owner
+- Applies PostgreSQL row level security (RLS), same-origin mutation checks, JSON body limits, API rate limiting, upstream food-search timeouts, and HTTP security headers
 
 ---
 
@@ -42,6 +44,8 @@ Authenticated personal metrics tracker for logging study, finance, health, and p
 | Charts | Recharts |
 | Validation | Zod |
 | Testing | Vitest |
+| Rate limiting | Upstash Redis REST API in production, in-memory fallback in development |
+| Food data | [Open Food Facts](https://world.openfoodfacts.org) |
 | Hosting | Vercel |
 | Database (production) | [Neon](https://neon.tech) serverless Postgres |
 
@@ -55,14 +59,21 @@ flowchart LR
   Clerk["Clerk auth"]
   UI["Next.js App Router UI"]
   API["Protected /api/entries routes"]
+  FoodAPI["Authenticated /api/food/search route"]
   Prisma["Prisma Client"]
   DB[(PostgreSQL)]
+  Redis["Upstash Redis rate limits"]
+  OFF["Open Food Facts"]
 
   User --> Clerk
   Clerk --> UI
   UI --> API
+  UI --> FoodAPI
   API --> Prisma
   Prisma --> DB
+  API --> Redis
+  FoodAPI --> Redis
+  FoodAPI --> OFF
 ```
 
 Routes:
@@ -75,10 +86,11 @@ Routes:
 | `/dashboard` | Overview, trend chart, recent entries, and progress summary |
 | `/entries` | Entry form, edit/delete actions, filtering, sorting, and history |
 | `/analytics` | Derived totals, latest entry, category chart, and value-over-time chart |
-| `/api/entries` | Authenticated `GET` and `POST` handlers |
+| `/api/entries` | Authenticated `GET` and `POST` handlers with metric filtering |
 | `/api/entries/[id]` | Authenticated `PATCH` and `DELETE` handlers |
+| `/api/food/search` | Authenticated, rate-limited Open Food Facts lookup |
 
-The API uses Clerk's `userId` to scope reads and writes. Prisma persists entries with `userId`, category, date, value, title, note, and timestamps.
+The API uses Clerk's `userId` to scope reads and writes. Prisma persists entries with ownership, metric type, category, date, value, title, note, timestamps, and optional calorie-specific nutrition details.
 
 ---
 
@@ -93,14 +105,18 @@ npm install
 Create `.env.local` from `.env.example`, then replace the placeholders with values from Neon and Clerk:
 
 ```bash
-DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+DATABASE_URL="postgresql://APP_USER:PASSWORD@HOST-pooler/DATABASE?sslmode=require"
+DIRECT_DATABASE_URL="postgresql://MIGRATION_USER:PASSWORD@HOST/DATABASE?sslmode=require"
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_or_pk_live_placeholder"
 CLERK_SECRET_KEY="sk_test_or_sk_live_placeholder"
 NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
 NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL="/dashboard"
 NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL="/dashboard"
+APP_ORIGIN="http://localhost:3000"
 ```
+
+For local development, remove the placeholder `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` lines unless you configure a real Upstash database. The app then uses its in-memory development rate-limit store.
 
 Then prepare the database and start the app:
 
@@ -117,13 +133,18 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `DATABASE_URL` | Yes | PostgreSQL connection string, usually Neon in production |
-| `DIRECT_DATABASE_URL` | Recommended for production migrations | Migration/admin PostgreSQL connection string, preferably a direct Neon URL |
+| `DIRECT_DATABASE_URL` | Yes for migrations and deployment builds | Migration/admin PostgreSQL connection string, preferably a direct Neon URL |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Public Clerk browser key |
 | `CLERK_SECRET_KEY` | Yes | Server-side Clerk key used by protected routes |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Recommended | Points Clerk to the local `/sign-in` route |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | Points Clerk to the local `/sign-up` route |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign in |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign up |
+| `CLERK_FRONTEND_API_URL` | Optional | Exact Clerk Frontend API URL for Content Security Policy configuration when it cannot be derived from the publishable key |
+| `APP_ORIGIN` | Recommended | Canonical application origin allowed to make entry mutations |
+| `APP_ALLOWED_ORIGINS` | Optional | Comma-separated additional allowed origins, such as trusted preview deployments |
+| `UPSTASH_REDIS_REST_URL` | Required in production | Upstash Redis REST endpoint used for distributed API rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN` | Required in production | Upstash Redis REST token used for distributed API rate limiting |
 
 ### Database roles and RLS
 
@@ -133,6 +154,12 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 - `DIRECT_DATABASE_URL`: migration/admin role. Use this for Prisma migrations and schema changes.
 
 The runtime role needs only the privileges required to read and mutate app tables. On Neon, the runtime URL may use the pooled `-pooler` host. RLS user context is set with `set_config(..., true)` inside the same Prisma transaction as protected `Entry` queries, so it is safe with PgBouncer transaction pooling.
+
+### Request security and rate limiting
+
+Entry mutations reject cross-origin requests, require JSON for create and update operations, and enforce a 16 KB body limit. Responses include a Content Security Policy and common browser hardening headers; production also adds HSTS.
+
+Rate limiting uses Upstash Redis in production. Development falls back to an in-memory store when Upstash settings are not present. The food-search endpoint applies both per-user and per-IP limits before calling Open Food Facts with a 5-second timeout.
 
 ---
 
@@ -154,14 +181,15 @@ The runtime role needs only the privileges required to read and mutate app table
 
 ---
 
-## Production deploy (Vercel + Neon + Clerk)
+## Production deploy (Vercel + Neon + Clerk + Upstash)
 
-1. Create a [Neon](https://neon.tech) project and copy the pooled PostgreSQL connection string.
+1. Create a [Neon](https://neon.tech) project. Provision a least-privilege runtime role for `DATABASE_URL` and a migration/admin role for `DIRECT_DATABASE_URL`.
 2. Create a Clerk application and copy the publishable and secret keys.
-3. Import the repo in [Vercel](https://vercel.com).
-4. Set `DATABASE_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and the Clerk route variables in Vercel Environment Variables.
-5. Deploy. Vercel runs `npm run vercel-build`, which runs `prisma migrate deploy` before `next build`.
-6. Visit `/sign-up`, create an account, add an entry, then confirm it appears on `/dashboard`, `/entries`, and `/analytics`.
+3. Create an [Upstash Redis](https://upstash.com) database and copy its REST URL and token.
+4. Import the repo in [Vercel](https://vercel.com).
+5. Set the database, Clerk, Upstash, and application-origin variables in Vercel Environment Variables.
+6. Deploy. Vercel runs `npm run vercel-build`, which runs `prisma migrate deploy` before `next build`.
+7. Visit `/sign-up`, create an account, add entries under each metric tab, and confirm they appear on `/dashboard`, `/entries`, and `/analytics`.
 
 See [MIGRATION.md](./MIGRATION.md) for API details and troubleshooting.
 
@@ -169,7 +197,7 @@ See [MIGRATION.md](./MIGRATION.md) for API details and troubleshooting.
 
 ## Testing
 
-The test suite covers date helpers, entry serialization, and validation logic.
+The default test suite covers date helpers, metric formatting, nutrition calculations, entry serialization, validation, food-search input hardening, request-origin checks, rate limiting, security headers, API ownership checks, and credential hygiene.
 
 ```bash
 npm run test
@@ -191,10 +219,12 @@ npm run test:integration
 - Migrating a Vite-style dashboard into the Next.js App Router while keeping shared UI state predictable
 - Adding Clerk authentication around app routes and API routes
 - Scoping database records by authenticated `userId`
-- Modeling entries with Prisma enums, migrations, indexes, and typed API responses
+- Modeling multi-metric and nutrition entries with Prisma migrations, indexes, and typed API responses
 - Validating create and update payloads with Zod before database writes
 - Centralising fetch and mutation logic so dashboard, entries, and analytics stay in sync
-- Deploying Prisma migrations safely through the Vercel build flow
+- Applying defense in depth with API ownership filters, PostgreSQL RLS, rate limits, origin checks, and browser security headers
+- Deploying Prisma migrations safely through the Vercel build flow with separate runtime and migration database roles
+- Scaling a desktop dashboard down to mobile navigation, compact controls, and responsive charts
 
 ---
 
@@ -203,8 +233,9 @@ npm run test:integration
 - Export entries as CSV or JSON
 - Add date-range controls to analytics charts
 - Add goal configuration instead of fixed progress assumptions
-- Add profile settings and user-facing account controls
 - Add richer onboarding and empty states for first-time users
+- Add configurable currency and locale preferences
+- Add a production monitoring dashboard for rate-limit and upstream food-search failures
 
 ---
 
@@ -212,16 +243,18 @@ npm run test:integration
 
 ```text
 app/             Next.js routes, layouts, auth pages, and API handlers
-components/      Dashboard, entries, analytics, layout, and status UI
+components/      Dashboard, entries, analytics, layout, auth, navigation, and status UI
 contexts/        Shared entries provider
 hooks/           Client-side entry loading and mutation hooks
 layouts/         Shell layout wrapper
-lib/             Prisma client, API helpers, errors, validation, serialization
+lib/             Prisma, API, analytics, nutrition, rate-limit, and security helpers
 prisma/          Schema, migrations, and seed data
+integration/     Opt-in PostgreSQL RLS integration suite
 types/           Shared TypeScript entry types
 utils/           Date formatting and parsing helpers
 Images/          README screenshots
 planning/        Planning notes and roadmap documents
+personal-analytics-course/  Interactive codebase learning walkthrough
 ```
 
 Interview walkthrough: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md)
