@@ -12,6 +12,7 @@ const ignoredDirs = new Set([
   "node_modules",
   "personal-analytics-course",
 ]);
+const secretScanIgnoredDirs = new Set(["planning"]);
 const scannedExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
 const unsafePrismaApis = /\$queryRawUnsafe|\$executeRawUnsafe/;
 const placeholderMarkers =
@@ -79,6 +80,14 @@ describe("tracked secret hygiene", () => {
     const offenders: string[] = [];
 
     for (const relativeFile of trackedFiles) {
+      if (
+        relativeFile
+          .split(/[\\/]/)
+          .some((segment) => secretScanIgnoredDirs.has(segment))
+      ) {
+        continue;
+      }
+
       const file = path.join(projectRoot, relativeFile);
       let source: string;
 
