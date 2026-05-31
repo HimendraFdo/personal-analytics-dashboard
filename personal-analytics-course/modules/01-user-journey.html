@@ -1,0 +1,81 @@
+<section class="module" id="module-1">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What Happens When You Use the Dashboard</h1>
+      <p class="module-subtitle">This app is a private logbook for time, money, and calories. You add entries, then the dashboard turns them into totals, charts, recent history, and trends.</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Start with the click you already understand</h2>
+      <p>Imagine you sign in, choose the calories tab, search for a food, and press Add Entry. That one action travels through a <span class="term" data-definition="A frontend is the part of the app running in the browser: buttons, forms, charts, and page interactions.">frontend</span>, an <span class="term" data-definition="An API is a controlled doorway that lets one part of software ask another part to do work, usually by sending and receiving JSON data.">API</span>, validation, authentication, and a database.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+          <div class="pattern-icon" style="background: var(--color-actor-1)">UI</div>
+          <h4 class="pattern-title">You see pages</h4>
+          <p class="pattern-desc">Dashboard, entries, and analytics live under the protected app shell.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+          <div class="pattern-icon" style="background: var(--color-actor-2)">API</div>
+          <h4 class="pattern-title">The browser asks</h4>
+          <p class="pattern-desc">Fetch calls send create, edit, delete, and search requests.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+          <div class="pattern-icon" style="background: var(--color-actor-5)">DB</div>
+          <h4 class="pattern-title">Postgres remembers</h4>
+          <p class="pattern-desc">Prisma writes each entry with the signed-in user's ID.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The shell wraps every protected page</h2>
+      <p>Think of the app shell like a reusable dashboard frame: side navigation, top bar, metric color theme, and shared entry data all stay in place while the page content changes.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">export default function ShellLayout({</span>
+<span class="code-line">  children,</span>
+<span class="code-line">}: Readonly&lt;{</span>
+<span class="code-line">  children: React.ReactNode;</span>
+<span class="code-line">}&gt;) {</span>
+<span class="code-line">  return (</span>
+<span class="code-line">    &lt;Suspense fallback={null}&gt;</span>
+<span class="code-line">      &lt;EntriesProvider&gt;</span>
+<span class="code-line">        &lt;DashboardLayout&gt;{children}&lt;/DashboardLayout&gt;</span>
+<span class="code-line">      &lt;/EntriesProvider&gt;</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">This layout receives whatever page is being viewed.</p>
+            <p class="tl">Suspense lets the page wait safely for browser-only state.</p>
+            <p class="tl">EntriesProvider makes entry data available everywhere inside the shell.</p>
+            <p class="tl">DashboardLayout supplies the shared sidebar, topbar, and page frame.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout callout-accent">
+        <div class="callout-icon">AI</div>
+        <div class="callout-content">
+          <strong class="callout-title">How this helps you steer AI</strong>
+          <p>When you ask for a new protected dashboard page, tell AI to place it inside the shell route group so it gets the same shared provider and layout.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module1">
+      <div class="quiz-question-block" data-correct="option-b" data-explanation-right="Exactly. A new protected page should live inside the shell so it inherits shared data and layout." data-explanation-wrong="Not quite. The public sign-in pages do not receive the dashboard shell or entries provider.">
+        <h3 class="quiz-question">You ask AI to add a new Goals page that should share the sidebar and current metric tab. Where should that work fit?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only in the public sign-in page</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Inside the protected shell area, using the same dashboard layout</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Directly inside Prisma schema first</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+    </div>
+  </div>
+</section>

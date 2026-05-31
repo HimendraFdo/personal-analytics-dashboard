@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -11,8 +12,21 @@ const ignoredDirs = new Set([
   "node_modules",
   "personal-analytics-course",
 ]);
+const secretScanIgnoredDirs = new Set(["planning"]);
 const scannedExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
 const unsafePrismaApis = /\$queryRawUnsafe|\$executeRawUnsafe/;
+const placeholderMarkers =
+  /placeholder|example|USER:PASSWORD@HOST|APP_USER:PASSWORD@HOST|MIGRATION_USER:PASSWORD@HOST|ci:ci@localhost/i;
+const obviousSecretPatterns = [
+  {
+    name: "Clerk secret key",
+    pattern: new RegExp(`sk_${"(?:test|live)"}_`),
+  },
+  {
+    name: "PostgreSQL connection string",
+    pattern: new RegExp(`postgresql:${"/" + "/"}`, "i"),
+  },
+];
 
 function collectSourceFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -43,6 +57,61 @@ describe("Prisma raw SQL safety", () => {
     expect(offenders.map((file) => path.relative(projectRoot, file))).toEqual(
       []
     );
+  });
+});
+
+describe("tracked secret hygiene", () => {
+  it("does not track a local .env file", () => {
+    const trackedEnv = execFileSync("git", ["ls-files", ".env"], {
+      cwd: projectRoot,
+      encoding: "utf8",
+    }).trim();
+
+    expect(trackedEnv).toBe("");
+  });
+
+  it("does not commit obvious non-placeholder secrets", () => {
+    const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
+      cwd: projectRoot,
+      encoding: "utf8",
+    })
+      .split("\0")
+      .filter(Boolean);
+    const offenders: string[] = [];
+
+    for (const relativeFile of trackedFiles) {
+      if (
+        relativeFile
+          .split(/[\\/]/)
+          .some((segment) => secretScanIgnoredDirs.has(segment))
+      ) {
+        continue;
+      }
+
+      const file = path.join(projectRoot, relativeFile);
+      let source: string;
+
+      try {
+        source = fs.readFileSync(file, "utf8");
+      } catch {
+        continue;
+      }
+
+      if (source.includes("\0")) {
+        continue;
+      }
+
+      source.split(/\r?\n/).forEach((line, index) => {
+        if (
+          !placeholderMarkers.test(line) &&
+          obviousSecretPatterns.some(({ pattern }) => pattern.test(line))
+        ) {
+          offenders.push(`${relativeFile}:${index + 1}`);
+        }
+      });
+    }
+
+    expect(offenders).toEqual([]);
   });
 });
 

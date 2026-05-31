@@ -146,6 +146,7 @@ The runtime role needs only the privileges required to read and mutate app table
 | `npm run start` | Start the production server |
 | `npm run lint` | Run the configured Next.js lint command |
 | `npm run test` | Run Vitest tests |
+| `npm run test:integration` | Run PostgreSQL RLS integration tests against `RLS_TEST_DATABASE_URL` |
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run db:migrate` | Create and apply local Prisma migrations |
 | `npm run db:seed` | Seed sample entries |
@@ -172,6 +173,15 @@ The test suite covers date helpers, entry serialization, and validation logic.
 
 ```bash
 npm run test
+```
+
+The PostgreSQL RLS suite is opt-in because it requires a migrated disposable
+database and a least-privilege runtime role that does not own `Entry` and does
+not have `BYPASSRLS`. Set `RLS_TEST_DATABASE_URL` to that runtime role URL,
+then run:
+
+```bash
+npm run test:integration
 ```
 
 ---

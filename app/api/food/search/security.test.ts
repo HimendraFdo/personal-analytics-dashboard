@@ -70,6 +70,19 @@ describe("food search route abuse protection", () => {
     resetMemoryRateLimitStoreForTests();
   });
 
+  it("returns 401 for unauthenticated requests", async () => {
+    mocks.auth.mockResolvedValue({ userId: null });
+    vi.stubGlobal("fetch", vi.fn());
+
+    const response = await GET(searchRequest("?q=oat%20milk"));
+
+    expect(response.status).toBe(401);
+    expect(await readJson(response)).toEqual({
+      error: { message: "Unauthorized", code: "UNAUTHORIZED" },
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("returns 400 for a missing query", async () => {
     mocks.auth.mockResolvedValue({ userId });
     vi.stubGlobal("fetch", vi.fn());

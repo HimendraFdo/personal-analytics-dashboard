@@ -1,0 +1,98 @@
+<section class="module" id="module-5">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">When Things Break</h1>
+      <p class="module-subtitle">Debugging this app is about tracing symptoms to the right layer. Is the user signed in? Did validation reject the data? Did the browser state update? Did Prisma return the right records?</p>
+    </header>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">Use symptoms like street signs</h2>
+      <p>Every failure leaves a clue. A blank chart, a 401 error, and a form validation message point to different layers.</p>
+      <div class="arch-diagram">
+        <div class="arch-zone arch-zone-browser">
+          <h4 class="arch-zone-label">Browser</h4>
+          <div class="arch-component" data-desc="Look here when the form accepts input but the visible list or chart does not update." onclick="showArchDesc(this)">
+            <div class="arch-icon">UI</div><span>React state</span>
+          </div>
+          <div class="arch-component" data-desc="Look here when switching metric tabs shows the wrong wording, color, or filter." onclick="showArchDesc(this)">
+            <div class="arch-icon">URL</div><span>Metric query</span>
+          </div>
+        </div>
+        <div class="arch-zone arch-zone-server">
+          <h4 class="arch-zone-label">Server</h4>
+          <div class="arch-component" data-desc="Look here for Unauthorized, invalid input, or records leaking across users." onclick="showArchDesc(this)">
+            <div class="arch-icon">API</div><span>Route handlers</span>
+          </div>
+          <div class="arch-component" data-desc="Look here when a title, value, date, metric, or nutrition field is rejected." onclick="showArchDesc(this)">
+            <div class="arch-icon">ZOD</div><span>Validation</span>
+          </div>
+        </div>
+        <div class="arch-zone arch-zone-external">
+          <h4 class="arch-zone-label">Persistence</h4>
+          <div class="arch-component" data-desc="Look here when saved data is missing, incorrectly scoped, or sorted unexpectedly." onclick="showArchDesc(this)">
+            <div class="arch-icon">DB</div><span>Prisma + Postgres</span>
+          </div>
+        </div>
+        <div class="arch-description" id="arch-desc">Click any component to learn where to debug.</div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The API returns consistent error envelopes</h2>
+      <p>An error helper is like a standard incident report form. Instead of every route inventing a different failure shape, callers can expect message, code, and status.</p>
+      <div class="translation-block animate-in">
+        <div class="translation-code">
+          <span class="translation-label">CODE</span>
+          <pre><code><span class="code-line">if (!sortResult.success) {</span>
+<span class="code-line">  return jsonError("Invalid sort parameter", "VALIDATION_ERROR", 400);</span>
+<span class="code-line">}</span>
+<span class="code-line"></span>
+<span class="code-line">if (</span>
+<span class="code-line">  category &amp;&amp;</span>
+<span class="code-line">  !ENTRY_CATEGORIES.includes(category as (typeof ENTRY_CATEGORIES)[number])</span>
+<span class="code-line">) {</span>
+<span class="code-line">  return jsonError("Invalid category", "VALIDATION_ERROR", 400);</span>
+<span class="code-line">}</span></code></pre>
+        </div>
+        <div class="translation-english">
+          <span class="translation-label">PLAIN ENGLISH</span>
+          <div class="translation-lines">
+            <p class="tl">If the sort option is not one of the accepted values, stop.</p>
+            <p class="tl">Return a clear validation error instead of guessing.</p>
+            <p class="tl">If a category filter exists, check it against the known category list.</p>
+            <p class="tl">Reject unknown categories before asking the database for records.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen animate-in">
+      <h2 class="screen-heading">The best debugging prompts are specific</h2>
+      <p>When AI gets stuck, give it the layer and symptom. That keeps it from randomly changing UI when the real bug is in the route, validation, or database query.</p>
+      <div class="pattern-cards">
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)"><div class="pattern-icon" style="background: var(--color-actor-1)">401</div><h4 class="pattern-title">Unauthorized</h4><p class="pattern-desc">Inspect middleware, Clerk auth, and protected API routes.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)"><div class="pattern-icon" style="background: var(--color-actor-4)">400</div><h4 class="pattern-title">Validation error</h4><p class="pattern-desc">Inspect Zod schemas, date parsing, metric type, and category lists.</p></div>
+        <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)"><div class="pattern-icon" style="background: var(--color-actor-5)">DB</div><h4 class="pattern-title">Missing records</h4><p class="pattern-desc">Inspect userId scoping, metric filter, sort order, and Prisma migrations.</p></div>
+      </div>
+      <div class="callout callout-warning">
+        <div class="callout-icon">DBG</div>
+        <div class="callout-content"><strong class="callout-title">Practical rule</strong><p>Do not ask AI to "fix the dashboard" first. Say what broke, where you saw it, and which layer you suspect.</p></div>
+      </div>
+    </div>
+
+    <div class="quiz-container animate-in" id="quiz-module5">
+      <div class="quiz-question-block" data-correct="option-c" data-explanation-right="Exactly. The visible list is filtered from entries already loaded in the browser, so start with activeMetric and filter state before changing the database." data-explanation-wrong="Not quite. A database migration is unlikely if the same records appear elsewhere, and auth would usually fail the whole request.">
+        <h3 class="quiz-question">The dashboard shows money entries, but the Entries page says no entries match after switching tabs. Where do you investigate first?</h3>
+        <div class="quiz-options">
+          <button class="quiz-option" data-value="option-a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete and recreate the database</span></button>
+          <button class="quiz-option" data-value="option-b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Rewrite authentication middleware</span></button>
+          <button class="quiz-option" data-value="option-c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Check activeMetric, filters, and sortedEntries in the Entries page</span></button>
+        </div>
+        <div class="quiz-feedback"></div>
+      </div>
+      <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answer</button>
+      <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+    </div>
+  </div>
+</section>

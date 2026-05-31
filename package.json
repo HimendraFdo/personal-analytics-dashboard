@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:integration": "vitest run integration/rls.integration.test.ts",
     "test:watch": "vitest",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
