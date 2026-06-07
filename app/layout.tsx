@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   description: "Track study, finance, health, and personal metrics",
 };
 
+const clerkTelemetry = {
+  disabled:
+    process.env.NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED === "true" ||
+    process.env.NODE_ENV !== "production",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -15,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider telemetry={clerkTelemetry}>{children}</ClerkProvider>
       </body>
     </html>
   );

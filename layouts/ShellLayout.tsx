@@ -1,12 +1,12 @@
-import { Suspense } from "react";
-import DashboardLayout from "@/layouts/DashboardLayout";
+import { Suspense, type ReactNode } from "react";
 import { EntriesProvider } from "@/contexts/EntriesContext";
+import DashboardLayout from "@/layouts/DashboardLayout";
 
-export default function ShellLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+type ShellLayoutProps = {
+  children: ReactNode;
+};
+
+export default function ShellLayout({ children }: ShellLayoutProps) {
   return (
     <Suspense fallback={null}>
       <EntriesProvider>

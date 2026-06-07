@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:integration": "vitest run integration/rls.integration.test.ts",
     "test:watch": "vitest",
+    "qa:money-import": "tsx scripts/qa-money-import.ts",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
@@ -20,6 +21,7 @@
     "@clerk/nextjs": "^7.3.5",
     "@prisma/client": "^6.19.0",
     "next": "^15.5.7",
+    "openai": "^6.42.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "recharts": "^3.8.1",
@@ -37,9 +39,6 @@
     "tailwindcss": "^4.2.2",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
-    "vitest": "^3.2.4"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "vitest": "^4.1.8"
   }
 }

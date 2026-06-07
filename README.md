@@ -113,6 +113,9 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
 NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL="/dashboard"
 NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL="/dashboard"
+# Optional: disables Clerk telemetry explicitly in every environment.
+# The app already disables Clerk telemetry automatically outside production.
+NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED="true"
 APP_ORIGIN="http://localhost:3000"
 ```
 
@@ -140,6 +143,7 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Recommended | Points Clerk to the local `/sign-up` route |
 | `NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign in |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL` | Recommended | Sends users to `/dashboard` after sign up |
+| `NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED` | Optional | Set to `true` to disable Clerk telemetry explicitly; local development disables it by default to avoid CSP telemetry warnings |
 | `CLERK_FRONTEND_API_URL` | Optional | Exact Clerk Frontend API URL for Content Security Policy configuration when it cannot be derived from the publishable key |
 | `APP_ORIGIN` | Recommended | Canonical application origin allowed to make entry mutations |
 | `APP_ALLOWED_ORIGINS` | Optional | Comma-separated additional allowed origins, such as trusted preview deployments |

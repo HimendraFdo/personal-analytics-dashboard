@@ -39,3 +39,16 @@ model Entry {
   @@index([date(sort: Desc)])
   @@index([category])
 }
+
+model MoneyImportRun {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String
+  fileName  String
+  status    String
+  drafts    Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}

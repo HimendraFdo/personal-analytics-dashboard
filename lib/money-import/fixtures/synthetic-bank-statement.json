@@ -1,0 +1,39 @@
+{
+  "accountName": "QA Checking",
+  "statementPeriodStart": "2026-05-01",
+  "statementPeriodEnd": "2026-05-31",
+  "currency": "USD",
+  "transactions": [
+    {
+      "sourceRowId": "qa-row-1",
+      "date": "2026-05-03",
+      "description": "Corner Coffee",
+      "amount": -6.5,
+      "currency": "USD",
+      "direction": "debit",
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "sourceRowId": "qa-row-2",
+      "date": "2026-05-05",
+      "description": "Market Groceries",
+      "amount": -48.2,
+      "currency": "USD",
+      "direction": "debit",
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "sourceRowId": "qa-row-3",
+      "date": "2026-05-09",
+      "description": "Card Refund",
+      "amount": 12,
+      "currency": "USD",
+      "direction": "credit",
+      "confidence": 0.82,
+      "warnings": ["Credit row should be reviewed before import"]
+    }
+  ],
+  "warnings": ["Synthetic fixture for deterministic local QA"]
+}

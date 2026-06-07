@@ -29,6 +29,7 @@ export default function EntriesPage() {
         await updateEntry(id, payload);
       }}
       onDeleteEntry={deleteEntry}
+      onImportComplete={reload}
     />
   );
 }
