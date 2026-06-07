@@ -156,7 +156,11 @@
     term.addEventListener('mouseleave', () => hideTooltip(tip));
     term.addEventListener('click', e => {
       e.stopPropagation();
-      tip.classList.contains('visible') ? hideTooltip(tip) : showTooltip(term, tip);
+      if (tip.classList.contains('visible')) {
+        hideTooltip(tip);
+      } else {
+        showTooltip(term, tip);
+      }
     });
   });
 
@@ -416,7 +420,7 @@
       packet.style.setProperty('--packet-to-y',   ty + 'px');
       packet.style.display    = 'block';
       packet.style.animation  = 'none';
-      packet.offsetHeight; // reflow
+      void packet.offsetHeight; // reflow
       packet.style.animation  = 'packetMove 0.8s var(--ease-in-out) forwards';
       setTimeout(() => { packet.style.display = 'none'; }, 850);
     }

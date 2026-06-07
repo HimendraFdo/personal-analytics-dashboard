@@ -49,7 +49,10 @@ function createInputContent(intake: IntakeResult) {
 async function readStatementFixture(
   fixturePath: string
 ): Promise<StatementExtraction> {
-  if (process.env.NODE_ENV === "production") {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.MONEY_IMPORT_EXTRACT_FIXTURE_ALLOW_PRODUCTION !== "true"
+  ) {
     throw new Error("Statement extraction fixture mode is not allowed in production");
   }
 

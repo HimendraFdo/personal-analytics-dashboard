@@ -122,6 +122,26 @@ async function waitFor<T>(
   throw new Error(`Timed out waiting for ${description}`);
 }
 
+async function pageState(client: CdpClient) {
+  return evaluate<{
+    href: string;
+    title: string;
+    text: string;
+    testIds: string[];
+  }>(
+    client,
+    `(() => ({
+      href: location.href,
+      title: document.title,
+      text: document.body.innerText.slice(0, 1200),
+      testIds: [...document.querySelectorAll("[data-testid]")]
+        .map((element) => element.getAttribute("data-testid"))
+        .filter(Boolean)
+        .slice(0, 80)
+    }))()`
+  );
+}
+
 async function setFileInput(client: CdpClient) {
   const result = await client.send<RuntimeEvaluateResult<unknown>>(
     "Runtime.evaluate",
@@ -161,11 +181,23 @@ async function main() {
       "page load"
     );
 
-    const signedIn = await waitFor<boolean>(
-      client,
-      "Boolean(document.querySelector('[data-testid=\"money-import-panel\"]')) || location.pathname.includes('/sign-in')",
-      "money import panel or sign-in redirect"
-    );
+    let signedIn: boolean;
+    try {
+      signedIn = await waitFor<boolean>(
+        client,
+        "Boolean(document.querySelector('[data-testid=\"money-import-panel\"]')) || location.pathname.includes('/sign-in')",
+        "money import panel or sign-in redirect"
+      );
+    } catch (error) {
+      const state = await pageState(client);
+      throw new Error(
+        `${error instanceof Error ? error.message : error}\n` +
+          `Current page: ${state.href}\n` +
+          `Title: ${state.title}\n` +
+          `Test IDs: ${state.testIds.join(", ") || "(none)"}\n` +
+          `Visible text:\n${state.text}`
+      );
+    }
 
     if (!signedIn) {
       throw new Error("Unexpected navigation state");
@@ -186,26 +218,43 @@ async function main() {
       client,
       "document.querySelector('[data-testid=\"money-import-extract\"]').click()"
     );
-    await waitFor<boolean>(
-      client,
-      "document.body.innerText.includes('Corner Coffee') && document.body.innerText.includes('Market Groceries')",
-      "fixture rows to appear"
-    );
+    try {
+      await waitFor<boolean>(
+        client,
+        "[...document.querySelectorAll('input')].some((input) => input.value === 'Corner Coffee') && [...document.querySelectorAll('input')].some((input) => input.value === 'Market Groceries')",
+        "fixture rows to appear"
+      );
+    } catch (error) {
+      const state = await pageState(client);
+      throw new Error(
+        `${error instanceof Error ? error.message : error}\n` +
+          `Current page: ${state.href}\n` +
+          `Title: ${state.title}\n` +
+          `Test IDs: ${state.testIds.join(", ") || "(none)"}\n` +
+          `Visible text:\n${state.text}`
+      );
+    }
 
     await evaluate<void>(
       client,
       "document.querySelector('[data-testid=\"money-import-commit\"]').click()"
     );
-    await waitFor<boolean>(
-      client,
-      "document.body.innerText.includes('Imported 3 money entries.')",
-      "import success message"
-    );
-    await waitFor<boolean>(
-      client,
-      "[...document.querySelectorAll('[data-testid=\"entry-list-item\"]')].some((item) => item.textContent.includes('Corner Coffee'))",
-      "imported entry in history"
-    );
+    try {
+      await waitFor<boolean>(
+        client,
+        "[...document.querySelectorAll('[data-testid=\"entry-list-item\"]')].some((item) => item.textContent.includes('Corner Coffee')) && [...document.querySelectorAll('[data-testid=\"entry-list-item\"]')].some((item) => item.textContent.includes('Market Groceries')) && [...document.querySelectorAll('[data-testid=\"entry-list-item\"]')].some((item) => item.textContent.includes('Card Refund'))",
+        "imported entries in history"
+      );
+    } catch (error) {
+      const state = await pageState(client);
+      throw new Error(
+        `${error instanceof Error ? error.message : error}\n` +
+          `Current page: ${state.href}\n` +
+          `Title: ${state.title}\n` +
+          `Test IDs: ${state.testIds.join(", ") || "(none)"}\n` +
+          `Visible text:\n${state.text}`
+      );
+    }
 
     console.log("Money import QA passed.");
   } finally {
