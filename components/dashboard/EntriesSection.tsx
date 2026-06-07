@@ -7,6 +7,7 @@ import type { Entry, EntryCategory } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { formatDateForInput } from "@/utils/date";
+import MoneyImportPanel from "./MoneyImportPanel";
 
 type EntriesSectionProps = {
   entries: Entry[];
@@ -14,6 +15,7 @@ type EntriesSectionProps = {
   onAddEntry: (payload: EntryFormPayload) => Promise<void>;
   onDeleteEntry: (entryId: string) => Promise<void>;
   onUpdateEntry: (id: string, payload: EntryFormPayload) => Promise<void>;
+  onImportComplete?: () => void | Promise<void>;
 };
 
 type SortOption = "Newest" | "Oldest" | "Highest" | "Lowest";
@@ -39,6 +41,7 @@ export default function EntriesSection({
   onAddEntry,
   onDeleteEntry,
   onUpdateEntry,
+  onImportComplete,
 }: EntriesSectionProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
@@ -146,6 +149,10 @@ export default function EntriesSection({
         <section className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {actionError}
         </section>
+      )}
+
+      {activeMetric === "money" && onImportComplete && (
+        <MoneyImportPanel disabled={saving} onImportComplete={onImportComplete} />
       )}
 
       {hasNoEntries && (

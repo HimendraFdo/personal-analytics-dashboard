@@ -29,6 +29,7 @@ export default function EntryList({
       {entries.map((entry) => (
         <div
           key={entry.id}
+          data-testid="entry-list-item"
           className="rounded-2xl border border-slate-200 bg-slate-50 p-3 transition hover:-translate-y-0.5 hover:border-[var(--metric-primary)] hover:bg-white hover:shadow-md sm:p-4"
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">

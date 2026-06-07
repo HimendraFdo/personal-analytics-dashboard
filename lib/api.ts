@@ -5,6 +5,37 @@ import { parseApiDate } from "@/utils/date";
 
 type ApiEntry = Omit<Entry, "date"> & { date: string };
 
+export type MoneyImportDraft = {
+  id: string;
+  date: string;
+  title: string;
+  value: number;
+  category: "Finance";
+  note: string;
+  confidence: number;
+  duplicateCandidate: boolean;
+  warnings: string[];
+};
+
+export type MoneyImportResponse = {
+  runId: string;
+  status: "requires_review";
+  fileName: string;
+  summary: {
+    totalRows: number;
+    importableRows: number;
+    warningRows: number;
+    duplicateCandidateRows: number;
+  };
+  drafts: MoneyImportDraft[];
+  warnings: string[];
+};
+
+export type MoneyImportCommitResponse = {
+  importedEntryIds: string[];
+  skippedDraftIds: string[];
+};
+
 function mapEntryFromApi(entry: ApiEntry): Entry {
   return {
     ...entry,
@@ -82,4 +113,32 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
     await fetch(`/api/food/search?${search.toString()}`)
   );
   return data.foods;
+}
+
+export async function importMoneyStatement(
+  file: File
+): Promise<MoneyImportResponse> {
+  const formData = new FormData();
+  formData.set("file", file);
+
+  return parseJsonResponse<MoneyImportResponse>(
+    await fetch("/api/money/import", {
+      method: "POST",
+      body: formData,
+    })
+  );
+}
+
+export async function commitMoneyImport(
+  runId: string,
+  draftIds: string[],
+  drafts?: MoneyImportDraft[]
+): Promise<MoneyImportCommitResponse> {
+  return parseJsonResponse<MoneyImportCommitResponse>(
+    await fetch(`/api/money/import/${runId}/commit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draftIds, drafts }),
+    })
+  );
 }

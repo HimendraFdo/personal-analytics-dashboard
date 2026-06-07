@@ -58,6 +58,16 @@ export const RATE_LIMITS = {
     limit: 60,
     windowSeconds: 60,
   },
+  moneyImportExtract: {
+    route: "money-import:post",
+    limit: 5,
+    windowSeconds: 60,
+  },
+  moneyImportCommit: {
+    route: "money-import-commit:post",
+    limit: 10,
+    windowSeconds: 60,
+  },
 } satisfies Record<string, RateLimitPolicy>;
 
 const memoryCounters = new Map<string, { count: number; resetAt: number }>();
