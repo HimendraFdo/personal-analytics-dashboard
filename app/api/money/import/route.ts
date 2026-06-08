@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { withRlsUserContext } from "@/lib/prisma";
@@ -56,15 +57,17 @@ export async function POST(request: NextRequest) {
       ),
     ];
 
-    await withRlsUserContext(userId, (tx) =>
-      saveMoneyImportRun(tx, {
-        runId: intake.runId,
-        userId,
-        fileName: intake.originalFileName,
-        drafts: reviewed.drafts,
-        warnings,
-      })
-    );
+    after(async () => {
+      await withRlsUserContext(userId, (tx) =>
+        saveMoneyImportRun(tx, {
+          runId: intake.runId,
+          userId,
+          fileName: intake.originalFileName,
+          drafts: reviewed.drafts,
+          warnings,
+        })
+      );
+    });
 
     return Response.json({
       runId: intake.runId,
