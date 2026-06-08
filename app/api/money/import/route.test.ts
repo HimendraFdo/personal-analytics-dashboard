@@ -35,7 +35,7 @@ vi.mock("@/lib/money-import/statement-reader", () => ({
   readStatement: mocks.readStatement,
 }));
 
-import { POST as UPLOAD } from "./route";
+import { maxDuration, runtime, POST as UPLOAD } from "./route";
 import { POST as COMMIT } from "./[runId]/commit/route";
 
 const userId = "user_123";
@@ -147,6 +147,11 @@ afterEach(() => {
 });
 
 describe("money import upload route", () => {
+  it("uses the Node.js runtime with enough time for statement extraction", () => {
+    expect(runtime).toBe("nodejs");
+    expect(maxDuration).toBe(60);
+  });
+
   it("rejects unauthenticated uploads", async () => {
     mocks.auth.mockResolvedValue({ userId: null });
 
@@ -236,6 +241,23 @@ describe("money import upload route", () => {
       error: {
         message:
           "Statement extraction is not configured. Set OPENAI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
+        code: "CONFIGURATION_ERROR",
+      },
+    });
+  });
+
+  it("returns an actionable configuration error when fixture mode is enabled in production", async () => {
+    mocks.readStatement.mockRejectedValue(
+      new Error("Statement extraction fixture mode is not allowed in production")
+    );
+
+    const response = await UPLOAD(uploadRequest(validPngFile()));
+
+    expect(response.status).toBe(503);
+    expect(await readJson(response)).toEqual({
+      error: {
+        message:
+          "Statement extraction is configured for local fixture mode in production. Remove MONEY_IMPORT_EXTRACT_FIXTURE_PATH from production or explicitly enable production fixture mode.",
         code: "CONFIGURATION_ERROR",
       },
     });

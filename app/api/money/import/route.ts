@@ -10,6 +10,9 @@ import { normalizeStatementExtraction } from "@/lib/money-import/normalize";
 import { reviewMoneyImportDrafts } from "@/lib/money-import/review";
 import { saveMoneyImportRun } from "@/lib/money-import/store";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -87,6 +90,14 @@ export async function POST(request: NextRequest) {
     if (message === "OpenAI API key is not configured") {
       return jsonError(
         "Statement extraction is not configured. Set OPENAI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
+        "CONFIGURATION_ERROR",
+        503
+      );
+    }
+
+    if (message === "Statement extraction fixture mode is not allowed in production") {
+      return jsonError(
+        "Statement extraction is configured for local fixture mode in production. Remove MONEY_IMPORT_EXTRACT_FIXTURE_PATH from production or explicitly enable production fixture mode.",
         "CONFIGURATION_ERROR",
         503
       );
