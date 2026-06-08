@@ -35,6 +35,11 @@ vi.mock("@/lib/money-import/statement-reader", () => ({
   readStatement: mocks.readStatement,
 }));
 
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: (fn: () => unknown) => fn() };
+});
+
 import { maxDuration, runtime, POST as UPLOAD } from "./route";
 import { POST as COMMIT } from "./[runId]/commit/route";
 
@@ -149,7 +154,7 @@ afterEach(() => {
 describe("money import upload route", () => {
   it("uses the Node.js runtime with enough time for statement extraction", () => {
     expect(runtime).toBe("nodejs");
-    expect(maxDuration).toBe(10);
+    expect(maxDuration).toBe(60);
   });
 
   it("rejects unauthenticated uploads", async () => {
