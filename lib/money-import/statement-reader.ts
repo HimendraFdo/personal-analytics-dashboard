@@ -11,8 +11,8 @@ import {
 import { extractTextFromPdf } from "./pdf-text";
 import type { IntakeResult, StatementExtraction } from "./types";
 
-const IMAGE_MAX_PX = 1500;
-const IMAGE_MAX_BYTES = 1.5 * 1024 * 1024;
+const IMAGE_MAX_PX = 1000;
+const IMAGE_MAX_BYTES = 800 * 1024;
 
 async function resizeImageIfNeeded(bytes: Buffer, mimeType: string): Promise<{ bytes: Buffer; mimeType: string }> {
   try {
@@ -145,7 +145,7 @@ async function createInputContent(
       { type: "input_text" as const, text: prompt },
       {
         type: "input_image" as const,
-        detail: "high" as const,
+        detail: "low" as const,
         image_url: `data:${resized.mimeType};base64,${resizedBase64}`,
       },
     ],
