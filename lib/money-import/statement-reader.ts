@@ -163,7 +163,7 @@ export async function readStatement(
     uploadedFileId = fileId;
 
     response = await client.responses.parse({
-      model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o-mini",
+      model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o",
       input: [
         {
           role: "user",

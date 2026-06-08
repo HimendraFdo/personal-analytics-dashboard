@@ -49,6 +49,13 @@ function mapEntryFromApi(entry: ApiEntry): Entry {
 }
 
 async function parseJsonResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    if (response.status >= 500) {
+      throw new Error("Statement extraction timed out. Please try again.");
+    }
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   const body = await response.json();
   if (!response.ok) {
     throw new Error(getErrorMessage(body, "Request failed"));
