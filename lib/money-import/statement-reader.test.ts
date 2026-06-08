@@ -142,7 +142,7 @@ describe("readStatement", () => {
     });
     expect(mocks.responsesParse).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         input: [
           expect.objectContaining({
             content: [
