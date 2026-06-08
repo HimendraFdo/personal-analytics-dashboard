@@ -82,4 +82,28 @@ describe("normalizeStatementExtraction", () => {
       },
     ]);
   });
+
+  it("uses the statement period year for day-month transaction dates", () => {
+    const result = normalizeStatementExtraction({
+      accountName: null,
+      statementPeriodStart: "2026-04-10",
+      statementPeriodEnd: "2026-05-11",
+      currency: "NZD",
+      warnings: [],
+      transactions: [
+        {
+          sourceRowId: "1",
+          date: "11 Apr",
+          description: "NEW WORLD TE RAPA 4230",
+          amount: 7.99,
+          currency: "NZD",
+          direction: "debit",
+          confidence: 1,
+          warnings: [],
+        },
+      ],
+    });
+
+    expect(result.drafts[0]?.date).toBe("2026-04-11");
+  });
 });

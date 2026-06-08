@@ -92,6 +92,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (
+      message.startsWith("Statement extraction provider request failed:") &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      return jsonError(message, "EXTRACTION_PROVIDER_ERROR", 502);
+    }
+
     return jsonError("Failed to extract statement", "INTERNAL_ERROR", 500);
   }
 }

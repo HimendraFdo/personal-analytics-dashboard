@@ -19,11 +19,11 @@ const commitRequestSchema = z
         z
           .object({
             id: z.string().uuid(),
-            date: z.string().trim().min(1).max(20),
-            title: z.string().trim().min(1).max(200),
-            value: z.coerce.number().positive().finite(),
+            date: z.string().trim().min(1).max(20).optional(),
+            title: z.string().trim().min(1).max(200).optional(),
+            value: z.coerce.number().positive().finite().optional(),
             category: z.literal("Finance").optional(),
-            note: z.string().max(2000),
+            note: z.string().max(2000).optional(),
             confidence: z.coerce.number().min(0).max(1).optional(),
             duplicateCandidate: z.boolean().optional(),
             warnings: z.array(z.string().max(300)).optional(),
@@ -48,6 +48,7 @@ export async function POST(
 
     const securityError = validateMutationRequest(request, {
       requireJson: true,
+      maxContentLengthBytes: 128 * 1024,
     });
     if (securityError) {
       return securityError;

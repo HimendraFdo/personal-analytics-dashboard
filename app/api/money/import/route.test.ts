@@ -241,6 +241,23 @@ describe("money import upload route", () => {
     });
   });
 
+  it("returns provider details for extraction request failures outside production", async () => {
+    mocks.readStatement.mockRejectedValue(
+      new Error("Statement extraction provider request failed: unsupported model")
+    );
+
+    const response = await UPLOAD(uploadRequest(validPngFile()));
+
+    expect(response.status).toBe(502);
+    expect(await readJson(response)).toEqual({
+      error: {
+        message:
+          "Statement extraction provider request failed: unsupported model",
+        code: "EXTRACTION_PROVIDER_ERROR",
+      },
+    });
+  });
+
   it("returns reviewable drafts for a successful extraction", async () => {
     mocks.readStatement.mockResolvedValue({
       accountName: null,
@@ -458,6 +475,50 @@ describe("money import commit route", () => {
     expect(await readJson(response)).toEqual({
       importedEntryIds: ["123e4567-e89b-12d3-a456-426614174099"],
       skippedDraftIds: [],
+    });
+  });
+
+  it("accepts compact edited draft payloads from the review table", async () => {
+    mocks.importRunFindFirst.mockResolvedValue(storedRun());
+    mocks.entryCreate.mockResolvedValue({
+      id: "123e4567-e89b-12d3-a456-426614174099",
+      userId,
+      title: "Edited Coffee Shop",
+      value: 10,
+      metricType: "money",
+      category: "Finance",
+      date: new Date("2026-05-16T00:00:00.000Z"),
+      note: "Imported from bank statement row 1.",
+      foodName: null,
+      portionGrams: null,
+      proteinGrams: null,
+      carbsGrams: null,
+      fatGrams: null,
+      foodSource: null,
+      createdAt: new Date("2026-06-07T00:00:00.000Z"),
+      updatedAt: new Date("2026-06-07T00:00:00.000Z"),
+    });
+
+    const response = await COMMIT(
+      commitRequest({
+        draftIds: [draftId],
+        drafts: [
+          {
+            id: draftId,
+            title: "Edited Coffee Shop",
+            value: 10,
+          },
+        ],
+      }),
+      { params: Promise.resolve({ runId }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.entryCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        title: "Edited Coffee Shop",
+        value: 10,
+      }),
     });
   });
 });
