@@ -105,8 +105,12 @@ export async function POST(request: NextRequest) {
 
     if (message.startsWith("Statement extraction provider request failed:")) {
       console.error("[money-import] provider error:", error);
+      const isTimeout =
+        message.includes("timed out") || message.includes("TimeoutError");
       return jsonError(
-        "Statement extraction failed. Please try again later.",
+        isTimeout
+          ? "Statement extraction timed out. Try a smaller or simpler image."
+          : "Statement extraction failed. Please try again later.",
         "EXTRACTION_PROVIDER_ERROR",
         502
       );
