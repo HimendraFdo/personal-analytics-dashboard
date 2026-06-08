@@ -2,30 +2,29 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { deflateSync } from "node:zlib";
 
 const mocks = vi.hoisted(() => ({
-  generateContent: vi.fn(),
+  responsesParse: vi.fn(),
+  filesCreate: vi.fn(),
+  filesDelete: vi.fn(),
+  toFile: vi.fn(),
 }));
 
-vi.mock("@google/generative-ai", () => ({
-  GoogleGenerativeAI: vi.fn(function GoogleGenerativeAI() {
+vi.mock("openai", () => ({
+  toFile: mocks.toFile,
+  default: vi.fn(function OpenAI() {
     return {
-      getGenerativeModel: vi.fn(() => ({
-        generateContent: mocks.generateContent,
-      })),
+      files: {
+        create: mocks.filesCreate,
+        delete: mocks.filesDelete,
+      },
+      responses: {
+        parse: mocks.responsesParse,
+      },
     };
   }),
 }));
 
 import { readStatement } from "./statement-reader";
 import type { IntakeResult } from "./types";
-
-const validOutput = {
-  accountName: null,
-  statementPeriodStart: null,
-  statementPeriodEnd: null,
-  currency: "USD",
-  transactions: [],
-  warnings: [],
-};
 
 function intake(): IntakeResult {
   return {
@@ -110,71 +109,143 @@ describe("readStatement", () => {
     );
   });
 
-  it("sends image inline to Gemini for image files", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
-
-    await readStatement(intake());
-
-    const parts = mocks.generateContent.mock.calls[0][0];
-    expect(parts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ text: expect.stringContaining("Use 2026 as the year") }),
-        expect.objectContaining({ inlineData: expect.objectContaining({ mimeType: expect.any(String) }) }),
-      ])
-    );
-  });
-
-  it("sends extracted PDF text to Gemini when text is available", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
-
-    await readStatement(textPdfIntake());
-
-    const arg = mocks.generateContent.mock.calls[0][0];
-    expect(typeof arg).toBe("string");
-    expect(arg).toContain("NEW WORLD TE RAPA 4230");
-  });
-
-  it("sends PDF inline to Gemini when text extraction is not available", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
+  it("uploads PDFs and sends the file ID to the Responses API", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    mocks.toFile.mockResolvedValue(new File(["%PDF-1.7"], "statement.pdf"));
+    mocks.filesCreate.mockResolvedValue({ id: "file_pdf_123" });
+    mocks.filesDelete.mockResolvedValue({ id: "file_pdf_123", deleted: true });
+    mocks.responsesParse.mockResolvedValue({
+      output_parsed: {
+        accountName: null,
+        statementPeriodStart: null,
+        statementPeriodEnd: null,
+        currency: "USD",
+        transactions: [],
+        warnings: [],
+      },
+    });
 
     await readStatement(pdfIntake());
 
-    const parts = mocks.generateContent.mock.calls[0][0];
-    expect(Array.isArray(parts)).toBe(true);
-    expect(parts[1]).toEqual(
-      expect.objectContaining({
-        inlineData: expect.objectContaining({ mimeType: "application/pdf" }),
-      })
+    expect(mocks.toFile).toHaveBeenCalledWith(
+      Buffer.from("%PDF-1.7"),
+      "statement.pdf",
+      { type: "application/pdf" }
     );
+    expect(mocks.filesCreate).toHaveBeenCalledWith({
+      file: expect.any(File),
+      purpose: "user_data",
+      expires_after: {
+        anchor: "created_at",
+        seconds: 3600,
+      },
+    });
+    expect(mocks.responsesParse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "gpt-4o",
+        input: [
+          expect.objectContaining({
+            content: [
+              expect.objectContaining({
+                type: "input_text",
+                text: expect.stringContaining(
+                  "Use 2026 as the year for bank-app screenshots"
+                ),
+              }),
+              expect.objectContaining({
+                type: "input_file",
+                file_id: "file_pdf_123",
+              }),
+            ],
+          }),
+        ],
+      }),
+    );
+    expect(mocks.responsesParse.mock.calls[0][0].input[0].content[1]).not.toHaveProperty(
+      "file_data"
+    );
+    expect(mocks.filesDelete).toHaveBeenCalledWith("file_pdf_123");
   });
 
   it("wraps provider errors with an extraction-specific message", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockRejectedValue(new Error("unsupported model"));
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    mocks.responsesParse.mockRejectedValue(new Error("unsupported model"));
 
     await expect(readStatement(intake())).rejects.toThrow(
       "Statement extraction provider request failed: unsupported model"
     );
   });
 
-  it("throws when Gemini returns invalid JSON", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ response: { text: () => "not json" } });
+  it("deletes uploaded PDFs even when extraction fails", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    mocks.toFile.mockResolvedValue(new File(["%PDF-1.7"], "statement.pdf"));
+    mocks.filesCreate.mockResolvedValue({ id: "file_pdf_123" });
+    mocks.filesDelete.mockResolvedValue({ id: "file_pdf_123", deleted: true });
+    mocks.responsesParse.mockRejectedValue(new Error("invalid request"));
 
-    await expect(readStatement(intake())).rejects.toThrow(
-      "Statement extraction returned invalid data"
+    await expect(readStatement(pdfIntake())).rejects.toThrow(
+      "Statement extraction provider request failed: invalid request"
     );
+
+    expect(mocks.filesDelete).toHaveBeenCalledWith("file_pdf_123");
   });
 
-  it("throws when Gemini returns JSON that fails schema validation", async () => {
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify({ unexpected: true }) } });
-
-    await expect(readStatement(intake())).rejects.toThrow(
-      "Statement extraction returned invalid data"
+  it("falls back to inline PDF data when file upload scope is missing", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    mocks.toFile.mockResolvedValue(new File(["%PDF-1.7"], "statement.pdf"));
+    mocks.filesCreate.mockRejectedValue(
+      new Error(
+        "401 You have insufficient permissions for this operation. Missing scopes: api.files.write"
+      )
     );
+    mocks.responsesParse.mockResolvedValue({
+      output_parsed: {
+        accountName: null,
+        statementPeriodStart: null,
+        statementPeriodEnd: null,
+        currency: "USD",
+        transactions: [],
+        warnings: [],
+      },
+    });
+
+    await readStatement(pdfIntake());
+
+    const fileInput = mocks.responsesParse.mock.calls[0][0].input[0].content[1];
+    expect(fileInput).toEqual({
+      type: "input_file",
+      filename: "statement.pdf",
+      file_data: `data:application/pdf;base64,${Buffer.from("%PDF-1.7").toString(
+        "base64"
+      )}`,
+    });
+    expect(mocks.filesDelete).not.toHaveBeenCalled();
+  });
+
+  it("uses extracted PDF text before OpenAI file handling when text is available", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "test-key");
+    mocks.responsesParse.mockResolvedValue({
+      output_parsed: {
+        accountName: null,
+        statementPeriodStart: null,
+        statementPeriodEnd: null,
+        currency: "NZD",
+        transactions: [],
+        warnings: [],
+      },
+    });
+
+    await readStatement(textPdfIntake());
+
+    const content = mocks.responsesParse.mock.calls[0][0].input[0].content;
+    expect(mocks.toFile).not.toHaveBeenCalled();
+    expect(mocks.filesCreate).not.toHaveBeenCalled();
+    expect(content[1]).toEqual(
+      expect.objectContaining({
+        type: "input_text",
+        text: expect.stringContaining("NEW WORLD TE RAPA 4230"),
+      })
+    );
+    expect(content[1].text).not.toContain("data:application/pdf;base64,");
   });
 });

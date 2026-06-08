@@ -240,7 +240,7 @@ describe("money import upload route", () => {
     expect(await readJson(response)).toEqual({
       error: {
         message:
-          "Statement extraction is not configured. Set GEMINI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
+          "Statement extraction is not configured. Set OPENAI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
         code: "CONFIGURATION_ERROR",
       },
     });
