@@ -79,7 +79,7 @@ function extractPdfStrings(value: string) {
 function extractTextFromStream(stream: string) {
   const strings: string[] = [];
 
-  for (const match of stream.matchAll(/\[(.*?)\]\s*TJ/gs)) {
+  for (const match of stream.matchAll(/\[([\s\S]*?)\]\s*TJ/g)) {
     strings.push(...extractPdfStrings(match[1]));
   }
 

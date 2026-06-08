@@ -2,9 +2,12 @@ import OpenAI, { toFile } from "openai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { zodTextFormat } from "openai/helpers/zod";
+import type { ResponseInputContent } from "openai/resources/responses/responses";
 import { statementExtractionSchema } from "./extraction-schema";
 import { extractTextFromPdf } from "./pdf-text";
 import type { IntakeResult, StatementExtraction } from "./types";
+
+type InputContentResult = [ResponseInputContent[], string | null];
 
 function createStatementReaderPrompt(referenceDate = new Date()) {
   const referenceYear = referenceDate.getFullYear();
@@ -41,7 +44,10 @@ function isFileUploadPermissionError(error: unknown) {
   );
 }
 
-async function createInputContent(client: OpenAI, intake: IntakeResult) {
+async function createInputContent(
+  client: OpenAI,
+  intake: IntakeResult
+): Promise<InputContentResult> {
   const base64 = intake.bytes.toString("base64");
   const prompt = createStatementReaderPrompt();
 
@@ -60,7 +66,7 @@ async function createInputContent(client: OpenAI, intake: IntakeResult) {
           },
         ],
         null,
-      ] as const;
+      ];
     }
 
     try {
@@ -84,7 +90,7 @@ async function createInputContent(client: OpenAI, intake: IntakeResult) {
           },
         ],
         uploadedFile.id,
-      ] as const;
+      ];
     } catch (error) {
       if (!isFileUploadPermissionError(error)) {
         throw error;
@@ -101,7 +107,7 @@ async function createInputContent(client: OpenAI, intake: IntakeResult) {
         },
       ],
       null,
-    ] as const;
+    ];
   }
 
   return [
@@ -114,7 +120,7 @@ async function createInputContent(client: OpenAI, intake: IntakeResult) {
       },
     ],
     null,
-  ] as const;
+  ];
 }
 
 async function readStatementFixture(
