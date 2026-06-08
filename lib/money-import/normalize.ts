@@ -130,21 +130,13 @@ export function normalizeStatementExtraction(extraction: StatementExtraction): {
       warnings.push("Review non-debit transaction before importing");
     }
 
-    const sourceParts = [
-      `Imported from bank statement row ${transaction.sourceRowId}.`,
-      transaction.currency || extraction.currency
-        ? `Currency: ${transaction.currency ?? extraction.currency}.`
-        : "",
-      transaction.direction ? `Direction: ${transaction.direction}.` : "",
-    ].filter(Boolean);
-
     drafts.push({
       id: crypto.randomUUID(),
       date,
       title,
       value: amount,
       category: "Finance",
-      note: sourceParts.join(" "),
+      note: "",
       confidence: transaction.confidence,
       duplicateCandidate: false,
       warnings,

@@ -34,6 +34,7 @@ describe("normalizeStatementExtraction", () => {
         value: 12.5,
         category: "Finance",
         date: "2026-05-16",
+        note: "",
         duplicateCandidate: false,
       })
     );

@@ -99,6 +99,13 @@ export async function POST(request: NextRequest) {
       return jsonError(message, "EXTRACTION_PROVIDER_ERROR", 502);
     }
 
+    if (
+      message === "Statement extraction returned invalid data" &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      return jsonError(message, "EXTRACTION_VALIDATION_ERROR", 502);
+    }
+
     return jsonError("Failed to extract statement", "INTERNAL_ERROR", 500);
   }
 }
