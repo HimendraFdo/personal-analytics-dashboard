@@ -185,8 +185,11 @@ export function getClientIp(request: NextRequest): string {
 
 export async function rateLimit(
   input: RateLimitInput,
-  store = getDefaultStore()
+  store?: RateLimitStore
 ): Promise<RateLimitResult> {
+  if (!store) {
+    store = getDefaultStore();
+  }
   const subject = input.userId
     ? `user:${cleanKeyPart(input.userId)}`
     : `ip:${cleanKeyPart(input.ip || "unknown")}`;
@@ -229,14 +232,9 @@ export async function rateLimitResponse(
 
   try {
     result = await rateLimit(input, store);
-  } catch {
-    result = {
-      success: false,
-      limit: input.limit,
-      remaining: 0,
-      retryAfter: input.windowSeconds,
-      reset: Math.ceil(Date.now() / 1000) + input.windowSeconds,
-    };
+  } catch (error) {
+    console.error("[rate-limit] store error, failing open:", error);
+    return null;
   }
 
   if (result.success) {
