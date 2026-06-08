@@ -31,7 +31,7 @@ function createInputContent(intake: IntakeResult) {
       {
         type: "input_file" as const,
         filename: intake.originalFileName,
-        file_data: `data:${intake.mimeType};base64,${base64}`,
+        file_data: base64,
       },
     ];
   }
