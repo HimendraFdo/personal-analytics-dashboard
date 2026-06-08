@@ -17,6 +17,11 @@ export type MoneyImportDraft = {
   warnings: string[];
 };
 
+export type MoneyImportDraftUpdate = Pick<
+  MoneyImportDraft,
+  "id" | "date" | "title" | "value" | "note"
+>;
+
 export type MoneyImportResponse = {
   runId: string;
   status: "requires_review";
@@ -132,7 +137,7 @@ export async function importMoneyStatement(
 export async function commitMoneyImport(
   runId: string,
   draftIds: string[],
-  drafts?: MoneyImportDraft[]
+  drafts?: MoneyImportDraftUpdate[]
 ): Promise<MoneyImportCommitResponse> {
   return parseJsonResponse<MoneyImportCommitResponse>(
     await fetch(`/api/money/import/${runId}/commit`, {
