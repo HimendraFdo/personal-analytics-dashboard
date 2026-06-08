@@ -162,21 +162,24 @@ export async function readStatement(
     const [content, fileId] = await createInputContent(client, intake);
     uploadedFileId = fileId;
 
-    response = await client.responses.parse({
-      model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o-mini",
-      input: [
-        {
-          role: "user",
-          content,
+    response = await client.responses.parse(
+      {
+        model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o-mini",
+        input: [
+          {
+            role: "user",
+            content,
+          },
+        ],
+        text: {
+          format: zodTextFormat(
+            statementExtractionProviderSchema,
+            "statement_extraction"
+          ),
         },
-      ],
-      text: {
-        format: zodTextFormat(
-          statementExtractionProviderSchema,
-          "statement_extraction"
-        ),
       },
-    });
+      { signal: AbortSignal.timeout(8000) }
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown provider error";
