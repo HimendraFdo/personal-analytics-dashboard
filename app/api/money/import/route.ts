@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         message.includes("timed out") || message.includes("TimeoutError");
       const userMessage = isTimeout
         ? "Statement extraction timed out. Try a smaller or simpler image."
-        : `Statement extraction failed: ${message}`;
+        : "Statement extraction failed. Please try again later.";
       return jsonError(userMessage, "EXTRACTION_PROVIDER_ERROR", 502);
     }
 
