@@ -86,9 +86,9 @@ export async function POST(request: NextRequest) {
 
     if (message === "OpenAI API key is not configured") {
       return jsonError(
-        "Statement extraction is not configured",
-        "INTERNAL_ERROR",
-        500
+        "Statement extraction is not configured. Set OPENAI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
+        "CONFIGURATION_ERROR",
+        503
       );
     }
 
