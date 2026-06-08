@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
@@ -50,7 +50,7 @@ function getGeminiClient() {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("OpenAI API key is not configured");
   }
-  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  return new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
 
 const geminiResponseSchema = {
@@ -117,48 +117,35 @@ export async function readStatement(
 
   let responseText: string;
   try {
+    const geminiModel = client.getGenerativeModel({
+      model,
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: geminiResponseSchema as any,
+      },
+    });
+
     if (intake.fileKind === "pdf") {
       const extractedText = extractTextFromPdf(intake.bytes);
-      const contents = extractedText
-        ? [prompt, "Use this locally extracted PDF statement text to extract transactions.", extractedText].join("\n\n")
-        : prompt;
 
-      const pdfPart = extractedText
-        ? null
-        : { inlineData: { data: intake.bytes.toString("base64"), mimeType: intake.mimeType as "application/pdf" } };
-
-      const parts = pdfPart
-        ? [{ text: contents }, pdfPart]
-        : [{ text: contents }];
-
-      const result = await client.models.generateContent({
-        model,
-        contents: [{ role: "user", parts }],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: geminiResponseSchema,
-        },
-      });
-      responseText = result.text ?? "";
+      if (extractedText) {
+        const contents = [prompt, "Use this locally extracted PDF statement text to extract transactions.", extractedText].join("\n\n");
+        const result = await geminiModel.generateContent(contents);
+        responseText = result.response.text();
+      } else {
+        const result = await geminiModel.generateContent([
+          { text: prompt },
+          { inlineData: { data: intake.bytes.toString("base64"), mimeType: "application/pdf" } },
+        ]);
+        responseText = result.response.text();
+      }
     } else {
       const resized = await resizeImageIfNeeded(intake.bytes, intake.mimeType);
-      const result = await client.models.generateContent({
-        model,
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: prompt },
-              { inlineData: { data: resized.bytes.toString("base64"), mimeType: resized.mimeType as "image/jpeg" | "image/png" } },
-            ],
-          },
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: geminiResponseSchema,
-        },
-      });
-      responseText = result.text ?? "";
+      const result = await geminiModel.generateContent([
+        { text: prompt },
+        { inlineData: { data: resized.bytes.toString("base64"), mimeType: resized.mimeType } },
+      ]);
+      responseText = result.response.text();
     }
   } catch (error) {
     const message =

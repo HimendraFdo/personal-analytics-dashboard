@@ -5,12 +5,12 @@ const mocks = vi.hoisted(() => ({
   generateContent: vi.fn(),
 }));
 
-vi.mock("@google/genai", () => ({
-  GoogleGenAI: vi.fn(function GoogleGenAI() {
+vi.mock("@google/generative-ai", () => ({
+  GoogleGenerativeAI: vi.fn(function GoogleGenerativeAI() {
     return {
-      models: {
+      getGenerativeModel: vi.fn(() => ({
         generateContent: mocks.generateContent,
-      },
+      })),
     };
   }),
 }));
@@ -112,47 +112,38 @@ describe("readStatement", () => {
 
   it("sends image inline to Gemini for image files", async () => {
     vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
+    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
 
     await readStatement(intake());
 
-    expect(mocks.generateContent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        model: "gemini-2.0-flash",
-        contents: [
-          expect.objectContaining({
-            role: "user",
-            parts: expect.arrayContaining([
-              expect.objectContaining({ text: expect.stringContaining("Use 2026 as the year") }),
-              expect.objectContaining({ inlineData: expect.objectContaining({ mimeType: expect.any(String) }) }),
-            ]),
-          }),
-        ],
-      })
+    const parts = mocks.generateContent.mock.calls[0][0];
+    expect(parts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ text: expect.stringContaining("Use 2026 as the year") }),
+        expect.objectContaining({ inlineData: expect.objectContaining({ mimeType: expect.any(String) }) }),
+      ])
     );
   });
 
   it("sends extracted PDF text to Gemini when text is available", async () => {
     vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
+    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
 
     await readStatement(textPdfIntake());
 
-    const call = mocks.generateContent.mock.calls[0][0];
-    const parts = call.contents[0].parts;
-    expect(parts).toHaveLength(1);
-    expect(parts[0].text).toContain("NEW WORLD TE RAPA 4230");
+    const arg = mocks.generateContent.mock.calls[0][0];
+    expect(typeof arg).toBe("string");
+    expect(arg).toContain("NEW WORLD TE RAPA 4230");
   });
 
   it("sends PDF inline to Gemini when text extraction is not available", async () => {
     vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ text: JSON.stringify(validOutput) });
+    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify(validOutput) } });
 
     await readStatement(pdfIntake());
 
-    const call = mocks.generateContent.mock.calls[0][0];
-    const parts = call.contents[0].parts;
-    expect(parts).toHaveLength(2);
+    const parts = mocks.generateContent.mock.calls[0][0];
+    expect(Array.isArray(parts)).toBe(true);
     expect(parts[1]).toEqual(
       expect.objectContaining({
         inlineData: expect.objectContaining({ mimeType: "application/pdf" }),
@@ -171,7 +162,7 @@ describe("readStatement", () => {
 
   it("throws when Gemini returns invalid JSON", async () => {
     vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ text: "not json" });
+    mocks.generateContent.mockResolvedValue({ response: { text: () => "not json" } });
 
     await expect(readStatement(intake())).rejects.toThrow(
       "Statement extraction returned invalid data"
@@ -180,7 +171,7 @@ describe("readStatement", () => {
 
   it("throws when Gemini returns JSON that fails schema validation", async () => {
     vi.stubEnv("GEMINI_API_KEY", "test-key");
-    mocks.generateContent.mockResolvedValue({ text: JSON.stringify({ unexpected: true }) });
+    mocks.generateContent.mockResolvedValue({ response: { text: () => JSON.stringify({ unexpected: true }) } });
 
     await expect(readStatement(intake())).rejects.toThrow(
       "Statement extraction returned invalid data"
