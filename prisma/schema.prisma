@@ -46,6 +46,7 @@ model MoneyImportRun {
   fileName  String
   status    String
   drafts    Json
+  warnings  Json     @default("[]")
   createdAt DateTime @default(now())
   expiresAt DateTime
 

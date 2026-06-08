@@ -71,10 +71,10 @@ describe("request security helpers", () => {
   it("allows the Vercel deployment origin even when APP_ORIGIN is stale", () => {
     const originalAppOrigin = process.env.APP_ORIGIN;
     const originalAllowedOrigins = process.env.APP_ALLOWED_ORIGINS;
-    const originalVercelUrl = process.env.VERCEL_URL;
+    const originalVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
     process.env.APP_ORIGIN = "http://localhost:3000";
     delete process.env.APP_ALLOWED_ORIGINS;
-    process.env.VERCEL_URL = "personal-analytics-dashboard.vercel.app";
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "personal-analytics-dashboard.vercel.app";
 
     try {
       const request = new Request(
@@ -103,9 +103,9 @@ describe("request security helpers", () => {
       }
 
       if (originalVercelUrl === undefined) {
-        delete process.env.VERCEL_URL;
+        delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
       } else {
-        process.env.VERCEL_URL = originalVercelUrl;
+        process.env.VERCEL_PROJECT_PRODUCTION_URL = originalVercelUrl;
       }
     }
   });
