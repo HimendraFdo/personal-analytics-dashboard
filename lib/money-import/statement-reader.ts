@@ -3,7 +3,10 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { zodTextFormat } from "openai/helpers/zod";
 import type { ResponseInputContent } from "openai/resources/responses/responses";
-import { statementExtractionSchema } from "./extraction-schema";
+import {
+  statementExtractionProviderSchema,
+  statementExtractionSchema,
+} from "./extraction-schema";
 import { extractTextFromPdf } from "./pdf-text";
 import type { IntakeResult, StatementExtraction } from "./types";
 
@@ -168,7 +171,10 @@ export async function readStatement(
         },
       ],
       text: {
-        format: zodTextFormat(statementExtractionSchema, "statement_extraction"),
+        format: zodTextFormat(
+          statementExtractionProviderSchema,
+          "statement_extraction"
+        ),
       },
     });
   } catch (error) {

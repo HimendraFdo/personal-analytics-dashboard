@@ -90,7 +90,7 @@ function validDraft(overrides: Record<string, unknown> = {}) {
     title: "Coffee Shop",
     value: 12.5,
     category: "Finance",
-    note: "Imported from bank statement row 1.",
+    note: "",
     confidence: 0.95,
     duplicateCandidate: false,
     warnings: [],
@@ -215,11 +215,11 @@ describe("money import upload route", () => {
 
     const response = await UPLOAD(uploadRequest(validPngFile()));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(502);
     expect(await readJson(response)).toEqual({
       error: {
-        message: "Failed to extract statement",
-        code: "INTERNAL_ERROR",
+        message: "Statement extraction returned invalid data",
+        code: "EXTRACTION_VALIDATION_ERROR",
       },
     });
   });
@@ -341,7 +341,7 @@ describe("money import commit route", () => {
       metricType: "money",
       category: "Finance",
       date: new Date("2026-05-16T00:00:00.000Z"),
-      note: "Imported from bank statement row 1.",
+      note: "",
       foodName: null,
       portionGrams: null,
       proteinGrams: null,
@@ -488,7 +488,7 @@ describe("money import commit route", () => {
       metricType: "money",
       category: "Finance",
       date: new Date("2026-05-16T00:00:00.000Z"),
-      note: "Imported from bank statement row 1.",
+      note: "",
       foodName: null,
       portionGrams: null,
       proteinGrams: null,
