@@ -149,7 +149,7 @@ afterEach(() => {
 describe("money import upload route", () => {
   it("uses the Node.js runtime with enough time for statement extraction", () => {
     expect(runtime).toBe("nodejs");
-    expect(maxDuration).toBe(60);
+    expect(maxDuration).toBe(10);
   });
 
   it("rejects unauthenticated uploads", async () => {
@@ -223,7 +223,7 @@ describe("money import upload route", () => {
     expect(response.status).toBe(502);
     expect(await readJson(response)).toEqual({
       error: {
-        message: "Statement extraction returned invalid data",
+        message: "Statement extraction returned unexpected data. Please try again.",
         code: "EXTRACTION_VALIDATION_ERROR",
       },
     });
@@ -263,7 +263,7 @@ describe("money import upload route", () => {
     });
   });
 
-  it("returns provider details for extraction request failures outside production", async () => {
+  it("returns a safe provider error message for extraction request failures", async () => {
     mocks.readStatement.mockRejectedValue(
       new Error("Statement extraction provider request failed: unsupported model")
     );
@@ -273,8 +273,7 @@ describe("money import upload route", () => {
     expect(response.status).toBe(502);
     expect(await readJson(response)).toEqual({
       error: {
-        message:
-          "Statement extraction provider request failed: unsupported model",
+        message: "Statement extraction failed. Please try again later.",
         code: "EXTRACTION_PROVIDER_ERROR",
       },
     });

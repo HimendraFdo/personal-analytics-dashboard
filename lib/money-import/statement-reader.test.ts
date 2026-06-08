@@ -159,7 +159,8 @@ describe("readStatement", () => {
             ],
           }),
         ],
-      })
+      }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     expect(mocks.responsesParse.mock.calls[0][0].input[0].content[1]).not.toHaveProperty(
       "file_data"
