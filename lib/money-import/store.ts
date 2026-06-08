@@ -24,6 +24,7 @@ function toRun(row: {
   fileName: string;
   status: string;
   drafts: Prisma.JsonValue;
+  warnings: Prisma.JsonValue;
   createdAt: Date;
   expiresAt: Date;
 }): MoneyImportRun | null {
@@ -32,12 +33,14 @@ function toRun(row: {
     return null;
   }
 
+  const parsedWarnings = z.array(z.string()).safeParse(row.warnings);
+
   return {
     runId: row.id,
     userId: row.userId,
     fileName: row.fileName,
     drafts: parsedDrafts.data,
-    warnings: [],
+    warnings: parsedWarnings.success ? parsedWarnings.data : [],
     createdAt: row.createdAt.getTime(),
     expiresAt: row.expiresAt.getTime(),
   };
@@ -69,6 +72,7 @@ export async function saveMoneyImportRun(
       fileName: run.fileName,
       status: "requires_review",
       drafts: run.drafts as Prisma.InputJsonValue,
+      warnings: run.warnings as Prisma.InputJsonValue,
       expiresAt: new Date(now.getTime() + RUN_TTL_MS),
     },
   });
