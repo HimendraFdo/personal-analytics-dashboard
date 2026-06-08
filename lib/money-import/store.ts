@@ -46,11 +46,13 @@ function toRun(row: {
   };
 }
 
-export async function pruneExpiredMoneyImportRuns(
-  tx: PrismaTypes.TransactionClient
+async function pruneExpiredMoneyImportRuns(
+  tx: PrismaTypes.TransactionClient,
+  userId: string
 ) {
   await tx.moneyImportRun.deleteMany({
     where: {
+      userId,
       expiresAt: {
         lte: new Date(),
       },
@@ -62,7 +64,7 @@ export async function saveMoneyImportRun(
   tx: PrismaTypes.TransactionClient,
   run: Omit<MoneyImportRun, "createdAt" | "expiresAt">
 ) {
-  await pruneExpiredMoneyImportRuns(tx);
+  await pruneExpiredMoneyImportRuns(tx, run.userId);
 
   const now = new Date();
   const storedRun = await tx.moneyImportRun.create({
@@ -85,7 +87,7 @@ export async function getMoneyImportRun(
   runId: string,
   userId: string
 ) {
-  await pruneExpiredMoneyImportRuns(tx);
+  await pruneExpiredMoneyImportRuns(tx, userId);
 
   const run = await tx.moneyImportRun.findFirst({
     where: {

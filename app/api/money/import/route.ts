@@ -121,9 +121,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const detail = error instanceof Error ? error.message : String(error);
     console.error("[money-import] unexpected error:", error);
-    return jsonError(`Failed to extract statement: ${detail}`, "INTERNAL_ERROR", 500);
+    return jsonError("Failed to extract statement", "INTERNAL_ERROR", 500);
   }
 }
 
