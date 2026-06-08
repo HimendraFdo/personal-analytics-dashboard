@@ -36,7 +36,7 @@ function normalizeOrigin(value: string | null | undefined): string | null {
 function getConfiguredAllowedOrigins(): string[] {
   const explicitOrigins = parseOrigins(process.env.APP_ALLOWED_ORIGINS);
   const singleOrigin = parseOrigins(process.env.APP_ORIGIN);
-  const vercelOrigin = parseOrigins(process.env.VERCEL_URL);
+  const vercelOrigin = parseOrigins(process.env.VERCEL_PROJECT_PRODUCTION_URL);
 
   return [...new Set([...explicitOrigins, ...singleOrigin, ...vercelOrigin])];
 }
