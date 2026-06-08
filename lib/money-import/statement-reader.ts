@@ -1,11 +1,8 @@
-import OpenAI, { toFile } from "openai";
+import { GoogleGenAI } from "@google/genai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { zodTextFormat } from "openai/helpers/zod";
-import type { ResponseInputContent } from "openai/resources/responses/responses";
 import {
-  statementExtractionProviderSchema,
   statementExtractionSchema,
 } from "./extraction-schema";
 import { extractTextFromPdf } from "./pdf-text";
@@ -34,8 +31,6 @@ async function resizeImageIfNeeded(bytes: Buffer, mimeType: string): Promise<{ b
   }
 }
 
-type InputContentResult = [ResponseInputContent[], string | null];
-
 function createStatementReaderPrompt(referenceDate = new Date()) {
   const referenceYear = referenceDate.getFullYear();
 
@@ -47,111 +42,45 @@ function createStatementReaderPrompt(referenceDate = new Date()) {
     "Return uncertain rows with lower confidence and warnings.",
     "Treat debits and card purchases as spending.",
     "Treat refunds, credits, transfers, and deposits as non-spending unless the statement clearly marks them as fees or purchases.",
-    "Use the exact schema.",
+    "Respond with valid JSON matching the schema exactly.",
   ].join("\n");
 }
 
-function getOpenAIClient() {
-  if (!process.env.OPENAI_API_KEY) {
+function getGeminiClient() {
+  if (!process.env.GEMINI_API_KEY) {
     throw new Error("OpenAI API key is not configured");
   }
-
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
-function isFileUploadPermissionError(error: unknown) {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
-  return (
-    error.message.includes("api.files.write") ||
-    error.message.includes("Missing scopes") ||
-    error.message.includes("insufficient permissions")
-  );
-}
-
-async function createInputContent(
-  client: OpenAI,
-  intake: IntakeResult
-): Promise<InputContentResult> {
-  const base64 = intake.bytes.toString("base64");
-  const prompt = createStatementReaderPrompt();
-
-  if (intake.fileKind === "pdf") {
-    const extractedText = extractTextFromPdf(intake.bytes);
-    if (extractedText) {
-      return [
-        [
-          { type: "input_text" as const, text: prompt },
-          {
-            type: "input_text" as const,
-            text: [
-              "Use this locally extracted PDF statement text to extract transactions.",
-              extractedText,
-            ].join("\n\n"),
-          },
-        ],
-        null,
-      ];
-    }
-
-    try {
-      const uploadedFile = await client.files.create({
-        file: await toFile(intake.bytes, intake.originalFileName, {
-          type: intake.mimeType,
-        }),
-        purpose: "user_data",
-        expires_after: {
-          anchor: "created_at",
-          seconds: 3600,
+const geminiResponseSchema = {
+  type: "object",
+  properties: {
+    accountName: { type: "string", nullable: true },
+    statementPeriodStart: { type: "string", nullable: true },
+    statementPeriodEnd: { type: "string", nullable: true },
+    currency: { type: "string" },
+    transactions: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          sourceRowId: { type: "string" },
+          date: { type: "string", nullable: true },
+          description: { type: "string", nullable: true },
+          amount: { type: "number", nullable: true },
+          currency: { type: "string", nullable: true },
+          direction: { type: "string", enum: ["debit", "credit", "unknown"] },
+          confidence: { type: "number" },
+          warnings: { type: "array", items: { type: "string" } },
         },
-      });
-
-      return [
-        [
-          { type: "input_text" as const, text: prompt },
-          {
-            type: "input_file" as const,
-            file_id: uploadedFile.id,
-          },
-        ],
-        uploadedFile.id,
-      ];
-    } catch (error) {
-      if (!isFileUploadPermissionError(error)) {
-        throw error;
-      }
-    }
-
-    return [
-      [
-        { type: "input_text" as const, text: prompt },
-        {
-          type: "input_file" as const,
-          filename: intake.originalFileName,
-          file_data: `data:${intake.mimeType};base64,${base64}`,
-        },
-      ],
-      null,
-    ];
-  }
-
-  const resized = await resizeImageIfNeeded(intake.bytes, intake.mimeType);
-  const resizedBase64 = resized.bytes.toString("base64");
-
-  return [
-    [
-      { type: "input_text" as const, text: prompt },
-      {
-        type: "input_image" as const,
-        detail: "high" as const,
-        image_url: `data:${resized.mimeType};base64,${resizedBase64}`,
+        required: ["sourceRowId", "date", "description", "amount", "currency", "direction", "confidence", "warnings"],
       },
-    ],
-    null,
-  ];
-}
+    },
+    warnings: { type: "array", items: { type: "string" } },
+  },
+  required: ["accountName", "statementPeriodStart", "statementPeriodEnd", "currency", "transactions", "warnings"],
+};
 
 async function readStatementFixture(
   fixturePath: string
@@ -182,39 +111,69 @@ export async function readStatement(
     return readStatementFixture(fixturePath);
   }
 
-  const client = getOpenAIClient();
-  let uploadedFileId: string | null = null;
-  let response;
-  try {
-    const [content, fileId] = await createInputContent(client, intake);
-    uploadedFileId = fileId;
+  const client = getGeminiClient();
+  const model = process.env.GEMINI_MONEY_IMPORT_MODEL ?? "gemini-2.0-flash";
+  const prompt = createStatementReaderPrompt();
 
-    response = await client.responses.parse({
-      model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o",
-      input: [
-        {
-          role: "user",
-          content,
+  let responseText: string;
+  try {
+    if (intake.fileKind === "pdf") {
+      const extractedText = extractTextFromPdf(intake.bytes);
+      const contents = extractedText
+        ? [prompt, "Use this locally extracted PDF statement text to extract transactions.", extractedText].join("\n\n")
+        : prompt;
+
+      const pdfPart = extractedText
+        ? null
+        : { inlineData: { data: intake.bytes.toString("base64"), mimeType: intake.mimeType as "application/pdf" } };
+
+      const parts = pdfPart
+        ? [{ text: contents }, pdfPart]
+        : [{ text: contents }];
+
+      const result = await client.models.generateContent({
+        model,
+        contents: [{ role: "user", parts }],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: geminiResponseSchema,
         },
-      ],
-      text: {
-        format: zodTextFormat(
-          statementExtractionProviderSchema,
-          "statement_extraction"
-        ),
-      },
-    });
+      });
+      responseText = result.text ?? "";
+    } else {
+      const resized = await resizeImageIfNeeded(intake.bytes, intake.mimeType);
+      const result = await client.models.generateContent({
+        model,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              { inlineData: { data: resized.bytes.toString("base64"), mimeType: resized.mimeType as "image/jpeg" | "image/png" } },
+            ],
+          },
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: geminiResponseSchema,
+        },
+      });
+      responseText = result.text ?? "";
+    }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown provider error";
     throw new Error(`Statement extraction provider request failed: ${message}`);
-  } finally {
-    if (uploadedFileId) {
-      await client.files.delete(uploadedFileId).catch(() => undefined);
-    }
   }
 
-  const parsed = statementExtractionSchema.safeParse(response.output_parsed);
+  let rawJson: unknown;
+  try {
+    rawJson = JSON.parse(responseText);
+  } catch {
+    throw new Error("Statement extraction returned invalid data");
+  }
+
+  const parsed = statementExtractionSchema.safeParse(rawJson);
   if (!parsed.success) {
     throw new Error("Statement extraction returned invalid data");
   }
