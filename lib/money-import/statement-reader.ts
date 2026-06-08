@@ -162,33 +162,22 @@ export async function readStatement(
     const [content, fileId] = await createInputContent(client, intake);
     uploadedFileId = fileId;
 
-    response = await client.responses.parse(
-      {
-        model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o-mini",
-        input: [
-          {
-            role: "user",
-            content,
-          },
-        ],
-        text: {
-          format: zodTextFormat(
-            statementExtractionProviderSchema,
-            "statement_extraction"
-          ),
+    response = await client.responses.parse({
+      model: process.env.OPENAI_MONEY_IMPORT_MODEL ?? "gpt-4o-mini",
+      input: [
+        {
+          role: "user",
+          content,
         },
+      ],
+      text: {
+        format: zodTextFormat(
+          statementExtractionProviderSchema,
+          "statement_extraction"
+        ),
       },
-      { signal: AbortSignal.timeout(7000) }
-    );
+    });
   } catch (error) {
-    if (
-      error instanceof Error &&
-      (error.name === "TimeoutError" || error.message.includes("timed out"))
-    ) {
-      throw new Error(
-        "Statement extraction provider request failed: Request timed out — the statement may be too complex. Try a smaller image or fewer transactions."
-      );
-    }
     const message =
       error instanceof Error ? error.message : "Unknown provider error";
     throw new Error(`Statement extraction provider request failed: ${message}`);
