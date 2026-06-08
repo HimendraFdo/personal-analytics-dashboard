@@ -1,6 +1,7 @@
 import OpenAI, { toFile } from "openai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import { zodTextFormat } from "openai/helpers/zod";
 import type { ResponseInputContent } from "openai/resources/responses/responses";
 import {
@@ -9,6 +10,29 @@ import {
 } from "./extraction-schema";
 import { extractTextFromPdf } from "./pdf-text";
 import type { IntakeResult, StatementExtraction } from "./types";
+
+const IMAGE_MAX_PX = 1500;
+const IMAGE_MAX_BYTES = 1.5 * 1024 * 1024;
+
+async function resizeImageIfNeeded(bytes: Buffer, mimeType: string): Promise<{ bytes: Buffer; mimeType: string }> {
+  try {
+    const image = sharp(bytes);
+    const meta = await image.metadata();
+    const { width = 0, height = 0 } = meta;
+
+    const needsResize = width > IMAGE_MAX_PX || height > IMAGE_MAX_PX || bytes.length > IMAGE_MAX_BYTES;
+    if (!needsResize) return { bytes, mimeType };
+
+    const resized = await image
+      .resize(IMAGE_MAX_PX, IMAGE_MAX_PX, { fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+
+    return { bytes: resized, mimeType: "image/jpeg" };
+  } catch {
+    return { bytes, mimeType };
+  }
+}
 
 type InputContentResult = [ResponseInputContent[], string | null];
 
@@ -113,13 +137,16 @@ async function createInputContent(
     ];
   }
 
+  const resized = await resizeImageIfNeeded(intake.bytes, intake.mimeType);
+  const resizedBase64 = resized.bytes.toString("base64");
+
   return [
     [
       { type: "input_text" as const, text: prompt },
       {
         type: "input_image" as const,
         detail: "high" as const,
-        image_url: `data:${intake.mimeType};base64,${base64}`,
+        image_url: `data:${resized.mimeType};base64,${resizedBase64}`,
       },
     ],
     null,
