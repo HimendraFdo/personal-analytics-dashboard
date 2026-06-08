@@ -224,6 +224,23 @@ describe("money import upload route", () => {
     });
   });
 
+  it("returns an actionable configuration error when extraction is not configured", async () => {
+    mocks.readStatement.mockRejectedValue(
+      new Error("OpenAI API key is not configured")
+    );
+
+    const response = await UPLOAD(uploadRequest(validPngFile()));
+
+    expect(response.status).toBe(503);
+    expect(await readJson(response)).toEqual({
+      error: {
+        message:
+          "Statement extraction is not configured. Set OPENAI_API_KEY and restart the app, or set MONEY_IMPORT_EXTRACT_FIXTURE_PATH for local QA.",
+        code: "CONFIGURATION_ERROR",
+      },
+    });
+  });
+
   it("returns reviewable drafts for a successful extraction", async () => {
     mocks.readStatement.mockResolvedValue({
       accountName: null,
