@@ -12,7 +12,7 @@ import { reviewMoneyImportDrafts } from "@/lib/money-import/review";
 import { saveMoneyImportRun } from "@/lib/money-import/store";
 
 export const runtime = "nodejs";
-export const maxDuration = 10;
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
