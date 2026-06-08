@@ -103,20 +103,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      message.startsWith("Statement extraction provider request failed:") &&
-      process.env.NODE_ENV !== "production"
-    ) {
-      return jsonError(message, "EXTRACTION_PROVIDER_ERROR", 502);
+    if (message.startsWith("Statement extraction provider request failed:")) {
+      console.error("[money-import] provider error:", error);
+      return jsonError(
+        "Statement extraction failed. Please try again later.",
+        "EXTRACTION_PROVIDER_ERROR",
+        502
+      );
     }
 
-    if (
-      message === "Statement extraction returned invalid data" &&
-      process.env.NODE_ENV !== "production"
-    ) {
-      return jsonError(message, "EXTRACTION_VALIDATION_ERROR", 502);
+    if (message === "Statement extraction returned invalid data") {
+      console.error("[money-import] invalid extraction data:", error);
+      return jsonError(
+        "Statement extraction returned unexpected data. Please try again.",
+        "EXTRACTION_VALIDATION_ERROR",
+        502
+      );
     }
 
+    console.error("[money-import] unexpected error:", error);
     return jsonError("Failed to extract statement", "INTERNAL_ERROR", 500);
   }
 }
