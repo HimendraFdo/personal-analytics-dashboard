@@ -176,6 +176,7 @@ Rate limiting uses Upstash Redis in production. Development falls back to an in-
 | `npm run vercel-build` | Generate Prisma Client, deploy migrations, and build for Vercel |
 | `npm run start` | Start the production server |
 | `npm run lint` | Run the configured Next.js lint command |
+| `npm run typecheck` | Run TypeScript without emitting compiled files |
 | `npm run test` | Run Vitest tests |
 | `npm run test:integration` | Run PostgreSQL RLS integration tests against `RLS_TEST_DATABASE_URL` |
 | `npm run test:watch` | Run Vitest in watch mode |
@@ -215,6 +216,33 @@ then run:
 ```bash
 npm run test:integration
 ```
+
+---
+
+## CI/CD
+
+GitHub Actions runs the CI quality gate on pull requests, pushes to `main`, and manual dispatches:
+
+```bash
+npm ci
+npx prisma generate
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+Production deployment is handled by `.github/workflows/deploy.yml` after the `main` branch CI workflow succeeds, or by manual dispatch. It uses the Vercel CLI prebuilt-artifact flow: pull the production Vercel environment, build with `vercel build --prod`, then deploy with `vercel deploy --prebuilt --prod`.
+
+Add these repository secrets in GitHub before enabling the deployment workflow:
+
+| Secret | Purpose |
+|--------|---------|
+| `VERCEL_TOKEN` | Vercel token used by GitHub Actions |
+| `VERCEL_ORG_ID` | Vercel team or account ID |
+| `VERCEL_PROJECT_ID` | Vercel project ID |
+
+The production application variables such as `DATABASE_URL`, `DIRECT_DATABASE_URL`, Clerk keys, Upstash settings, and `APP_ORIGIN` should stay in Vercel Environment Variables. The deployment workflow pulls them from Vercel during the build step.
 
 ---
 

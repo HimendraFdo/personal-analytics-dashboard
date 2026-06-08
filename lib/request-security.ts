@@ -23,7 +23,11 @@ function normalizeOrigin(value: string | null | undefined): string | null {
   }
 
   try {
-    return new URL(trimmed).origin;
+    const withProtocol = /^https?:\/\//.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
+
+    return new URL(withProtocol).origin;
   } catch {
     return null;
   }
@@ -32,8 +36,9 @@ function normalizeOrigin(value: string | null | undefined): string | null {
 function getConfiguredAllowedOrigins(): string[] {
   const explicitOrigins = parseOrigins(process.env.APP_ALLOWED_ORIGINS);
   const singleOrigin = parseOrigins(process.env.APP_ORIGIN);
+  const vercelOrigin = parseOrigins(process.env.VERCEL_URL);
 
-  return [...new Set([...explicitOrigins, ...singleOrigin])];
+  return [...new Set([...explicitOrigins, ...singleOrigin, ...vercelOrigin])];
 }
 
 function getAllowedOrigins(options: RequestSecurityOptions): Set<string> {

@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,15 +16,20 @@ concurrency:
 
 jobs:
   checks:
+    name: Quality checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ci
+      DIRECT_DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2lfcGxhY2Vob2xkZXIk
       CLERK_SECRET_KEY: clerk_secret_ci_placeholder
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
       NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: /dashboard
       NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: /dashboard
+      NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED: "true"
+      APP_ORIGIN: http://localhost:3000
 
     steps:
       - name: Check out repository
@@ -43,6 +49,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
 
       - name: Test
         run: npm run test

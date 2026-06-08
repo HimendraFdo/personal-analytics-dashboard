@@ -68,6 +68,48 @@ describe("request security helpers", () => {
     }
   });
 
+  it("allows the Vercel deployment origin even when APP_ORIGIN is stale", () => {
+    const originalAppOrigin = process.env.APP_ORIGIN;
+    const originalAllowedOrigins = process.env.APP_ALLOWED_ORIGINS;
+    const originalVercelUrl = process.env.VERCEL_URL;
+    process.env.APP_ORIGIN = "http://localhost:3000";
+    delete process.env.APP_ALLOWED_ORIGINS;
+    process.env.VERCEL_URL = "personal-analytics-dashboard.vercel.app";
+
+    try {
+      const request = new Request(
+        "https://personal-analytics-dashboard.vercel.app/api/entries",
+        {
+          method: "POST",
+          headers: {
+            origin: "https://personal-analytics-dashboard.vercel.app",
+            "content-type": "application/json",
+          },
+        }
+      );
+
+      expect(validateMutationRequest(request, { requireJson: true })).toBeNull();
+    } finally {
+      if (originalAppOrigin === undefined) {
+        delete process.env.APP_ORIGIN;
+      } else {
+        process.env.APP_ORIGIN = originalAppOrigin;
+      }
+
+      if (originalAllowedOrigins === undefined) {
+        delete process.env.APP_ALLOWED_ORIGINS;
+      } else {
+        process.env.APP_ALLOWED_ORIGINS = originalAllowedOrigins;
+      }
+
+      if (originalVercelUrl === undefined) {
+        delete process.env.VERCEL_URL;
+      } else {
+        process.env.VERCEL_URL = originalVercelUrl;
+      }
+    }
+  });
+
   it("still rejects cross-origin mutations when APP_ORIGIN is not configured", () => {
     const originalAppOrigin = process.env.APP_ORIGIN;
     const originalAllowedOrigins = process.env.APP_ALLOWED_ORIGINS;
