@@ -326,13 +326,7 @@ describe("money import upload route", () => {
       ],
       warnings: [],
     });
-    expect(mocks.importRunCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        userId,
-        fileName: "statement.png",
-        status: "requires_review",
-      }),
-    });
+    expect(mocks.importRunCreate).not.toHaveBeenCalled();
     expect(mocks.entryCreate).not.toHaveBeenCalled();
   });
 });
@@ -354,7 +348,6 @@ describe("money import commit route", () => {
   });
 
   it("creates money entries for selected drafts", async () => {
-    mocks.importRunFindFirst.mockResolvedValue(storedRun());
     mocks.entryCreate.mockResolvedValue({
       id: "123e4567-e89b-12d3-a456-426614174099",
       userId,
@@ -375,16 +368,12 @@ describe("money import commit route", () => {
     });
 
     const response = await COMMIT(
-      commitRequest({ draftIds: [draftId] }),
+      commitRequest({ draftIds: [draftId], drafts: [validDraft()] }),
       { params: Promise.resolve({ runId }) }
     );
 
     expect(response.status).toBe(200);
-    expect(mocks.importRunFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ id: runId, userId }),
-      })
-    );
+    expect(mocks.importRunFindFirst).not.toHaveBeenCalled();
     expect(mocks.entryCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         userId,
@@ -400,38 +389,22 @@ describe("money import commit route", () => {
     });
   });
 
-  it("does not let another user commit a run they do not own", async () => {
-    mocks.importRunFindFirst.mockResolvedValue(null);
-
+  it("returns 400 when drafts field is missing", async () => {
     const response = await COMMIT(
       commitRequest({ draftIds: [draftId] }),
       { params: Promise.resolve({ runId }) }
     );
 
-    expect(response.status).toBe(404);
-    expect(mocks.importRunFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ id: runId, userId }),
-      })
-    );
+    expect(response.status).toBe(400);
+    expect(mocks.importRunFindFirst).not.toHaveBeenCalled();
     expect(mocks.entryCreate).not.toHaveBeenCalled();
   });
 
   it("revalidates edited draft values server-side", async () => {
-    mocks.importRunFindFirst.mockResolvedValue(storedRun());
-
     const response = await COMMIT(
       commitRequest({
         draftIds: [draftId],
-        drafts: [
-          {
-            id: draftId,
-            date: "not-a-date",
-            title: "Coffee Shop",
-            value: 12.5,
-            note: "Edited note",
-          },
-        ],
+        drafts: [validDraft({ date: "not-a-date" })],
       }),
       { params: Promise.resolve({ runId }) }
     );
@@ -445,7 +418,6 @@ describe("money import commit route", () => {
   });
 
   it("accepts full client draft payloads from the review table", async () => {
-    mocks.importRunFindFirst.mockResolvedValue(storedRun());
     mocks.entryCreate.mockResolvedValue({
       id: "123e4567-e89b-12d3-a456-426614174099",
       userId,
@@ -500,47 +472,16 @@ describe("money import commit route", () => {
     });
   });
 
-  it("accepts compact edited draft payloads from the review table", async () => {
-    mocks.importRunFindFirst.mockResolvedValue(storedRun());
-    mocks.entryCreate.mockResolvedValue({
-      id: "123e4567-e89b-12d3-a456-426614174099",
-      userId,
-      title: "Edited Coffee Shop",
-      value: 10,
-      metricType: "money",
-      category: "Finance",
-      date: new Date("2026-05-16T00:00:00.000Z"),
-      note: "",
-      foodName: null,
-      portionGrams: null,
-      proteinGrams: null,
-      carbsGrams: null,
-      fatGrams: null,
-      foodSource: null,
-      createdAt: new Date("2026-06-07T00:00:00.000Z"),
-      updatedAt: new Date("2026-06-07T00:00:00.000Z"),
-    });
-
+  it("returns 400 for partial draft payloads missing required fields", async () => {
     const response = await COMMIT(
       commitRequest({
         draftIds: [draftId],
-        drafts: [
-          {
-            id: draftId,
-            title: "Edited Coffee Shop",
-            value: 10,
-          },
-        ],
+        drafts: [{ id: draftId, title: "Edited Coffee Shop", value: 10 }],
       }),
       { params: Promise.resolve({ runId }) }
     );
 
-    expect(response.status).toBe(200);
-    expect(mocks.entryCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        title: "Edited Coffee Shop",
-        value: 10,
-      }),
-    });
+    expect(response.status).toBe(400);
+    expect(mocks.entryCreate).not.toHaveBeenCalled();
   });
 });
