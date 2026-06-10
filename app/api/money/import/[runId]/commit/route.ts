@@ -6,38 +6,31 @@ import { jsonError } from "@/lib/api-response";
 import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { validateMutationRequest } from "@/lib/request-security";
 import { commitMoneyImportDrafts } from "@/lib/money-import/commit";
-import {
-  deleteMoneyImportRun,
-  getMoneyImportRun,
-} from "@/lib/money-import/store";
+
+const draftSchema = z
+  .object({
+    id: z.string().uuid(),
+    date: z.string().trim().min(1).max(20),
+    title: z.string().trim().min(1).max(200),
+    value: z.coerce.number().positive().finite(),
+    category: z.literal("Finance"),
+    note: z.string().max(2000),
+    confidence: z.coerce.number().min(0).max(1),
+    duplicateCandidate: z.boolean(),
+    warnings: z.array(z.string().max(300)),
+  })
+  .strict();
 
 const commitRequestSchema = z
   .object({
     draftIds: z.array(z.string().uuid()).min(1).max(200),
-    drafts: z
-      .array(
-        z
-          .object({
-            id: z.string().uuid(),
-            date: z.string().trim().min(1).max(20).optional(),
-            title: z.string().trim().min(1).max(200).optional(),
-            value: z.coerce.number().positive().finite().optional(),
-            category: z.literal("Finance").optional(),
-            note: z.string().max(2000).optional(),
-            confidence: z.coerce.number().min(0).max(1).optional(),
-            duplicateCandidate: z.boolean().optional(),
-            warnings: z.array(z.string().max(300)).optional(),
-          })
-          .strict()
-      )
-      .max(200)
-      .optional(),
+    drafts: z.array(draftSchema).min(1).max(200),
   })
   .strict();
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ runId: string }> }
+  _context: { params: Promise<{ runId: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -71,37 +64,14 @@ export async function POST(
       );
     }
 
-    const { runId } = await params;
     const result = await withRlsUserContext(userId, async (tx) => {
-      const run = await getMoneyImportRun(tx, runId, userId);
-      if (!run) {
-        return null;
-      }
-
-      const draftUpdates = new Map(
-        (parsed.data.drafts ?? []).map((draft) => [draft.id, draft])
-      );
-      const drafts = run.drafts.map((draft) => {
-        const update = draftUpdates.get(draft.id);
-        return update
-          ? { ...draft, ...update, category: "Finance" as const }
-          : draft;
-      });
-
-      const commitResult = await commitMoneyImportDrafts({
+      return commitMoneyImportDrafts({
         tx,
         userId,
-        drafts,
+        drafts: parsed.data.drafts,
         draftIds: parsed.data.draftIds,
       });
-
-      await deleteMoneyImportRun(tx, runId, userId);
-      return commitResult;
     });
-
-    if (!result) {
-      return jsonError("Import run not found", "NOT_FOUND", 404);
-    }
 
     return Response.json(result);
   } catch {

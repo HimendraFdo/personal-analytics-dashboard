@@ -8,7 +8,6 @@ import { intakeStatementFile } from "@/lib/money-import/intake";
 import { readStatement } from "@/lib/money-import/statement-reader";
 import { normalizeStatementExtraction } from "@/lib/money-import/normalize";
 import { reviewMoneyImportDrafts } from "@/lib/money-import/review";
-import { saveMoneyImportRun } from "@/lib/money-import/store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -55,16 +54,6 @@ export async function POST(request: NextRequest) {
         (row) => `Rejected row ${row.sourceRowId}: ${row.reason}`
       ),
     ];
-
-    await withRlsUserContext(userId, (tx) =>
-      saveMoneyImportRun(tx, {
-        runId: intake.runId,
-        userId,
-        fileName: intake.originalFileName,
-        drafts: reviewed.drafts,
-        warnings,
-      })
-    );
 
     return Response.json({
       runId: intake.runId,
