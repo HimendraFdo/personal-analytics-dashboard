@@ -50,14 +50,19 @@ async function pruneExpiredMoneyImportRuns(
   tx: PrismaTypes.TransactionClient,
   userId: string
 ) {
-  await tx.moneyImportRun.deleteMany({
-    where: {
-      userId,
-      expiresAt: {
-        lte: new Date(),
+  try {
+    await tx.moneyImportRun.deleteMany({
+      where: {
+        userId,
+        expiresAt: {
+          lte: new Date(),
+        },
       },
-    },
-  });
+    });
+  } catch {
+    // Non-critical cleanup — log and continue
+    console.warn("[money-import] pruneExpiredMoneyImportRuns failed, skipping");
+  }
 }
 
 export async function saveMoneyImportRun(
