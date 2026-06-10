@@ -37,7 +37,7 @@ function formatAxisValue(value: number): string {
 function formatDateTick(date: string): string {
   const [, month, day] = date.split("-");
 
-  return month && day ? `${Number(month)}/${Number(day)}` : date;
+  return month && day ? `${Number(day)}/${Number(month)}` : date;
 }
 
 export default function ActivityTrendChart({

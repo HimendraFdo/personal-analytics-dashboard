@@ -34,7 +34,7 @@ export function formatDisplayDate(date: Date): string {
   if (Number.isNaN(date.getTime())) {
     return "Unknown date";
   }
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString("en-GB", {
     dateStyle: "short",
     timeStyle: "short",
   });
