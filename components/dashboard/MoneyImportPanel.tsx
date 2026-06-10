@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   commitMoneyImport,
   importMoneyStatement,
@@ -13,6 +13,79 @@ type MoneyImportPanelProps = {
   disabled?: boolean;
   onImportComplete: () => void | Promise<void>;
 };
+
+const EXTRACT_STEPS = [
+  "Reading your file…",
+  "Identifying transactions…",
+  "Parsing amounts & dates…",
+  "Reviewing for duplicates…",
+  "Almost there…",
+];
+
+function ExtractionLoader() {
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setStepIndex((i) => (i + 1) % EXTRACT_STEPS.length);
+    }, 1800);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="mt-6 flex flex-col items-center gap-5 py-6">
+      {/* Animated rings */}
+      <div className="relative flex items-center justify-center">
+        <span className="absolute h-16 w-16 animate-ping rounded-full bg-[var(--metric-primary)] opacity-10" />
+        <span className="absolute h-12 w-12 animate-ping rounded-full bg-[var(--metric-primary)] opacity-15 [animation-delay:300ms]" />
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--metric-primary-soft)]">
+          <svg
+            className="h-5 w-5 animate-spin text-[var(--metric-primary)]"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"
+            />
+          </svg>
+        </span>
+      </div>
+
+      {/* Step label */}
+      <p
+        key={stepIndex}
+        className="animate-fade-in text-sm font-semibold text-[var(--metric-primary)] transition-all duration-500"
+        style={{ animation: "fadeSlideUp 0.4s ease both" }}
+      >
+        {EXTRACT_STEPS[stepIndex]}
+      </p>
+
+      {/* Segmented progress bar */}
+      <div className="flex gap-1.5">
+        {EXTRACT_STEPS.map((_, i) => (
+          <span
+            key={i}
+            className={`h-1.5 w-6 rounded-full transition-all duration-500 ${
+              i <= stepIndex
+                ? "bg-[var(--metric-primary)]"
+                : "bg-[var(--metric-primary-soft)]"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function editableDraftValue(
   draft: MoneyImportDraft,
@@ -176,10 +249,12 @@ export default function MoneyImportPanel({
             disabled={!file || disabled || loading || committing}
             className="rounded-2xl bg-[var(--metric-panel-strong)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--metric-primary-dark)] disabled:opacity-60"
           >
-            {loading ? "Extracting..." : "Import statement"}
+            Import statement
           </button>
         </div>
       </div>
+
+      {loading && <ExtractionLoader />}
 
       {error && (
         <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
