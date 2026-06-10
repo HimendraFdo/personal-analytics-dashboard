@@ -144,7 +144,7 @@ export async function importMoneyStatement(
 export async function commitMoneyImport(
   runId: string,
   draftIds: string[],
-  drafts?: MoneyImportDraftUpdate[]
+  drafts: MoneyImportDraft[]
 ): Promise<MoneyImportCommitResponse> {
   return parseJsonResponse<MoneyImportCommitResponse>(
     await fetch(`/api/money/import/${runId}/commit`, {

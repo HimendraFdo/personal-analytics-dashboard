@@ -25,18 +25,6 @@ function editableDraftValue(
   return { ...draft, [field]: value };
 }
 
-function editableFieldsChanged(
-  draft: MoneyImportDraft,
-  original: MoneyImportDraft | undefined
-) {
-  return (
-    !original ||
-    draft.date !== original.date ||
-    draft.title !== original.title ||
-    draft.value !== original.value ||
-    draft.note !== original.note
-  );
-}
 
 export default function MoneyImportPanel({
   disabled = false,
@@ -98,24 +86,10 @@ export default function MoneyImportPanel({
     setMessage(null);
 
     try {
-      const originalDrafts = new Map(
-        review.drafts.map((draft) => [draft.id, draft])
-      );
-      const editedSelectedDrafts = drafts.filter(
-        (draft) =>
-          selectedDraftIds.has(draft.id) &&
-          editableFieldsChanged(draft, originalDrafts.get(draft.id))
-      ).map((draft) => ({
-        id: draft.id,
-        date: draft.date,
-        title: draft.title,
-        value: draft.value,
-        note: draft.note,
-      }));
       const result = await commitMoneyImport(
         review.runId,
         Array.from(selectedDraftIds),
-        editedSelectedDrafts.length > 0 ? editedSelectedDrafts : undefined
+        drafts
       );
       setMessage(`Imported ${result.importedEntryIds.length} money entries.`);
       setReview(null);
