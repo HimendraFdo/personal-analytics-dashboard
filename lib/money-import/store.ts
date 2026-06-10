@@ -1,5 +1,6 @@
 import { Prisma, type Prisma as PrismaTypes } from "@prisma/client";
 import { z } from "zod";
+import { prisma } from "@/lib/prisma";
 import type { MoneyImportRun } from "./types";
 
 const RUN_TTL_MS = 30 * 60 * 1000;
@@ -46,12 +47,9 @@ function toRun(row: {
   };
 }
 
-async function pruneExpiredMoneyImportRuns(
-  tx: PrismaTypes.TransactionClient,
-  userId: string
-) {
+async function pruneExpiredMoneyImportRuns(userId: string) {
   try {
-    await tx.moneyImportRun.deleteMany({
+    await prisma.moneyImportRun.deleteMany({
       where: {
         userId,
         expiresAt: {
@@ -60,7 +58,7 @@ async function pruneExpiredMoneyImportRuns(
       },
     });
   } catch {
-    // Non-critical cleanup — log and continue
+    // Non-critical cleanup — missing DELETE privilege won't block the import
     console.warn("[money-import] pruneExpiredMoneyImportRuns failed, skipping");
   }
 }
@@ -69,7 +67,7 @@ export async function saveMoneyImportRun(
   tx: PrismaTypes.TransactionClient,
   run: Omit<MoneyImportRun, "createdAt" | "expiresAt">
 ) {
-  await pruneExpiredMoneyImportRuns(tx, run.userId);
+  await pruneExpiredMoneyImportRuns(run.userId);
 
   const now = new Date();
   const storedRun = await tx.moneyImportRun.create({
@@ -92,7 +90,7 @@ export async function getMoneyImportRun(
   runId: string,
   userId: string
 ) {
-  await pruneExpiredMoneyImportRuns(tx, userId);
+  await pruneExpiredMoneyImportRuns(userId);
 
   const run = await tx.moneyImportRun.findFirst({
     where: {
