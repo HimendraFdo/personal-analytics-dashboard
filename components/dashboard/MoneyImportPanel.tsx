@@ -113,6 +113,11 @@ export default function MoneyImportPanel({
   const [committing, setCommitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+
+  const PAGE_SIZE = 8;
+  const totalPages = Math.max(1, Math.ceil(drafts.length / PAGE_SIZE));
+  const pagedDrafts = drafts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const selectedCount = selectedDraftIds.size;
   const canCommit = selectedCount > 0 && review && !loading && !committing;
@@ -138,6 +143,7 @@ export default function MoneyImportPanel({
       setReview(result);
       setDrafts(result.drafts);
       setSelectedDraftIds(new Set(result.drafts.map((draft) => draft.id)));
+      setPage(0);
     } catch (extractError) {
       setError(
         extractError instanceof Error
@@ -316,7 +322,7 @@ export default function MoneyImportPanel({
                 </tr>
               </thead>
               <tbody>
-                {drafts.map((draft) => (
+                {pagedDrafts.map((draft) => (
                   <tr key={draft.id} className="border-t border-slate-200">
                     <td className="p-3 align-top">
                       <input
@@ -390,6 +396,30 @@ export default function MoneyImportPanel({
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="rounded-xl px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-40"
+              >
+                ← Prev
+              </button>
+              <span className="text-sm text-slate-500">
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                className="rounded-xl px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-500">

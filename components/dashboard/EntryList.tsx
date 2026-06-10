@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Entry } from "@/types/entry";
 import { metricConfigs } from "@/lib/metrics";
 import { formatMacroValue, hasMacroData } from "@/lib/nutrition";
@@ -10,12 +13,19 @@ type EntryListProps = {
   emptyMessage?: string;
 };
 
+const PAGE_SIZE = 8;
+
 export default function EntryList({
   entries,
   onDeleteEntry,
   onEditEntry,
   emptyMessage = "No entries match your current filters.",
 }: EntryListProps) {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pagedEntries = entries.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
   if (entries.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
@@ -26,7 +36,7 @@ export default function EntryList({
 
   return (
     <div className="space-y-3">
-      {entries.map((entry) => (
+      {pagedEntries.map((entry) => (
         <div
           key={entry.id}
           data-testid="entry-list-item"
@@ -91,6 +101,30 @@ export default function EntryList({
           </div>
         </div>
       ))}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={safePage === 0}
+            className="rounded-xl px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-40"
+          >
+            ← Prev
+          </button>
+          <span className="text-sm text-slate-500">
+            Page {safePage + 1} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={safePage === totalPages - 1}
+            className="rounded-xl px-3 py-1.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-40"
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
