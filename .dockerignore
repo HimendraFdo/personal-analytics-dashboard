@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+.npm
+
+# Next.js output
+.next
+out
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Git and editor metadata
+.git
+.github
+.cursor
+.codex
+.agents
+
+# Logs and generated files
+*.log
+*.tsbuildinfo
+coverage
+.qa-money-import-fixtures
+
+# Docker artifacts
+Dockerfile
+docker-compose*.yml

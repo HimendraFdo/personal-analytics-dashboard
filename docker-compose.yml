@@ -1,0 +1,77 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/sign-in}
+        NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_URL:-/sign-up}
+        NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL:-/dashboard}
+        NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL:-/dashboard}
+        NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED: ${NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED:-true}
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3001}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://personal_analytics:personal_analytics@db:5432/personal_analytics?schema=public}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:-postgresql://personal_analytics:personal_analytics@db:5432/personal_analytics?schema=public}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/sign-in}
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_URL:-/sign-up}
+      NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL:-/dashboard}
+      NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL:-/dashboard}
+      NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED: ${NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED:-true}
+      CLERK_FRONTEND_API_URL: ${CLERK_FRONTEND_API_URL:-}
+      APP_ALLOWED_ORIGINS: ${APP_ALLOWED_ORIGINS:-}
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:-}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:-}
+      ENABLE_IN_MEMORY_RATE_LIMIT_FALLBACK: ${ENABLE_IN_MEMORY_RATE_LIMIT_FALLBACK:-true}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MONEY_IMPORT_MAX_FILE_MB: ${MONEY_IMPORT_MAX_FILE_MB:-10}
+      MONEY_IMPORT_EXTRACT_FIXTURE_PATH: ${MONEY_IMPORT_EXTRACT_FIXTURE_PATH:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: .
+      target: builder
+      args:
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_URL:-/sign-in}
+        NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_URL:-/sign-up}
+        NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL:-/dashboard}
+        NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL: ${NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL:-/dashboard}
+        NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED: ${NEXT_PUBLIC_CLERK_TELEMETRY_DISABLED:-true}
+    profiles:
+      - tools
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://personal_analytics:personal_analytics@db:5432/personal_analytics?schema=public}
+      DIRECT_DATABASE_URL: ${DIRECT_DATABASE_URL:-postgresql://personal_analytics:personal_analytics@db:5432/personal_analytics?schema=public}
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: personal_analytics
+      POSTGRES_USER: personal_analytics
+      POSTGRES_PASSWORD: personal_analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U personal_analytics -d personal_analytics"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
