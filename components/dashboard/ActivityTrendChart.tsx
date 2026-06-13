@@ -40,6 +40,12 @@ function formatDateTick(date: string): string {
   return month && day ? `${Number(day)}/${Number(month)}` : date;
 }
 
+function formatTooltipDate(date: string): string {
+  const [year, month, day] = date.split("-");
+
+  return year && month && day ? `${day}/${month}/${year}` : date;
+}
+
 export default function ActivityTrendChart({
   data,
   valueFormatter = (value) => String(value),
@@ -85,6 +91,7 @@ export default function ActivityTrendChart({
             valueFormatter(Number(value)),
             tooltipLabel,
           ]}
+          labelFormatter={(label) => formatTooltipDate(String(label))}
           cursor={{ stroke: "var(--metric-primary-soft)", strokeWidth: 1 }}
           contentStyle={{
             border: "1px solid #e2e8f0",

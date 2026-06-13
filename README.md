@@ -167,6 +167,31 @@ Rate limiting uses Upstash Redis in production. Development falls back to an in-
 
 ---
 
+## Docker
+
+Copy the Docker example env file and fill in at least the Clerk keys:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+Build the production image and start the app with the local PostgreSQL service:
+
+```bash
+docker compose --env-file .env.docker build
+docker compose --env-file .env.docker up -d db
+docker compose --env-file .env.docker run --rm migrate
+docker compose --env-file .env.docker up app
+```
+
+Open [http://localhost:3001](http://localhost:3001).
+
+The compose file defaults `DATABASE_URL` and `DIRECT_DATABASE_URL` to the bundled local Postgres container. To use Neon or another external database instead, set those variables in `.env.docker` before running the commands above. Public Clerk values are passed as Docker build args because Next.js embeds `NEXT_PUBLIC_*` variables in the browser bundle at build time. Rebuild the image after changing them.
+
+The app image does not run migrations automatically; run `docker compose run --rm migrate` after schema changes or before the first containerized start.
+
+---
+
 ## Scripts
 
 | Command | Description |
