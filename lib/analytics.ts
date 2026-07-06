@@ -14,6 +14,34 @@ export type MacroEnergyBreakdownItem = ValueBreakdownItem & {
 const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const weekdaySortOrder = [1, 2, 3, 4, 5, 6, 0];
 
+export type TimeRangeFilter = "day" | "week" | "month" | "all";
+
+export const TIME_RANGE_OPTIONS: { value: TimeRangeFilter; label: string }[] = [
+  { value: "day", label: "Last 24 Hours" },
+  { value: "week", label: "Last 7 Days" },
+  { value: "month", label: "Last 30 Days" },
+  { value: "all", label: "All Time" },
+];
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const TIME_RANGE_WINDOW_DAYS: Record<Exclude<TimeRangeFilter, "all">, number> = {
+  day: 1,
+  week: 7,
+  month: 30,
+};
+
+export function filterEntriesByTimeRange(
+  entries: Entry[],
+  range: TimeRangeFilter
+): Entry[] {
+  if (range === "all") {
+    return entries;
+  }
+
+  const cutoff = Date.now() - TIME_RANGE_WINDOW_DAYS[range] * MS_PER_DAY;
+  return entries.filter((entry) => entry.date.getTime() >= cutoff);
+}
+
 export function getCategoryValueBreakdown(entries: Entry[]): ValueBreakdownItem[] {
   const totals: Record<string, ValueBreakdownItem> = {};
 
