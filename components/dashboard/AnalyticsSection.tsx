@@ -1,12 +1,16 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import ChartSkeleton from "@/components/dashboard/ChartSkeleton";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
 import {
+  filterEntriesByTimeRange,
   getCategoryValueBreakdown,
   getMacroEnergyBreakdown,
   getWeekdayValueBreakdown,
+  TIME_RANGE_OPTIONS,
+  type TimeRangeFilter,
 } from "@/lib/analytics";
 import { formatMacroValue, getMacroTotals } from "@/lib/nutrition";
 import type { Entry } from "@/types/entry";
@@ -40,19 +44,26 @@ const CategoryTotalsChart = dynamic(
 
 export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
+  const [selectedRange, setSelectedRange] = useState<TimeRangeFilter>("all");
   const isCalories = activeMetric === "calories";
   const isMoney = activeMetric === "money";
-  const totalEntries = entries.length;
-  const totalMetricValue = entries.reduce((total, entry) => total + entry.value, 0);
+
+  const rangeFilteredEntries = useMemo(
+    () => filterEntriesByTimeRange(entries, selectedRange),
+    [entries, selectedRange]
+  );
+
+  const totalEntries = rangeFilteredEntries.length;
+  const totalMetricValue = rangeFilteredEntries.reduce((total, entry) => total + entry.value, 0);
   const averageMetricValue = totalEntries > 0 ? totalMetricValue / totalEntries : 0.0;
-  const macroTotals = getMacroTotals(entries);
+  const macroTotals = getMacroTotals(rangeFilteredEntries);
 
   const dateTotals: Record<string, number> = {};
-  const categoryBreakdown = getCategoryValueBreakdown(entries);
-  const weekdayBreakdown = getWeekdayValueBreakdown(entries);
-  const macroEnergyBreakdown = getMacroEnergyBreakdown(entries);
+  const categoryBreakdown = getCategoryValueBreakdown(rangeFilteredEntries);
+  const weekdayBreakdown = getWeekdayValueBreakdown(rangeFilteredEntries);
+  const macroEnergyBreakdown = getMacroEnergyBreakdown(rangeFilteredEntries);
 
-  for (const entry of entries) {
+  for (const entry of rangeFilteredEntries) {
     const dateKey = entry.date.toISOString().split("T")[0];
     dateTotals[dateKey] = (dateTotals[dateKey] || 0) + entry.value;
   }
@@ -66,7 +77,9 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
     }
   }
 
-  const sortedEntries = [...entries].sort((a, b) => b.date.getTime() - a.date.getTime());
+  const sortedEntries = [...rangeFilteredEntries].sort(
+    (a, b) => b.date.getTime() - a.date.getTime()
+  );
   const latestEntry = sortedEntries[0] ?? null;
 
   const timeSeriesChartData = Object.entries(dateTotals)
@@ -132,8 +145,28 @@ export default function AnalyticsSection({ entries }: AnalyticsSectionProps) {
               Review derived insights based on your tracked {metricConfig.label.toLowerCase()} entries.
             </p>
           </div>
-          <div className="rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--metric-primary)]">
-            {analyticsBreakdown.data.length} active groups
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Time Range
+              </label>
+              <select
+                value={selectedRange}
+                onChange={(event) =>
+                  setSelectedRange(event.target.value as TimeRangeFilter)
+                }
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)] sm:w-auto"
+              >
+                {TIME_RANGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="rounded-2xl border border-[var(--metric-ring)] bg-[var(--metric-primary-soft)] px-4 py-3 text-sm font-semibold text-[var(--metric-primary)]">
+              {analyticsBreakdown.data.length} active groups
+            </div>
           </div>
         </div>
       </section>
