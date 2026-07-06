@@ -25,7 +25,7 @@ Authenticated, mobile-responsive personal metrics tracker for logging time, spen
 - Separates tracking into `Time`, `Money`, and `Calories` metric tabs with metric-specific labels, units, palettes, dashboards, entries, and analytics
 - Tracks time across `Study`, `Finance`, `Health`, and `Personal` categories, spending in dollars, and nutrition in kilocalories
 - Supports creating, editing, deleting, sorting, and filtering entries for the selected metric
-- Supports manual calorie logging or authenticated food lookup through [Open Food Facts](https://world.openfoodfacts.org), including portion-based calories, protein, carbs, and fat
+- Supports manual calorie logging or authenticated food lookup through [USDA FoodData Central](https://fdc.nal.usda.gov) and [Open Food Facts](https://world.openfoodfacts.org), including portion-based calories, protein, carbs, and fat
 - Shows metric-specific summaries, 7-day totals, daily trends, recent entries, category or weekday breakdowns, and nutrition macro breakdowns
 - Uses a responsive desktop sidebar, mobile bottom navigation, compact topbar, and mobile-friendly cards and charts
 - Protects dashboard, entries, analytics, and API routes with Clerk authentication and scopes every entry to its signed-in owner
@@ -45,7 +45,7 @@ Authenticated, mobile-responsive personal metrics tracker for logging time, spen
 | Validation | Zod |
 | Testing | Vitest |
 | Rate limiting | Upstash Redis REST API in production, in-memory fallback in development |
-| Food data | [Open Food Facts](https://world.openfoodfacts.org) |
+| Food data | [USDA FoodData Central](https://fdc.nal.usda.gov) (optional, via `USDA_FDC_API_KEY`) and [Open Food Facts](https://world.openfoodfacts.org) |
 | Hosting | Vercel |
 | Database (production) | [Neon](https://neon.tech) serverless Postgres |
 
@@ -63,6 +63,7 @@ flowchart LR
   Prisma["Prisma Client"]
   DB[(PostgreSQL)]
   Redis["Upstash Redis rate limits"]
+  USDA["USDA FoodData Central"]
   OFF["Open Food Facts"]
 
   User --> Clerk
@@ -73,6 +74,7 @@ flowchart LR
   Prisma --> DB
   API --> Redis
   FoodAPI --> Redis
+  FoodAPI --> USDA
   FoodAPI --> OFF
 ```
 
@@ -88,7 +90,7 @@ Routes:
 | `/analytics` | Derived totals, latest entry, category chart, and value-over-time chart |
 | `/api/entries` | Authenticated `GET` and `POST` handlers with metric filtering |
 | `/api/entries/[id]` | Authenticated `PATCH` and `DELETE` handlers |
-| `/api/food/search` | Authenticated, rate-limited Open Food Facts lookup |
+| `/api/food/search` | Authenticated, rate-limited food lookup across USDA FoodData Central and Open Food Facts |
 
 The API uses Clerk's `userId` to scope reads and writes. Prisma persists entries with ownership, metric type, category, date, value, title, note, timestamps, and optional calorie-specific nutrition details.
 
@@ -163,7 +165,7 @@ The runtime role needs only the privileges required to read and mutate app table
 
 Entry mutations reject cross-origin requests, require JSON for create and update operations, and enforce a 16 KB body limit. Responses include a Content Security Policy and common browser hardening headers; production also adds HSTS.
 
-Rate limiting uses Upstash Redis in production. Development falls back to an in-memory store when Upstash settings are not present. The food-search endpoint applies both per-user and per-IP limits before calling Open Food Facts with a 5-second timeout.
+Rate limiting uses Upstash Redis in production. Development falls back to an in-memory store when Upstash settings are not present. The food-search endpoint applies both per-user and per-IP limits before querying the food providers, each with a 5-second timeout. USDA FoodData Central is queried when `USDA_FDC_API_KEY` is set (free key from [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-key-signup)) and its generic whole-food results are listed first; Open Food Facts results are ranked by scan popularity and can be scoped to one country's products with `OPENFOODFACTS_COUNTRY` (e.g. `nz`). The lookup only fails if every configured provider fails.
 
 ---
 
