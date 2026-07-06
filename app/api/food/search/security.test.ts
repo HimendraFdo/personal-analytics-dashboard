@@ -67,6 +67,7 @@ describe("food search route abuse protection", () => {
     vi.clearAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
+    vi.unstubAllEnvs();
     resetMemoryRateLimitStoreForTests();
   });
 
@@ -149,6 +150,8 @@ describe("food search route abuse protection", () => {
 
   it("uses fixed upstream params plus the validated query", async () => {
     mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "");
+    vi.stubEnv("OPENFOODFACTS_COUNTRY", "");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -206,6 +209,7 @@ describe("food search route abuse protection", () => {
       action: "process",
       json: "1",
       page_size: "8",
+      sort_by: "unique_scans_n",
       fields: "code,product_name,generic_name,brands,serving_size,nutriments",
     });
     expect(init).toMatchObject({
@@ -220,6 +224,7 @@ describe("food search route abuse protection", () => {
 
   it("returns a safe 502 when the upstream fetch times out", async () => {
     mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "");
     vi.useFakeTimers();
     vi.stubGlobal(
       "fetch",
@@ -244,6 +249,7 @@ describe("food search route abuse protection", () => {
 
   it("returns a safe 502 when the upstream response fails", async () => {
     mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "");
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -259,6 +265,160 @@ describe("food search route abuse protection", () => {
     expect(response.status).toBe(502);
     expect(await readJson(response)).toEqual({
       error: { message: "Food lookup failed", code: "INTERNAL_ERROR" },
+    });
+  });
+
+  it("uses the country-specific Open Food Facts host when configured", async () => {
+    mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "");
+    vi.stubEnv("OPENFOODFACTS_COUNTRY", "nz");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(Response.json({ products: [] }))
+    );
+
+    const response = await GET(searchRequest("?q=weet-bix"));
+
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledOnce();
+    const upstreamUrl = new URL(String(vi.mocked(fetch).mock.calls[0][0]));
+    expect(upstreamUrl.origin).toBe("https://nz.openfoodfacts.org");
+  });
+
+  it("merges USDA results ahead of Open Food Facts when a key is configured", async () => {
+    mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "test-fdc-key");
+    vi.stubEnv("OPENFOODFACTS_COUNTRY", "");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string | URL | Request) => {
+        const target = new URL(String(url));
+
+        if (target.hostname === "api.nal.usda.gov") {
+          expect(target.pathname).toBe("/fdc/v1/foods/search");
+          expect(target.searchParams.get("api_key")).toBe("test-fdc-key");
+          expect(target.searchParams.get("query")).toBe("banana");
+          expect(target.searchParams.get("dataType")).toBe(
+            "Foundation,SR Legacy,Survey (FNDDS)"
+          );
+
+          return Promise.resolve(
+            Response.json({
+              foods: [
+                {
+                  fdcId: 1105314,
+                  description: "Bananas, ripe and slightly ripe, raw",
+                  foodNutrients: [
+                    { nutrientId: 1008, value: 98 },
+                    { nutrientId: 1003, value: 0.74 },
+                    { nutrientId: 1005, value: 23 },
+                    { nutrientId: 1004, value: 0.29 },
+                  ],
+                },
+                {
+                  fdcId: 999,
+                  description: "No energy data",
+                  foodNutrients: [{ nutrientId: 1003, value: 1 }],
+                },
+              ],
+            })
+          );
+        }
+
+        return Promise.resolve(
+          Response.json({
+            products: [
+              {
+                code: "9300652016758",
+                product_name: "Banana bread",
+                brands: "Bakery",
+                nutriments: {
+                  "energy-kcal_100g": 320,
+                  proteins_100g: 5,
+                  carbohydrates_100g: 50,
+                  fat_100g: 10,
+                },
+              },
+            ],
+          })
+        );
+      })
+    );
+
+    const response = await GET(searchRequest("?q=banana"));
+
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(await readJson(response)).toEqual({
+      foods: [
+        {
+          id: "fdc-1105314",
+          name: "Bananas, ripe and slightly ripe, raw",
+          brand: "USDA",
+          servingSize: null,
+          nutrientsPer100g: {
+            calories: 98,
+            protein: 0.74,
+            carbs: 23,
+            fat: 0.29,
+          },
+          source: "USDA FoodData Central",
+        },
+        {
+          id: "9300652016758",
+          name: "Banana bread",
+          brand: "Bakery",
+          servingSize: null,
+          nutrientsPer100g: {
+            calories: 320,
+            protein: 5,
+            carbs: 50,
+            fat: 10,
+          },
+          source: "Open Food Facts",
+        },
+      ],
+    });
+  });
+
+  it("still returns results when one provider fails", async () => {
+    mocks.auth.mockResolvedValue({ userId });
+    vi.stubEnv("USDA_FDC_API_KEY", "test-fdc-key");
+    vi.stubEnv("OPENFOODFACTS_COUNTRY", "");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string | URL | Request) => {
+        const target = new URL(String(url));
+
+        if (target.hostname === "api.nal.usda.gov") {
+          return Promise.resolve(
+            new Response("upstream internals", { status: 503 })
+          );
+        }
+
+        return Promise.resolve(
+          Response.json({
+            products: [
+              {
+                code: "123",
+                product_name: "Oat milk",
+                brands: "Brand",
+                nutriments: { "energy-kcal_100g": 46 },
+              },
+            ],
+          })
+        );
+      })
+    );
+
+    const response = await GET(searchRequest("?q=oat%20milk"));
+
+    expect(response.status).toBe(200);
+    const body = await readJson(response);
+    expect(body.foods).toHaveLength(1);
+    expect(body.foods[0]).toMatchObject({
+      name: "Oat milk",
+      source: "Open Food Facts",
     });
   });
 });

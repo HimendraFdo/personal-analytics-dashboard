@@ -2,60 +2,17 @@ import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { jsonError } from "@/lib/api-response";
 import { validateFoodSearchQuery } from "@/lib/food-search";
+import {
+  getUsdaApiKey,
+  searchOpenFoodFacts,
+  searchUsdaFoodData,
+} from "@/lib/food-search-providers";
 import type { FoodSearchResult } from "@/lib/nutrition";
 import {
   getClientIp,
   RATE_LIMITS,
   rateLimitResponse,
 } from "@/lib/rate-limit";
-
-type OpenFoodFactsProduct = {
-  code?: string;
-  product_name?: string;
-  generic_name?: string;
-  brands?: string;
-  serving_size?: string;
-  nutriments?: {
-    "energy-kcal_100g"?: number;
-    proteins_100g?: number;
-    carbohydrates_100g?: number;
-    fat_100g?: number;
-  };
-};
-
-type OpenFoodFactsSearchResponse = {
-  products?: OpenFoodFactsProduct[];
-};
-
-const FOOD_SEARCH_TIMEOUT_MS = 5_000;
-
-function toNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-function mapProduct(product: OpenFoodFactsProduct): FoodSearchResult | null {
-  const name = product.product_name || product.generic_name;
-  const nutrients = product.nutriments;
-  const calories = toNumber(nutrients?.["energy-kcal_100g"]);
-
-  if (!name || calories <= 0) {
-    return null;
-  }
-
-  return {
-    id: product.code || name,
-    name,
-    brand: product.brands || "Open Food Facts",
-    servingSize: product.serving_size || null,
-    nutrientsPer100g: {
-      calories,
-      protein: toNumber(nutrients?.proteins_100g),
-      carbs: toNumber(nutrients?.carbohydrates_100g),
-      fat: toNumber(nutrients?.fat_100g),
-    },
-    source: "Open Food Facts",
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,46 +43,26 @@ export async function GET(request: NextRequest) {
       return jsonError(query.message, "VALIDATION_ERROR", 400);
     }
 
-    const params = new URLSearchParams({
-      search_terms: query.query,
-      search_simple: "1",
-      action: "process",
-      json: "1",
-      page_size: "8",
-      fields:
-        "code,product_name,generic_name,brands,serving_size,nutriments",
-    });
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FOOD_SEARCH_TIMEOUT_MS);
-    let response: Response;
-
-    try {
-      response = await fetch(
-        `https://world.openfoodfacts.org/cgi/search.pl?${params.toString()}`,
-        {
-          headers: {
-            "User-Agent":
-              "PersonalAnalyticsDashboard/1.0 (food lookup for user-entered nutrition)",
-          },
-          next: { revalidate: 60 * 60 * 24 },
-          signal: controller.signal,
-        }
-      );
-    } catch {
-      return jsonError("Food lookup failed", "INTERNAL_ERROR", 502);
-    } finally {
-      clearTimeout(timeout);
+    // USDA first: its generic whole-food entries are usually what users mean
+    // when they type "banana", ahead of branded supermarket products.
+    const usdaApiKey = getUsdaApiKey();
+    const providers: Promise<FoodSearchResult[]>[] = [];
+    if (usdaApiKey) {
+      providers.push(searchUsdaFoodData(query.query, usdaApiKey));
     }
+    providers.push(searchOpenFoodFacts(query.query));
 
-    if (!response.ok) {
+    const settled = await Promise.allSettled(providers);
+    const fulfilled = settled.filter(
+      (result): result is PromiseFulfilledResult<FoodSearchResult[]> =>
+        result.status === "fulfilled"
+    );
+
+    if (fulfilled.length === 0) {
       return jsonError("Food lookup failed", "INTERNAL_ERROR", 502);
     }
 
-    const data = (await response.json()) as OpenFoodFactsSearchResponse;
-    const foods = (data.products ?? [])
-      .map(mapProduct)
-      .filter((food): food is FoodSearchResult => food !== null);
+    const foods = fulfilled.flatMap((result) => result.value);
 
     return Response.json({ foods });
   } catch {
