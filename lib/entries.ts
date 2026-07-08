@@ -1,6 +1,6 @@
 import type { Entry as PrismaEntry } from "@prisma/client";
 import { parseMetricType } from "@/lib/metrics";
-import type { Entry, EntryCategory } from "@/types/entry";
+import type { Entry } from "@/types/entry";
 
 export function serializeEntry(entry: PrismaEntry): Entry {
   return {
@@ -8,7 +8,7 @@ export function serializeEntry(entry: PrismaEntry): Entry {
     title: entry.title,
     value: entry.value,
     metricType: parseMetricType(entry.metricType),
-    category: entry.category as EntryCategory,
+    category: entry.category,
     date: entry.date,
     note: entry.note,
     foodName: entry.foodName,

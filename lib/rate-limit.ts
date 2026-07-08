@@ -68,6 +68,16 @@ export const RATE_LIMITS = {
     limit: 10,
     windowSeconds: 60,
   },
+  categoriesRead: {
+    route: "categories:get",
+    limit: 60,
+    windowSeconds: 60,
+  },
+  categoriesWrite: {
+    route: "categories:write",
+    limit: 20,
+    windowSeconds: 60,
+  },
 } satisfies Record<string, RateLimitPolicy>;
 
 const memoryCounters = new Map<string, { count: number; resetAt: number }>();

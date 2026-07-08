@@ -1,4 +1,5 @@
-import { PrismaClient, EntryCategory } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { DEFAULT_CATEGORY_NAMES } from "../types/entry";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,11 @@ async function main() {
 
   const userId = process.env.SEED_USER_ID ?? "seed_demo_user";
 
+  await prisma.category.createMany({
+    data: DEFAULT_CATEGORY_NAMES.map((name) => ({ userId, name })),
+    skipDuplicates: true,
+  });
+
   await prisma.entry.createMany({
     data: [
       {
@@ -17,7 +23,7 @@ async function main() {
         title: "Study Session",
         value: 150,
         metricType: "time",
-        category: EntryCategory.Study,
+        category: "Study",
         date: new Date("2026-03-31"),
         note: "Worked on frontend layout",
       },
@@ -26,7 +32,7 @@ async function main() {
         title: "Budget Review",
         value: 30,
         metricType: "time",
-        category: EntryCategory.Finance,
+        category: "Finance",
         date: new Date("2026-03-30"),
         note: "Lunch and coffee",
       },
@@ -35,7 +41,7 @@ async function main() {
         title: "Workout",
         value: 45,
         metricType: "time",
-        category: EntryCategory.Health,
+        category: "Health",
         date: new Date("2026-03-29"),
         note: "Evening gym session",
       },

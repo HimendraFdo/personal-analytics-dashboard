@@ -9,11 +9,15 @@ datasource db {
   directUrl = env("DIRECT_DATABASE_URL")
 }
 
-enum EntryCategory {
-  Study
-  Finance
-  Health
-  Personal
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
 }
 
 model Entry {
@@ -22,7 +26,7 @@ model Entry {
   title      String
   value      Float
   metricType String        @default("time")
-  category   EntryCategory
+  category   String
   date       DateTime
   note       String        @default("")
   foodName   String?

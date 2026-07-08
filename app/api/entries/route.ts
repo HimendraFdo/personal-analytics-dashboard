@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { EntryCategory, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { withRlsUserContext } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
@@ -8,11 +8,12 @@ import { parseMetricType } from "@/lib/metrics";
 import { RATE_LIMITS, rateLimitResponse } from "@/lib/rate-limit";
 import { validateMutationRequest } from "@/lib/request-security";
 import {
+  categoryNameSchema,
   createEntrySchema,
   parseEntryDate,
   sortSchema,
 } from "@/lib/validation";
-import { DEFAULT_ENTRY_CATEGORIES, ENTRY_CATEGORIES } from "@/types/entry";
+import { DEFAULT_ENTRY_CATEGORIES } from "@/types/entry";
 
 function getOrderBy(sort: string): Prisma.EntryOrderByWithRelationInput {
   switch (sort) {
@@ -55,10 +56,7 @@ export async function GET(request: NextRequest) {
       return jsonError("Invalid sort parameter", "VALIDATION_ERROR", 400);
     }
 
-    if (
-      category &&
-      !ENTRY_CATEGORIES.includes(category as (typeof ENTRY_CATEGORIES)[number])
-    ) {
+    if (category && !categoryNameSchema.safeParse(category).success) {
       return jsonError("Invalid category", "VALIDATION_ERROR", 400);
     }
 
@@ -67,7 +65,7 @@ export async function GET(request: NextRequest) {
         where: {
           userId,
           metricType,
-          ...(category ? { category: category as EntryCategory } : {}),
+          ...(category ? { category } : {}),
         },
         orderBy: getOrderBy(sortResult.data),
       })
@@ -155,10 +153,11 @@ export async function POST(request: NextRequest) {
           title,
           value,
           metricType,
-          category: (category ??
+          category:
+            category ??
             DEFAULT_ENTRY_CATEGORIES[
               metricType as keyof typeof DEFAULT_ENTRY_CATEGORIES
-            ]) as EntryCategory,
+            ],
           date: parseEntryDate(date),
           note: note ?? "",
           ...nutritionData,

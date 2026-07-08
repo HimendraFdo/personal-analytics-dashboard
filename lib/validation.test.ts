@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  categoryMutationSchema,
   createEntrySchema,
   entryIdSchema,
   parseEntryDate,
@@ -154,6 +155,33 @@ describe("sortSchema", () => {
   it("rejects malicious sort values", () => {
     const result = sortSchema.safeParse("date_desc; DELETE FROM Entry");
 
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("categoryMutationSchema", () => {
+  it("accepts and trims valid category names", () => {
+    const result = categoryMutationSchema.parse({ name: "  Side projects " });
+    expect(result.name).toBe("Side projects");
+  });
+
+  it("rejects blank names", () => {
+    expect(categoryMutationSchema.safeParse({ name: "   " }).success).toBe(
+      false
+    );
+  });
+
+  it("rejects names longer than 40 characters", () => {
+    expect(
+      categoryMutationSchema.safeParse({ name: "x".repeat(41) }).success
+    ).toBe(false);
+  });
+
+  it("rejects unknown fields", () => {
+    const result = categoryMutationSchema.safeParse({
+      name: "Study",
+      userId: "user_attacker",
+    });
     expect(result.success).toBe(false);
   });
 });

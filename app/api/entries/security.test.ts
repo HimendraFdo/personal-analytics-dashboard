@@ -117,12 +117,30 @@ describe("entry API SQL injection safety", () => {
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 
-  it("rejects malicious category values before querying entries", async () => {
+  it("passes SQL-looking category filters to the query as plain data", async () => {
     mocks.auth.mockResolvedValue({ userId });
+    mocks.findMany.mockResolvedValue([]);
 
     const response = await GET(
       new NextRequest(
         "http://localhost/api/entries?category=Study%27%20OR%201%3D1%20--"
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ category: "Study' OR 1=1 --" }),
+      })
+    );
+  });
+
+  it("rejects over-long category filters before querying entries", async () => {
+    mocks.auth.mockResolvedValue({ userId });
+
+    const response = await GET(
+      new NextRequest(
+        `http://localhost/api/entries?category=${"x".repeat(41)}`
       )
     );
 

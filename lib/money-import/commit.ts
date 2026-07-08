@@ -1,4 +1,4 @@
-import { EntryCategory, type Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { serializeEntryJson } from "@/lib/entries";
 import { parseEntryDate } from "@/lib/validation";
 import type { MoneyImportDraft } from "./types";
@@ -44,7 +44,7 @@ export async function commitMoneyImportDrafts({
         metricType: "money",
         title: draft.title.trim(),
         value: draft.value,
-        category: EntryCategory.Finance,
+        category: "Finance",
         date: parseEntryDate(draft.date),
         note: draft.note,
         foodName: null,
