@@ -1,4 +1,4 @@
-export type EntryCategory = "Study" | "Finance" | "Health" | "Personal";
+export type EntryCategory = string;
 export type MetricType = "time" | "money" | "calories";
 
 export type Entry = {
@@ -34,7 +34,7 @@ export type EntryInput = {
 
 export type EntryUpdateInput = Partial<EntryInput>;
 
-export const ENTRY_CATEGORIES: EntryCategory[] = [
+export const DEFAULT_CATEGORY_NAMES: string[] = [
   "Study",
   "Finance",
   "Health",

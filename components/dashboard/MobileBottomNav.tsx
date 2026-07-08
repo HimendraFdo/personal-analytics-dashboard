@@ -27,7 +27,7 @@ export default function MobileBottomNav() {
       aria-label="Primary navigation"
       className="fixed inset-x-0 bottom-0 z-20 border-t border-white/70 bg-white/90 px-2 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-12px_32px_var(--metric-shadow)] backdrop-blur-xl transition-colors duration-500 md:hidden"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-3 gap-1">
+      <ul className="mx-auto grid max-w-md grid-cols-4 gap-1">
         {MAIN_NAV_ITEMS.map((item) => {
           const isActive = item === activeItem;
 

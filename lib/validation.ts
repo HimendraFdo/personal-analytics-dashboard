@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { METRIC_TYPES } from "@/lib/metrics";
-import { ENTRY_CATEGORIES } from "@/types/entry";
 
-const categorySchema = z.enum(
-  ENTRY_CATEGORIES as [string, ...string[]]
-);
+export const categoryNameSchema = z.string().trim().min(1).max(40);
+
+const categorySchema = categoryNameSchema;
 const metricTypeSchema = z.enum(METRIC_TYPES as [string, ...string[]]);
 const optionalNutritionNumber = z.coerce.number().nonnegative().finite().nullable().optional();
 const optionalFoodText = z.string().trim().max(200).nullable().optional();
@@ -52,6 +51,14 @@ export const sortSchema = z
   .default("date_desc");
 
 export const entryIdSchema = z.string().uuid();
+
+export const categoryIdSchema = z.string().uuid();
+
+export const categoryMutationSchema = z
+  .object({
+    name: categoryNameSchema,
+  })
+  .strict();
 
 export function parseEntryDate(input: string | Date): Date {
   if (input instanceof Date) {

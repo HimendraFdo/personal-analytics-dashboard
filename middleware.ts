@@ -6,10 +6,12 @@ const isProtectedPageRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/entries(.*)",
   "/analytics(.*)",
+  "/settings(.*)",
 ]);
 
 const isProtectedApiRoute = createRouteMatcher([
   "/api/entries(.*)",
+  "/api/settings(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

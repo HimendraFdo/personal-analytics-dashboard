@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { EntryCategory } from "@prisma/client";
 import { serializeEntryJson } from "./entries";
 
 describe("serializeEntryJson", () => {
@@ -10,7 +9,7 @@ describe("serializeEntryJson", () => {
       userId: "user_123",
       value: 5,
       metricType: "time",
-      category: EntryCategory.Health,
+      category: "Health",
       date: new Date("2026-05-16T00:00:00.000Z"),
       note: "Felt good",
       foodName: null,

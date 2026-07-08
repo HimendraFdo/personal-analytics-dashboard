@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { EntryCategory } from "@prisma/client";
 import { withRlsUserContext } from "@/lib/prisma";
 import { jsonError } from "@/lib/api-response";
 import { serializeEntryJson } from "@/lib/entries";
@@ -104,9 +103,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           ...(title !== undefined ? { title } : {}),
           ...(value !== undefined ? { value } : {}),
           ...(metricType !== undefined ? { metricType } : {}),
-          ...(category !== undefined
-            ? { category: category as EntryCategory }
-            : {}),
+          ...(category !== undefined ? { category } : {}),
           ...(date !== undefined ? { date: parseEntryDate(date) } : {}),
           ...(note !== undefined ? { note } : {}),
           ...nutritionData,
