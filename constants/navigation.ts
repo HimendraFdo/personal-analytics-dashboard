@@ -2,6 +2,7 @@ export const NAVIGATION_ITEMS = {
   DASHBOARD: "Dashboard",
   ENTRIES: "Entries",
   ANALYTICS: "Analytics",
+  SETTINGS: "Settings",
 } as const;
 
 export type NavigationItem =
@@ -11,12 +12,14 @@ export const MAIN_NAV_ITEMS: NavigationItem[] = [
   NAVIGATION_ITEMS.DASHBOARD,
   NAVIGATION_ITEMS.ENTRIES,
   NAVIGATION_ITEMS.ANALYTICS,
+  NAVIGATION_ITEMS.SETTINGS,
 ];
 
 export const NAV_PATHS: Record<NavigationItem, string> = {
   [NAVIGATION_ITEMS.DASHBOARD]: "/dashboard",
   [NAVIGATION_ITEMS.ENTRIES]: "/entries",
   [NAVIGATION_ITEMS.ANALYTICS]: "/analytics",
+  [NAVIGATION_ITEMS.SETTINGS]: "/settings",
 };
 
 export function getNavItemFromPath(pathname: string): NavigationItem {
@@ -25,6 +28,9 @@ export function getNavItemFromPath(pathname: string): NavigationItem {
   }
   if (pathname.startsWith("/analytics")) {
     return NAVIGATION_ITEMS.ANALYTICS;
+  }
+  if (pathname.startsWith("/settings")) {
+    return NAVIGATION_ITEMS.SETTINGS;
   }
   return NAVIGATION_ITEMS.DASHBOARD;
 }

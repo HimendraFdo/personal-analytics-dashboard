@@ -1,3 +1,4 @@
+import type { Category } from "@/types/category";
 import type { Entry, EntryInput, EntryUpdateInput } from "@/types/entry";
 import { getErrorMessage } from "@/lib/errors";
 import type { FoodSearchResult } from "@/lib/nutrition";
@@ -116,6 +117,46 @@ export async function deleteEntry(id: string): Promise<void> {
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     throw new Error(getErrorMessage(body, "Failed to delete entry"));
+  }
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const data = await parseJsonResponse<{ categories: Category[] }>(
+    await fetch("/api/settings/categories")
+  );
+  return data.categories;
+}
+
+export async function createCategory(name: string): Promise<Category> {
+  return parseJsonResponse<Category>(
+    await fetch("/api/settings/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    })
+  );
+}
+
+export async function renameCategory(
+  id: string,
+  name: string
+): Promise<Category> {
+  return parseJsonResponse<Category>(
+    await fetch(`/api/settings/categories/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    })
+  );
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const response = await fetch(`/api/settings/categories/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(getErrorMessage(body, "Failed to delete category"));
   }
 }
 

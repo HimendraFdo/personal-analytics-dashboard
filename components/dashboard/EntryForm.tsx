@@ -17,14 +17,8 @@ type EntryFormProps = {
   editingEntry: Entry | null;
   onCancelEdit: () => void;
   disabled?: boolean;
+  categories: string[];
 };
-
-const CATEGORIES: EntryCategory[] = [
-  "Study",
-  "Finance",
-  "Health",
-  "Personal",
-];
 
 const inputFocusClasses =
   "focus:border-[var(--metric-primary)] focus:ring-[var(--metric-ring)]";
@@ -69,7 +63,7 @@ function getInitialFormData(editingEntry: Entry | null): FormData {
   return {
     title: "",
     value: "",
-    category: "Study",
+    category: "",
     date: formatDateTimeForInput(new Date()),
     note: "",
     foodName: "",
@@ -94,6 +88,7 @@ export default function EntryForm({
   editingEntry,
   onCancelEdit,
   disabled = false,
+  categories,
 }: EntryFormProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
   const { placeholders, valueInput } = metricConfig;
@@ -112,6 +107,13 @@ export default function EntryForm({
   const [foodSearchError, setFoodSearchError] = useState<string | null>(null);
   const [foodSearching, setFoodSearching] = useState(false);
   const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
+
+  // Keep the entry's original category selectable even if it was removed in Settings
+  const categoryOptions =
+    formData.category && !categories.includes(formData.category)
+      ? [formData.category, ...categories]
+      : categories;
+  const selectedCategory = formData.category || categoryOptions[0] || "";
 
   function validateForm(): boolean {
     const nextErrors: FormErrors = {
@@ -175,7 +177,7 @@ export default function EntryForm({
       title: formData.title.trim(),
       value: Number(formData.value),
       category: showsCategory
-        ? formData.category
+        ? selectedCategory || DEFAULT_ENTRY_CATEGORIES[activeMetric]
         : DEFAULT_ENTRY_CATEGORIES[activeMetric],
       date: new Date(formData.date),
       note: formData.note.trim(),
@@ -463,12 +465,12 @@ export default function EntryForm({
           </label>
           <select
             name="category"
-            value={formData.category}
+            value={selectedCategory}
             onChange={handleChange}
             disabled={disabled || submitting}
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
           >
-            {CATEGORIES.map((option) => (
+            {categoryOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>

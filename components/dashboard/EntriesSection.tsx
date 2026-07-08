@@ -5,6 +5,7 @@ import EntryForm from "./EntryForm";
 import EntryList from "./EntryList";
 import type { Entry, EntryCategory } from "@/types/entry";
 import type { EntryFormPayload } from "@/hooks/useEntries";
+import { useCategories } from "@/hooks/useCategories";
 import { useMetricSelection } from "@/hooks/useMetricSelection";
 import { formatDateForInput } from "@/utils/date";
 import MoneyImportPanel from "./MoneyImportPanel";
@@ -27,14 +28,6 @@ const SORT_OPTIONS: SortOption[] = [
   "Lowest",
 ];
 
-const CATEGORY_OPTIONS: Array<"All" | EntryCategory> = [
-  "All",
-  "Study",
-  "Finance",
-  "Health",
-  "Personal",
-];
-
 export default function EntriesSection({
   entries,
   saving = false,
@@ -44,6 +37,7 @@ export default function EntriesSection({
   onImportComplete,
 }: EntriesSectionProps) {
   const { activeMetric, metricConfig } = useMetricSelection();
+  const { categories } = useCategories();
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"All" | EntryCategory>("All");
   const [selectedDate, setSelectedDate] = useState("");
@@ -97,6 +91,20 @@ export default function EntriesSection({
     setSelectedDate("");
     setSelectedSort("Newest");
   }, [activeMetric]);
+
+  const categoryNames = useMemo(
+    () => categories.map((category) => category.name),
+    [categories]
+  );
+
+  // Include categories still present on entries even if removed in Settings
+  const categoryOptions = useMemo<Array<"All" | EntryCategory>>(() => {
+    const names = new Set(categoryNames);
+    for (const entry of entries) {
+      names.add(entry.category);
+    }
+    return ["All", ...names];
+  }, [categoryNames, entries]);
 
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
@@ -207,7 +215,7 @@ export default function EntriesSection({
               }
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[var(--metric-primary)] focus:ring-4 focus:ring-[var(--metric-ring)]"
             >
-              {CATEGORY_OPTIONS.map((option) => (
+              {categoryOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>
@@ -256,6 +264,7 @@ export default function EntriesSection({
               editingEntry={editingEntry}
               onCancelEdit={handleCancelEdit}
               disabled={saving}
+              categories={categoryNames}
             />
           </div>
         </div>
